@@ -517,7 +517,7 @@ func saveIsPinnedPost(c *Context, w http.ResponseWriter, r *http.Request, isPinn
 		return
 	}
 
-	// Restrict pinning if the experimental read-only-town-square setting is on.
+	// Restrict pinning if the experimental read-only-selleros-assistant setting is on.
 	user, err := c.App.GetUser(c.App.Session.UserId)
 	if err != nil {
 		c.Err = err

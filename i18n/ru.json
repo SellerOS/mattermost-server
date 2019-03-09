@@ -172,7 +172,7 @@
     "translation": "Нельзя создать больше чем {{.MaxChannelsPerTeam}} каналов для этой команды"
   },
   {
-    "id": "api.channel.create_default_channels.off_topic",
+    "id": "api.channel.create_default_channels.all-people",
     "translation": "Флуд"
   },
   {

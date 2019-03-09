@@ -172,7 +172,7 @@
     "translation": "현재 팀에서 {{.MaxChannelsPerTeam}} 이상의 채널을 생성할 수 없습니다."
   },
   {
-    "id": "api.channel.create_default_channels.off_topic",
+    "id": "api.channel.create_default_channels.all-people",
     "translation": "잡담"
   },
   {

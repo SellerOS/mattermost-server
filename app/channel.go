@@ -17,13 +17,13 @@ import (
 )
 
 func (a *App) CreateDefaultChannels(teamId string) ([]*model.Channel, *model.AppError) {
-	townSquare := &model.Channel{DisplayName: utils.T("api.channel.create_default_channels.town_square"), Name: "town-square", Type: model.CHANNEL_OPEN, TeamId: teamId}
+	townSquare := &model.Channel{DisplayName: utils.T("api.channel.create_default_channels.town_square"), Name: "selleros-assistant", Type: model.CHANNEL_OPEN, TeamId: teamId}
 
 	if _, err := a.CreateChannel(townSquare, false); err != nil {
 		return nil, err
 	}
 
-	offTopic := &model.Channel{DisplayName: utils.T("api.channel.create_default_channels.off_topic"), Name: "off-topic", Type: model.CHANNEL_OPEN, TeamId: teamId}
+	offTopic := &model.Channel{DisplayName: utils.T("api.channel.create_default_channels.all-people"), Name: "off-topic", Type: model.CHANNEL_OPEN, TeamId: teamId}
 
 	if _, err := a.CreateChannel(offTopic, false); err != nil {
 		return nil, err
@@ -43,7 +43,7 @@ func (a *App) JoinDefaultChannels(teamId string, user *model.User, shouldBeAdmin
 		requestor = u.Data.(*model.User)
 	}
 
-	defaultChannelList := []string{"town-square"}
+	defaultChannelList := []string{"selleros-assistant"}
 
 	if len(a.Config().TeamSettings.ExperimentalDefaultChannels) == 0 {
 		defaultChannelList = append(defaultChannelList, "off-topic")

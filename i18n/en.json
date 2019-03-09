@@ -200,12 +200,12 @@
     "translation": "Unable to create more than {{.MaxChannelsPerTeam}} channels for current team"
   },
   {
-    "id": "api.channel.create_default_channels.off_topic",
-    "translation": "Off-Topic"
+    "id": "api.channel.create_default_channels.all-people",
+    "translation": "所有人"
   },
   {
     "id": "api.channel.create_default_channels.town_square",
-    "translation": "Town Square"
+    "translation": "SellerOS小助手"
   },
   {
     "id": "api.channel.create_direct_channel.invalid_user.app_error",

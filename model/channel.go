@@ -21,7 +21,7 @@ const (
 	CHANNEL_GROUP                  = "G"
 	CHANNEL_GROUP_MAX_USERS        = 8
 	CHANNEL_GROUP_MIN_USERS        = 3
-	DEFAULT_CHANNEL                = "town-square"
+	DEFAULT_CHANNEL                = "selleros-assistant"
 	CHANNEL_DISPLAY_NAME_MAX_RUNES = 64
 	CHANNEL_NAME_MIN_LENGTH        = 2
 	CHANNEL_NAME_MAX_LENGTH        = 64

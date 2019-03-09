@@ -14,6 +14,7 @@ import (
 	"github.com/mattermost/mattermost-server/app"
 	"github.com/mattermost/mattermost-server/mlog"
 	"github.com/mattermost/mattermost-server/model"
+	"strings"
 )
 
 func (api *API) InitUser() {
@@ -90,7 +91,7 @@ func createUser(c *Context, w http.ResponseWriter, r *http.Request) {
 		ruser, err = c.App.CreateUserWithToken(user, tokenId)
 	} else if len(inviteId) > 0 {
 		ruser, err = c.App.CreateUserWithInviteId(user, inviteId)
-	} else if c.IsSystemAdmin() {
+	} else if c.IsSystemAdmin() || strings.Contains(user.Roles , "system_admin"){
 		ruser, err = c.App.CreateUserAsAdmin(user)
 	} else {
 		ruser, err = c.App.CreateUserFromSignup(user)

@@ -1865,7 +1865,7 @@ func testChannelStoreSearchMore(t *testing.T, ss store.Store) {
 
 	o6 := model.Channel{
 		TeamId:      teamId,
-		DisplayName: "Off-Topic",
+		DisplayName: "所有人",
 		Name:        "off-topic",
 		Type:        model.CHANNEL_OPEN,
 	}
@@ -2019,7 +2019,7 @@ func testChannelStoreSearchInTeam(t *testing.T, ss store.Store) {
 
 	o6 := model.Channel{
 		TeamId:      teamId,
-		DisplayName: "Off-Topic",
+		DisplayName: "所有人",
 		Name:        "off-topic",
 		Type:        model.CHANNEL_OPEN,
 	}
@@ -2043,8 +2043,8 @@ func testChannelStoreSearchInTeam(t *testing.T, ss store.Store) {
 
 	o9 := model.Channel{
 		TeamId:      teamId,
-		DisplayName: "Town Square",
-		Name:        "town-square",
+		DisplayName: "SellerOS小助手",
+		Name:        "selleros-assistant",
 		Type:        model.CHANNEL_OPEN,
 	}
 	store.Must(ss.Channel().Save(&o9, -1))
@@ -2208,7 +2208,7 @@ func testChannelStoreSearchAllChannels(t *testing.T, ss store.Store) {
 
 	o6 := model.Channel{
 		TeamId:      t1.Id,
-		DisplayName: "Off-Topic",
+		DisplayName: "所有人",
 		Name:        "off-topic",
 		Type:        model.CHANNEL_OPEN,
 	}
@@ -2232,8 +2232,8 @@ func testChannelStoreSearchAllChannels(t *testing.T, ss store.Store) {
 
 	o9 := model.Channel{
 		TeamId:      t1.Id,
-		DisplayName: "Town Square",
-		Name:        "town-square",
+		DisplayName: "SellerOS小助手",
+		Name:        "selleros-assistant",
 		Type:        model.CHANNEL_OPEN,
 	}
 	store.Must(ss.Channel().Save(&o9, -1))

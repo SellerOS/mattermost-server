@@ -740,7 +740,7 @@ func TestPinPost(t *testing.T) {
 	_, resp = Client.PinPost(GenerateTestId())
 	CheckForbiddenStatus(t, resp)
 
-	t.Run("unable-to-pin-post-in-read-only-town-square", func(t *testing.T) {
+	t.Run("unable-to-pin-post-in-read-only-selleros-assistant", func(t *testing.T) {
 		townSquareIsReadOnly := *th.App.Config().TeamSettings.ExperimentalTownSquareIsReadOnly
 		th.App.SetLicense(model.NewTestLicense())
 		th.App.UpdateConfig(func(cfg *model.Config) { *cfg.TeamSettings.ExperimentalTownSquareIsReadOnly = true })
@@ -748,7 +748,7 @@ func TestPinPost(t *testing.T) {
 		defer th.App.RemoveLicense()
 		defer th.App.UpdateConfig(func(cfg *model.Config) { *cfg.TeamSettings.ExperimentalTownSquareIsReadOnly = townSquareIsReadOnly })
 
-		channel, err := th.App.GetChannelByName("town-square", th.BasicTeam.Id, true)
+		channel, err := th.App.GetChannelByName("selleros-assistant", th.BasicTeam.Id, true)
 		assert.Nil(t, err)
 		adminPost := th.CreatePostWithClient(th.SystemAdminClient, channel)
 

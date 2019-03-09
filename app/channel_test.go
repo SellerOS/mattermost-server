@@ -162,7 +162,7 @@ func TestJoinDefaultChannelsCreatesChannelMemberHistoryRecordTownSquare(t *testi
 	defer th.TearDown()
 
 	// figure out the initial number of users in town square
-	townSquareChannelId := store.Must(th.App.Srv.Store.Channel().GetByName(th.BasicTeam.Id, "town-square", true)).(*model.Channel).Id
+	townSquareChannelId := store.Must(th.App.Srv.Store.Channel().GetByName(th.BasicTeam.Id, "selleros-assistant", true)).(*model.Channel).Id
 	initialNumTownSquareUsers := len(store.Must(th.App.Srv.Store.ChannelMemberHistory().GetUsersInChannelDuring(model.GetMillis()-100, model.GetMillis()+100, townSquareChannelId)).([]*model.ChannelMemberHistoryResult))
 
 	// create a new user that joins the default channels
@@ -776,7 +776,7 @@ func TestGetPublicChannelsForTeam(t *testing.T) {
 
 	var expectedChannels []*model.Channel
 
-	townSquare, err := th.App.GetChannelByName("town-square", team.Id, false)
+	townSquare, err := th.App.GetChannelByName("selleros-assistant", team.Id, false)
 	require.Nil(t, err)
 	require.NotNil(t, townSquare)
 	expectedChannels = append(expectedChannels, townSquare)

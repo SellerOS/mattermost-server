@@ -173,10 +173,10 @@ func TestSaveReaction(t *testing.T) {
 		th.AddPermissionToRole(model.PERMISSION_ADD_REACTION.Id, model.CHANNEL_USER_ROLE_ID)
 	})
 
-	t.Run("unable-to-react-in-read-only-town-square", func(t *testing.T) {
+	t.Run("unable-to-react-in-read-only-selleros-assistant", func(t *testing.T) {
 		th.LoginBasic()
 
-		channel, err := th.App.GetChannelByName("town-square", th.BasicTeam.Id, true)
+		channel, err := th.App.GetChannelByName("selleros-assistant", th.BasicTeam.Id, true)
 		assert.Nil(t, err)
 		post := th.CreatePostWithClient(th.Client, channel)
 
@@ -502,10 +502,10 @@ func TestDeleteReaction(t *testing.T) {
 		th.AddPermissionToRole(model.PERMISSION_REMOVE_OTHERS_REACTIONS.Id, model.SYSTEM_ADMIN_ROLE_ID)
 	})
 
-	t.Run("unable-to-delete-reactions-in-read-only-town-square", func(t *testing.T) {
+	t.Run("unable-to-delete-reactions-in-read-only-selleros-assistant", func(t *testing.T) {
 		th.LoginBasic()
 
-		channel, err := th.App.GetChannelByName("town-square", th.BasicTeam.Id, true)
+		channel, err := th.App.GetChannelByName("selleros-assistant", th.BasicTeam.Id, true)
 		assert.Nil(t, err)
 		post := th.CreatePostWithClient(th.Client, channel)
 

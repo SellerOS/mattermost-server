@@ -11,6 +11,8 @@ services:
       MYSQL_PASSWORD: mostest
       MYSQL_USER: mmuser
       MYSQL_DATABASE: mattermost_test
+    ports:
+      - 3306:3306
     tmpfs: /var/lib/mysql
     volumes:
      - "./docker/mysql.conf.d:/etc/mysql/conf.d"

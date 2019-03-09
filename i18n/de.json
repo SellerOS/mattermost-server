@@ -172,8 +172,8 @@
     "translation": "Es können nicht mehr als {{.MaxChannelsPerTeam}} Kanäle für das aktuelle Team erstellt werden."
   },
   {
-    "id": "api.channel.create_default_channels.off_topic",
-    "translation": "Off-Topic"
+    "id": "api.channel.create_default_channels.all-people",
+    "translation": "所有人"
   },
   {
     "id": "api.channel.create_default_channels.town_square",

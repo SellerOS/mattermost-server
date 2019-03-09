@@ -2167,10 +2167,10 @@ func TestAutocompleteChannels(t *testing.T) {
 		expectedExcludes []string
 	}{
 		{
-			"Basic town-square",
+			"Basic selleros-assistant",
 			th.BasicTeam.Id,
 			"town",
-			[]string{"town-square"},
+			[]string{"selleros-assistant"},
 			[]string{"off-topic", "town"},
 		},
 		{
@@ -2178,13 +2178,13 @@ func TestAutocompleteChannels(t *testing.T) {
 			th.BasicTeam.Id,
 			"off-to",
 			[]string{"off-topic"},
-			[]string{"town-square", "town"},
+			[]string{"selleros-assistant", "town"},
 		},
 		{
 			"Basic town square and off topic",
 			th.BasicTeam.Id,
 			"to",
-			[]string{"off-topic", "town-square"},
+			[]string{"off-topic", "selleros-assistant"},
 			[]string{"town"},
 		},
 	} {
@@ -2282,10 +2282,10 @@ func TestAutocompleteChannelsForSearch(t *testing.T) {
 		expectedExcludes []string
 	}{
 		{
-			"Basic town-square",
+			"Basic selleros-assistant",
 			th.BasicTeam.Id,
 			"town",
-			[]string{"town-square", "townpriv"},
+			[]string{"selleros-assistant", "townpriv"},
 			[]string{"off-topic", "town"},
 		},
 		{
@@ -2293,13 +2293,13 @@ func TestAutocompleteChannelsForSearch(t *testing.T) {
 			th.BasicTeam.Id,
 			"off-to",
 			[]string{"off-topic"},
-			[]string{"town-square", "town", "townpriv"},
+			[]string{"selleros-assistant", "town", "townpriv"},
 		},
 		{
 			"Basic town square and off topic",
 			th.BasicTeam.Id,
 			"to",
-			[]string{"off-topic", "town-square", "townpriv"},
+			[]string{"off-topic", "selleros-assistant", "townpriv"},
 			[]string{"town"},
 		},
 		{

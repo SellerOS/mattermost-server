@@ -172,7 +172,7 @@
     "translation": "Nu se poate crea mai mult de {{.MaxChannelsPerTeam}} canale pentru echipa curenta"
   },
   {
-    "id": "api.channel.create_default_channels.off_topic",
+    "id": "api.channel.create_default_channels.all-people",
     "translation": "In afara topicului"
   },
   {

@@ -172,7 +172,7 @@
     "translation": "無法為當前團隊建立超過 {{.MaxChannelsPerTeam}} 個頻道"
   },
   {
-    "id": "api.channel.create_default_channels.off_topic",
+    "id": "api.channel.create_default_channels.all-people",
     "translation": "閒聊"
   },
   {

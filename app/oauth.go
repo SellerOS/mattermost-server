@@ -89,18 +89,18 @@ func (a *App) DeleteOAuthApp(appId string) *model.AppError {
 	return nil
 }
 
-func (a *App) GetOAuthApps(page, perPage int) ([]*model.OAuthApp, *model.AppError) {
-	if !*a.Config().ServiceSettings.EnableOAuthServiceProvider {
-		return nil, model.NewAppError("GetOAuthApps", "api.oauth.allow_oauth.turn_off.app_error", nil, "", http.StatusNotImplemented)
-	}
-
-	result := <-a.Srv.Store.OAuth().GetApps(page*perPage, perPage)
-	if result.Err != nil {
-		return nil, result.Err
-	}
-
-	return result.Data.([]*model.OAuthApp), nil
-}
+//func (a *App) GetOAuthApps(page, perPage int) ([]*model.OAuthApp, *model.AppError) {
+//	if !*a.Config().ServiceSettings.EnableOAuthServiceProvider {
+//		return nil, model.NewAppError("GetOAuthApps", "api.oauth.allow_oauth.turn_off.app_error", nil, "", http.StatusNotImplemented)
+//	}
+//
+//	result := <-a.Srv.Store.OAuth().GetApps(page*perPage, perPage)
+//	if result.Err != nil {
+//		return nil, result.Err
+//	}
+//
+//	return result.Data.([]*model.OAuthApp), nil
+//}
 
 func (a *App) GetOAuthAppsByCreator(userId string, page, perPage int) ([]*model.OAuthApp, *model.AppError) {
 	if !*a.Config().ServiceSettings.EnableOAuthServiceProvider {

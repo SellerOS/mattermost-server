@@ -123,6 +123,11 @@ func updateOAuthApp(c *Context, w http.ResponseWriter, r *http.Request) {
 }
 
 func getOAuthApps(c *Context, w http.ResponseWriter, r *http.Request) {
+	c.RequireUserId()
+	if c.Err != nil {
+		return
+	}
+
 	if !c.App.SessionHasPermissionTo(c.App.Session, model.PERMISSION_MANAGE_OAUTH) {
 		c.Err = model.NewAppError("getOAuthApps", "api.command.admin_only.app_error", nil, "", http.StatusForbidden)
 		return
@@ -131,7 +136,7 @@ func getOAuthApps(c *Context, w http.ResponseWriter, r *http.Request) {
 	var apps []*model.OAuthApp
 	var err *model.AppError
 	if c.App.SessionHasPermissionTo(c.App.Session, model.PERMISSION_MANAGE_SYSTEM_WIDE_OAUTH) {
-		apps, err = c.App.GetOAuthApps(c.Params.Page, c.Params.PerPage)
+		apps, err = c.App.GetOAuthAppsByCreator(c.Params.UserId,c.Params.Page, c.Params.PerPage)
 	} else if c.App.SessionHasPermissionTo(c.App.Session, model.PERMISSION_MANAGE_OAUTH) {
 		apps, err = c.App.GetOAuthAppsByCreator(c.App.Session.UserId, c.Params.Page, c.Params.PerPage)
 	} else {

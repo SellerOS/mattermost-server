@@ -11,9 +11,9 @@ import (
 	"regexp"
 	"strings"
 	"unicode/utf8"
+	"crypto/sha256"
 
 	"github.com/mattermost/mattermost-server/services/timezones"
-	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/text/language"
 )
 
@@ -60,6 +60,7 @@ type User struct {
 	DeleteAt           int64     `json:"delete_at"`
 	Username           string    `json:"username"`
 	Password           string    `json:"password,omitempty"`
+	Salt               string    `json:"salt,omitempty"`
 	AuthData           *string   `json:"auth_data,omitempty"`
 	AuthService        string    `json:"auth_service"`
 	Email              string    `json:"email"`
@@ -241,9 +242,11 @@ func (u *User) PreSave() {
 	if u.Timezone == nil {
 		u.Timezone = timezones.DefaultUserTimezone()
 	}
-
+	if u.Salt == "" {
+		u.Salt = NewId()
+	}
 	if len(u.Password) > 0 {
-		u.Password = HashPassword(u.Password)
+		u.Password = HashPassword(u.Password, u.Salt)
 	}
 }
 
@@ -555,24 +558,27 @@ func UserListFromJson(data io.Reader) []*User {
 }
 
 // HashPassword generates a hash using the bcrypt.GenerateFromPassword
-func HashPassword(password string) string {
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), 10)
-	if err != nil {
-		panic(err)
-	}
+func HashPassword(password string, salt string) string {
+	saltedPassword := password + "_" + salt
 
-	return string(hash)
+	h := sha256.New()
+	h.Write([]byte(saltedPassword))
+	encryptedPassword := fmt.Sprintf("%x", h.Sum(nil))
+
+	return encryptedPassword
 }
 
 // ComparePassword compares the hash
-func ComparePassword(hash string, password string) bool {
-
-	if len(password) == 0 || len(hash) == 0 {
+func ComparePassword(password string, salt string, saltedPassword string) bool {
+	if len(password) == 0 || len(salt) == 0 || len(saltedPassword) == 0 {
 		return false
 	}
 
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
+	h := sha256.New()
+	h.Write([]byte(password + "_" + salt))
+	cacPassword := fmt.Sprintf("%x", h.Sum(nil))
+
+	return cacPassword == saltedPassword
 }
 
 var validUsernameChars = regexp.MustCompile(`^[a-z0-9\.\-_]+$`)

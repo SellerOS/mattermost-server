@@ -192,9 +192,10 @@ func (a *App) CreateUser(user *model.User) (*model.User, *model.AppError) {
 	if !user.IsLDAPUser() && !user.IsSAMLUser() && !CheckUserDomain(user, *a.Config().TeamSettings.RestrictCreationToDomains) {
 		return nil, model.NewAppError("CreateUser", "api.user.create_user.accepted_domain.app_error", nil, "", http.StatusBadRequest)
 	}
-
-	user.Roles = model.SYSTEM_USER_ROLE_ID
-
+	//为管理员添加system_user权限
+	if  user.Roles == model.SYSTEM_ADMIN_ROLE_ID {
+		user.Roles = model.SYSTEM_ADMIN_ROLE_ID + " " + model.SYSTEM_USER_ROLE_ID
+	}
 	// Below is a special case where the first user in the entire
 	// system is granted the system_admin role
 	result := <-a.Srv.Store.User().Count(model.UserCountOptions{
@@ -235,10 +236,10 @@ func (a *App) CreateUser(user *model.User) (*model.User, *model.AppError) {
 
 func (a *App) createUser(user *model.User) (*model.User, *model.AppError) {
 	user.MakeNonNil()
-
-	if err := a.IsPasswordValid(user.Password); user.AuthService == "" && err != nil {
-		return nil, err
-	}
+	//
+	//if err := a.IsPasswordValid(user.Password); user.AuthService == "" && err != nil {
+	//	return nil, err
+	//}
 
 	result := <-a.Srv.Store.User().Save(user)
 	if result.Err != nil {
@@ -981,10 +982,14 @@ func (a *App) UpdateUserAuth(userId string, userAuth *model.UserAuth) (*model.Us
 		userAuth.AuthData = nil
 		userAuth.AuthService = ""
 
-		if err := a.IsPasswordValid(userAuth.Password); err != nil {
+		//if err := a.IsPasswordValid(userAuth.Password); err != nil {
+		//	return nil, err
+		//}
+		user, err := a.GetUser(userId)
+		if err != nil {
 			return nil, err
 		}
-		password := model.HashPassword(userAuth.Password)
+		password := model.HashPassword(userAuth.Password, user.Salt)
 
 		if result := <-a.Srv.Store.User().UpdatePassword(userId, password); result.Err != nil {
 			return nil, result.Err
@@ -1144,11 +1149,11 @@ func (a *App) UpdatePasswordByUserIdSendEmail(userId, newPassword, method string
 }
 
 func (a *App) UpdatePassword(user *model.User, newPassword string) *model.AppError {
-	if err := a.IsPasswordValid(newPassword); err != nil {
-		return err
-	}
+	//if err := a.IsPasswordValid(newPassword); err != nil {
+	//	return err
+	//}
 
-	hashedPassword := model.HashPassword(newPassword)
+	hashedPassword := model.HashPassword(newPassword, user.Salt)
 
 	if result := <-a.Srv.Store.User().UpdatePassword(user.Id, hashedPassword); result.Err != nil {
 		return model.NewAppError("UpdatePassword", "api.user.update_password.failed.app_error", nil, result.Err.Error(), http.StatusInternalServerError)

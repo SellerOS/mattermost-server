@@ -9,13 +9,13 @@ import (
 
 	"github.com/mattermost/mattermost-server/model"
 	"github.com/mattermost/mattermost-server/services/mfa"
-	"github.com/mattermost/mattermost-server/utils"
+	//"github.com/mattermost/mattermost-server/utils"
 )
 
 type TokenLocation int
 
 const (
-	TokenLocationNotFound = iota
+	TokenLocationNotFound    = iota
 	TokenLocationHeader
 	TokenLocationCookie
 	TokenLocationQueryString
@@ -35,10 +35,10 @@ func (tl TokenLocation) String() string {
 		return "Unknown"
 	}
 }
-
-func (a *App) IsPasswordValid(password string) *model.AppError {
-	return utils.IsPasswordValidWithSettings(password, &a.Config().PasswordSettings)
-}
+//
+//func (a *App) IsPasswordValid(password string) *model.AppError {
+//	return utils.IsPasswordValidWithSettings(password, &a.Config().PasswordSettings)
+//}
 
 func (a *App) CheckPasswordAndAllCriteria(user *model.User, password string, mfaToken string) *model.AppError {
 	if err := a.CheckUserPreflightAuthenticationCriteria(user, mfaToken); err != nil {
@@ -95,7 +95,7 @@ func (a *App) DoubleCheckPassword(user *model.User, password string) *model.AppE
 }
 
 func (a *App) checkUserPassword(user *model.User, password string) *model.AppError {
-	if !model.ComparePassword(user.Password, password) {
+	if !model.ComparePassword(password, user.Salt, user.Password) {
 		return model.NewAppError("checkUserPassword", "api.user.check_user_password.invalid.app_error", nil, "user_id="+user.Id, http.StatusUnauthorized)
 	}
 

@@ -1545,11 +1545,12 @@ func testUserStoreUpdatePassword(t *testing.T, ss store.Store) {
 
 	u1 := &model.User{}
 	u1.Email = MakeEmail()
+	u1.Salt = model.NewId()
 	store.Must(ss.User().Save(u1))
 	defer func() { store.Must(ss.User().PermanentDelete(u1.Id)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u1.Id}, -1))
 
-	hashedPassword := model.HashPassword("newpwd")
+	hashedPassword := model.HashPassword("newpwd", u1.Salt)
 
 	if err := (<-ss.User().UpdatePassword(u1.Id, hashedPassword)).Err; err != nil {
 		t.Fatal(err)

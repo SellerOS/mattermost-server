@@ -429,7 +429,7 @@ func resetUserPasswordCmdF(command *cobra.Command, args []string) error {
 	}
 	password := args[1]
 
-	if result := <-a.Srv.Store.User().UpdatePassword(user.Id, model.HashPassword(password)); result.Err != nil {
+	if result := <-a.Srv.Store.User().UpdatePassword(user.Id, model.HashPassword(password, user.Salt)); result.Err != nil {
 		return result.Err
 	}
 

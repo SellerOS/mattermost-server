@@ -81,6 +81,7 @@ func NewSqlUserStore(sqlStore SqlStore, metrics einterfaces.MetricsInterface) st
 		table.ColMap("Id").SetMaxSize(26)
 		table.ColMap("Username").SetMaxSize(64).SetUnique(true)
 		table.ColMap("Password").SetMaxSize(128)
+		table.ColMap("Salt").SetMaxSize(26)
 		table.ColMap("AuthData").SetMaxSize(128).SetUnique(true)
 		table.ColMap("AuthService").SetMaxSize(32)
 		table.ColMap("Email").SetMaxSize(128).SetUnique(true)
@@ -163,6 +164,7 @@ func (us SqlUserStore) Update(user *model.User, trustedUpdateData bool) store.St
 			user.AuthData = oldUser.AuthData
 			user.AuthService = oldUser.AuthService
 			user.Password = oldUser.Password
+			user.Salt = oldUser.Salt
 			user.LastPasswordUpdate = oldUser.LastPasswordUpdate
 			user.LastPictureUpdate = oldUser.LastPictureUpdate
 			user.EmailVerified = oldUser.EmailVerified

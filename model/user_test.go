@@ -14,13 +14,13 @@ import (
 )
 
 func TestPasswordHash(t *testing.T) {
-	hash := HashPassword("Test")
+	hash := HashPassword("Test", "test")
 
-	if !ComparePassword(hash, "Test") {
+	if !ComparePassword("Test", "test", hash) {
 		t.Fatal("Passwords don't match")
 	}
 
-	if ComparePassword(hash, "Test2") {
+	if ComparePassword("Test", "Test2", hash) {
 		t.Fatal("Passwords should not have matched")
 	}
 }

@@ -131,22 +131,26 @@ func updateIncomingHook(c *Context, w http.ResponseWriter, r *http.Request) {
 }
 
 func getIncomingHooks(c *Context, w http.ResponseWriter, r *http.Request) {
-	c.RequireTeamId()
-	if c.Err != nil {
-		return
-	}
-
-	teamId := c.Params.TeamId
+	teamId := r.URL.Query().Get("team_id")
 
 	var hooks []*model.IncomingWebhook
 	var err *model.AppError
 
-	if !c.App.SessionHasPermissionToTeam(c.App.Session, teamId, model.PERMISSION_MANAGE_INCOMING_WEBHOOKS) {
-		c.SetPermissionError(model.PERMISSION_MANAGE_INCOMING_WEBHOOKS)
-		return
-	}
+	if len(teamId) > 0 {
+		if !c.App.SessionHasPermissionToTeam(c.App.Session, teamId, model.PERMISSION_MANAGE_INCOMING_WEBHOOKS) {
+			c.SetPermissionError(model.PERMISSION_MANAGE_INCOMING_WEBHOOKS)
+			return
+		}
 
-	hooks, err = c.App.GetIncomingWebhooksForTeamPage(teamId, c.Params.Page, c.Params.PerPage)
+		hooks, err = c.App.GetIncomingWebhooksForTeamPage(teamId, c.Params.Page, c.Params.PerPage)
+	} else {
+		if !c.App.SessionHasPermissionTo(c.App.Session, model.PERMISSION_MANAGE_INCOMING_WEBHOOKS) {
+			c.SetPermissionError(model.PERMISSION_MANAGE_INCOMING_WEBHOOKS)
+			return
+		}
+
+		hooks, err = c.App.GetIncomingWebhooksPage(c.Params.Page, c.Params.PerPage)
+	}
 
 	if err != nil {
 		c.Err = err
@@ -348,15 +352,14 @@ func getOutgoingHooks(c *Context, w http.ResponseWriter, r *http.Request) {
 		}
 
 		hooks, err = c.App.GetOutgoingWebhooksForTeamPage(teamId, c.Params.Page, c.Params.PerPage)
+	} else {
+		if !c.App.SessionHasPermissionTo(c.App.Session, model.PERMISSION_MANAGE_OUTGOING_WEBHOOKS) {
+			c.SetPermissionError(model.PERMISSION_MANAGE_OUTGOING_WEBHOOKS)
+			return
+		}
+
+		hooks, err = c.App.GetOutgoingWebhooksPage(c.Params.Page, c.Params.PerPage)
 	}
-	//} else {
-	//	if !c.App.SessionHasPermissionTo(c.App.Session, model.PERMISSION_MANAGE_OUTGOING_WEBHOOKS) {
-	//		c.SetPermissionError(model.PERMISSION_MANAGE_OUTGOING_WEBHOOKS)
-	//		return
-	//	}
-	//
-	//	hooks, err = c.App.GetOutgoingWebhooksPage(c.Params.Page, c.Params.PerPage)
-	//}
 
 	if err != nil {
 		c.Err = err

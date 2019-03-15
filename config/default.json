@@ -74,7 +74,7 @@
         "ExperimentalChannelOrganization": false,
         "EnableAPITeamDeletion": false,
         "ExperimentalEnableHardenedMode": false,
-        "DisableLegacyMFA": true,
+        "DisableLegacyMFA": false,
         "EnableEmailInvitations": false,
         "ExperimentalLdapGroupSync": false,
         "ExperimentalStrictCSRFEnforcement": false
@@ -191,7 +191,6 @@
         "SMTPServer": "dockerhost",
         "SMTPPort": "2500",
         "ConnectionSecurity": "",
-        "InviteSalt": "",
         "SendPushNotifications": true,
         "PushNotificationServer": "https://push-test.mattermost.com",
         "PushNotificationContents": "generic",

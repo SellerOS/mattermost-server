@@ -172,6 +172,7 @@
         "SMTPServer": "dockerhost",
         "SMTPPort": "2500",
         "ConnectionSecurity": "",
+        "InviteSalt": "n3mceqsek4j5ichs5hw9sudwx3cfbtqa",
         "SendPushNotifications": false,
         "PushNotificationServer": "",
         "PushNotificationContents": "generic",

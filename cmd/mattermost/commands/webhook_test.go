@@ -305,7 +305,7 @@ func TestCreateOutgoingWebhook(t *testing.T) {
 
 	th.CheckCommand(t, "webhook", "create-outgoing", "--team", team, "--channel", th.BasicChannel.Id, "--display-name", displayName, "--trigger-word", triggerWord1, "--trigger-word", triggerWord2, "--url", callbackURL1, "--url", callbackURL2, "--user", user)
 
-	webhooks, err := th.App.GetOutgoingWebhooksPage(0, 1000)
+	webhooks, err := th.App.GetOutgoingWebhooksForTeamPage(team, 0, 1000)
 	if err != nil {
 		t.Fatal("Unable to retreive outgoing webhooks")
 	}

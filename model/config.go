@@ -2240,6 +2240,7 @@ type Config struct {
 	PluginSettings        PluginSettings
 	DisplaySettings       DisplaySettings
 	ImageProxySettings    ImageProxySettings
+	ConsulConfigs 		  string
 }
 
 func (o *Config) Clone() *Config {

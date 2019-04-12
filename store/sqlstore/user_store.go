@@ -16,6 +16,7 @@ import (
 	"github.com/mattermost/mattermost-server/model"
 	"github.com/mattermost/mattermost-server/store"
 	"github.com/mattermost/mattermost-server/utils"
+	"github.com/mattermost/mattermost-server/services/userservice"
 )
 
 const (
@@ -70,7 +71,7 @@ func NewSqlUserStore(sqlStore SqlStore, metrics einterfaces.MetricsInterface) st
 	us.usersQuery = sq.
 		Select("u.*", "b.UserId IS NOT NULL AS IsBot").
 		From("Users u").
-		LeftJoin("Bots b ON ( b.UserId = u.Id )")
+		LeftJoin("Bots b ON ( b.UserId = u.ClientId )")
 
 	if us.DriverName() == model.DATABASE_DRIVER_POSTGRES {
 		us.usersQuery = us.usersQuery.PlaceholderFormat(sq.Dollar)
@@ -122,8 +123,8 @@ func (us SqlUserStore) CreateIndexesIfNotExists() {
 
 func (us SqlUserStore) Save(user *model.User) store.StoreChannel {
 	return store.Do(func(result *store.StoreResult) {
-		if len(user.Id) > 0 {
-			result.Err = model.NewAppError("SqlUserStore.Save", "store.sql_user.save.existing.app_error", nil, "user_id="+user.Id, http.StatusBadRequest)
+		if len(user.ClientId) > 0 {
+			result.Err = model.NewAppError("SqlUserStore.Save", "store.sql_user.save.existing.app_error", nil, "user_id="+user.ClientId, http.StatusBadRequest)
 			return
 		}
 
@@ -132,13 +133,13 @@ func (us SqlUserStore) Save(user *model.User) store.StoreChannel {
 			return
 		}
 
-		if err := us.GetMaster().Insert(user); err != nil {
+		if err := userservice.SaveUser(user); err != nil {
 			if IsUniqueConstraintError(err, []string{"Email", "users_email_key", "idx_users_email_unique"}) {
-				result.Err = model.NewAppError("SqlUserStore.Save", "store.sql_user.save.email_exists.app_error", nil, "user_id="+user.Id+", "+err.Error(), http.StatusBadRequest)
+				result.Err = model.NewAppError("SqlUserStore.Save", "store.sql_user.save.email_exists.app_error", nil, "user_id="+user.ClientId+", "+err.Error(), http.StatusBadRequest)
 			} else if IsUniqueConstraintError(err, []string{"Username", "users_username_key", "idx_users_username_unique"}) {
-				result.Err = model.NewAppError("SqlUserStore.Save", "store.sql_user.save.username_exists.app_error", nil, "user_id="+user.Id+", "+err.Error(), http.StatusBadRequest)
+				result.Err = model.NewAppError("SqlUserStore.Save", "store.sql_user.save.username_exists.app_error", nil, "user_id="+user.ClientId+", "+err.Error(), http.StatusBadRequest)
 			} else {
-				result.Err = model.NewAppError("SqlUserStore.Save", "store.sql_user.save.app_error", nil, "user_id="+user.Id+", "+err.Error(), http.StatusInternalServerError)
+				result.Err = model.NewAppError("SqlUserStore.Save", "store.sql_user.save.app_error", nil, "user_id="+user.ClientId+", "+err.Error(), http.StatusInternalServerError)
 			}
 		} else {
 			result.Data = user
@@ -154,10 +155,10 @@ func (us SqlUserStore) Update(user *model.User, trustedUpdateData bool) store.St
 			return
 		}
 
-		if oldUserResult, err := us.GetMaster().Get(model.User{}, user.Id); err != nil {
-			result.Err = model.NewAppError("SqlUserStore.Update", "store.sql_user.update.finding.app_error", nil, "user_id="+user.Id+", "+err.Error(), http.StatusInternalServerError)
+		if oldUserResult, err := us.GetMaster().Get(model.User{}, user.ClientId); err != nil {
+			result.Err = model.NewAppError("SqlUserStore.Update", "store.sql_user.update.finding.app_error", nil, "user_id="+user.ClientId+", "+err.Error(), http.StatusInternalServerError)
 		} else if oldUserResult == nil {
-			result.Err = model.NewAppError("SqlUserStore.Update", "store.sql_user.update.find.app_error", nil, "user_id="+user.Id, http.StatusBadRequest)
+			result.Err = model.NewAppError("SqlUserStore.Update", "store.sql_user.update.find.app_error", nil, "user_id="+user.ClientId, http.StatusBadRequest)
 		} else {
 			oldUser := oldUserResult.(*model.User)
 			user.CreateAt = oldUser.CreateAt
@@ -184,7 +185,7 @@ func (us SqlUserStore) Update(user *model.User, trustedUpdateData bool) store.St
 			} else if user.IsLDAPUser() && !trustedUpdateData {
 				if user.Username != oldUser.Username ||
 					user.Email != oldUser.Email {
-					result.Err = model.NewAppError("SqlUserStore.Update", "store.sql_user.update.can_not_change_ldap.app_error", nil, "user_id="+user.Id, http.StatusBadRequest)
+					result.Err = model.NewAppError("SqlUserStore.Update", "store.sql_user.update.can_not_change_ldap.app_error", nil, "user_id="+user.ClientId, http.StatusBadRequest)
 					return
 				}
 			} else if user.Email != oldUser.Email {
@@ -197,14 +198,14 @@ func (us SqlUserStore) Update(user *model.User, trustedUpdateData bool) store.St
 
 			if count, err := us.GetMaster().Update(user); err != nil {
 				if IsUniqueConstraintError(err, []string{"Email", "users_email_key", "idx_users_email_unique"}) {
-					result.Err = model.NewAppError("SqlUserStore.Update", "store.sql_user.update.email_taken.app_error", nil, "user_id="+user.Id+", "+err.Error(), http.StatusBadRequest)
+					result.Err = model.NewAppError("SqlUserStore.Update", "store.sql_user.update.email_taken.app_error", nil, "user_id="+user.ClientId+", "+err.Error(), http.StatusBadRequest)
 				} else if IsUniqueConstraintError(err, []string{"Username", "users_username_key", "idx_users_username_unique"}) {
-					result.Err = model.NewAppError("SqlUserStore.Update", "store.sql_user.update.username_taken.app_error", nil, "user_id="+user.Id+", "+err.Error(), http.StatusBadRequest)
+					result.Err = model.NewAppError("SqlUserStore.Update", "store.sql_user.update.username_taken.app_error", nil, "user_id="+user.ClientId+", "+err.Error(), http.StatusBadRequest)
 				} else {
-					result.Err = model.NewAppError("SqlUserStore.Update", "store.sql_user.update.updating.app_error", nil, "user_id="+user.Id+", "+err.Error(), http.StatusInternalServerError)
+					result.Err = model.NewAppError("SqlUserStore.Update", "store.sql_user.update.updating.app_error", nil, "user_id="+user.ClientId+", "+err.Error(), http.StatusInternalServerError)
 				}
 			} else if count != 1 {
-				result.Err = model.NewAppError("SqlUserStore.Update", "store.sql_user.update.app_error", nil, fmt.Sprintf("user_id=%v, count=%v", user.Id, count), http.StatusInternalServerError)
+				result.Err = model.NewAppError("SqlUserStore.Update", "store.sql_user.update.app_error", nil, fmt.Sprintf("user_id=%v, count=%v", user.ClientId, count), http.StatusInternalServerError)
 			} else {
 				user.Sanitize(map[string]bool{})
 				oldUser.Sanitize(map[string]bool{})
@@ -471,7 +472,7 @@ func (us SqlUserStore) GetProfiles(options *model.UserGetOptions) store.StoreCha
 	isPostgreSQL := us.DriverName() == model.DATABASE_DRIVER_POSTGRES
 	return store.Do(func(result *store.StoreResult) {
 		query := us.usersQuery.
-			Join("TeamMembers tm ON ( tm.UserId = u.Id AND tm.DeleteAt = 0 )").
+			Join("TeamMembers tm ON ( tm.UserId = u.ClientId AND tm.DeleteAt = 0 )").
 			Where("tm.TeamId = ?", options.InTeamId).
 			OrderBy("u.Username ASC").
 			Offset(uint64(options.Page * options.PerPage)).Limit(uint64(options.PerPage))
@@ -527,7 +528,7 @@ func (us SqlUserStore) InvalidateProfilesInChannelCache(channelId string) {
 func (us SqlUserStore) GetProfilesInChannel(channelId string, offset int, limit int) store.StoreChannel {
 	return store.Do(func(result *store.StoreResult) {
 		query := us.usersQuery.
-			Join("ChannelMembers cm ON ( cm.UserId = u.Id )").
+			Join("ChannelMembers cm ON ( cm.UserId = u.ClientId )").
 			Where("cm.ChannelId = ?", channelId).
 			OrderBy("u.Username ASC").
 			Offset(uint64(offset)).Limit(uint64(limit))
@@ -555,8 +556,8 @@ func (us SqlUserStore) GetProfilesInChannel(channelId string, offset int, limit 
 func (us SqlUserStore) GetProfilesInChannelByStatus(channelId string, offset int, limit int) store.StoreChannel {
 	return store.Do(func(result *store.StoreResult) {
 		query := us.usersQuery.
-			Join("ChannelMembers cm ON ( cm.UserId = u.Id )").
-			LeftJoin("Status s ON ( s.UserId = u.Id )").
+			Join("ChannelMembers cm ON ( cm.UserId = u.ClientId )").
+			LeftJoin("Status s ON ( s.UserId = u.ClientId )").
 			Where("cm.ChannelId = ?", channelId).
 			OrderBy(`
 				CASE s.Status
@@ -610,7 +611,7 @@ func (us SqlUserStore) GetAllProfilesInChannel(channelId string, allowFromCache 
 		}
 
 		query := us.usersQuery.
-			Join("ChannelMembers cm ON ( cm.UserId = u.Id )").
+			Join("ChannelMembers cm ON ( cm.UserId = u.ClientId )").
 			Where("cm.ChannelId = ?", channelId).
 			Where("u.DeleteAt = 0").
 			OrderBy("u.Username ASC")
@@ -631,7 +632,7 @@ func (us SqlUserStore) GetAllProfilesInChannel(channelId string, allowFromCache 
 
 		for _, u := range users {
 			u.Sanitize(map[string]bool{})
-			userMap[u.Id] = u
+			userMap[u.ClientId] = u
 		}
 
 		result.Data = userMap
@@ -645,8 +646,8 @@ func (us SqlUserStore) GetAllProfilesInChannel(channelId string, allowFromCache 
 func (us SqlUserStore) GetProfilesNotInChannel(teamId string, channelId string, offset int, limit int) store.StoreChannel {
 	return store.Do(func(result *store.StoreResult) {
 		query := us.usersQuery.
-			Join("TeamMembers tm ON ( tm.UserId = u.Id AND tm.DeleteAt = 0 AND tm.TeamId = ? )", teamId).
-			LeftJoin("ChannelMembers cm ON ( cm.UserId = u.Id AND cm.ChannelId = ? )", channelId).
+			Join("TeamMembers tm ON ( tm.UserId = u.ClientId AND tm.DeleteAt = 0 AND tm.TeamId = ? )", teamId).
+			LeftJoin("ChannelMembers cm ON ( cm.UserId = u.ClientId AND cm.ChannelId = ? )", channelId).
 			Where("cm.UserId IS NULL").
 			OrderBy("u.Username ASC").
 			Offset(uint64(offset)).Limit(uint64(limit))
@@ -680,7 +681,7 @@ func (us SqlUserStore) GetProfilesWithoutTeam(offset int, limit int) store.Store
 				FROM
 					TeamMembers
 				WHERE
-					TeamMembers.UserId = u.Id
+					TeamMembers.UserId = u.ClientId
 					AND TeamMembers.DeleteAt = 0
 			) = 0`).
 			OrderBy("u.Username ASC").
@@ -711,7 +712,7 @@ func (us SqlUserStore) GetProfilesByUsernames(usernames []string, teamId string)
 		query := us.usersQuery
 
 		if teamId != "" {
-			query = query.Join("TeamMembers tm ON (tm.UserId = u.Id AND tm.TeamId = ?)", teamId)
+			query = query.Join("TeamMembers tm ON (tm.UserId = u.ClientId AND tm.TeamId = ?)", teamId)
 		}
 
 		query = query.
@@ -745,8 +746,8 @@ func (us SqlUserStore) GetRecentlyActiveUsersForTeam(teamId string, offset, limi
 	return store.Do(func(result *store.StoreResult) {
 		query := us.usersQuery.
 			Column("s.LastActivityAt").
-			Join("TeamMembers tm ON (tm.UserId = u.Id AND tm.TeamId = ?)", teamId).
-			Join("Status s ON (s.UserId = u.Id)").
+			Join("TeamMembers tm ON (tm.UserId = u.ClientId AND tm.TeamId = ?)", teamId).
+			Join("Status s ON (s.UserId = u.ClientId)").
 			OrderBy("s.LastActivityAt DESC").
 			OrderBy("u.Username ASC").
 			Offset(uint64(offset)).Limit(uint64(limit))
@@ -779,7 +780,7 @@ func (us SqlUserStore) GetRecentlyActiveUsersForTeam(teamId string, offset, limi
 func (us SqlUserStore) GetNewUsersForTeam(teamId string, offset, limit int) store.StoreChannel {
 	return store.Do(func(result *store.StoreResult) {
 		query := us.usersQuery.
-			Join("TeamMembers tm ON (tm.UserId = u.Id AND tm.TeamId = ?)", teamId).
+			Join("TeamMembers tm ON (tm.UserId = u.ClientId AND tm.TeamId = ?)", teamId).
 			OrderBy("u.CreateAt DESC").
 			OrderBy("u.Username ASC").
 			Offset(uint64(offset)).Limit(uint64(limit))
@@ -838,7 +839,7 @@ func (us SqlUserStore) GetProfileByIds(userIds []string, allowFromCache bool) st
 
 		query := us.usersQuery.
 			Where(map[string]interface{}{
-				"u.Id": remainingUserIds,
+				"u.ClientId": remainingUserIds,
 			}).
 			OrderBy("u.Username ASC")
 
@@ -887,7 +888,7 @@ func (us SqlUserStore) GetSystemAdminProfiles() store.StoreChannel {
 
 		for _, u := range users {
 			u.Sanitize(map[string]bool{})
-			userMap[u.Id] = u
+			userMap[u.ClientId] = u
 		}
 
 		result.Data = userMap
@@ -1148,7 +1149,7 @@ func (us SqlUserStore) Search(teamId string, term string, options *model.UserSea
 			Limit(uint64(options.Limit))
 
 		if teamId != "" {
-			query = query.Join("TeamMembers tm ON ( tm.UserId = u.Id AND tm.DeleteAt = 0 AND tm.TeamId = ? )", teamId)
+			query = query.Join("TeamMembers tm ON ( tm.UserId = u.ClientId AND tm.DeleteAt = 0 AND tm.TeamId = ? )", teamId)
 		}
 
 		*result = us.performSearch(query, term, options)
@@ -1164,7 +1165,7 @@ func (us SqlUserStore) SearchWithoutTeam(term string, options *model.UserSearchO
 				FROM
 					TeamMembers
 				WHERE
-					TeamMembers.UserId = u.Id
+					TeamMembers.UserId = u.ClientId
 					AND TeamMembers.DeleteAt = 0
 			) = 0`).
 			OrderBy("u.Username ASC").
@@ -1177,7 +1178,7 @@ func (us SqlUserStore) SearchWithoutTeam(term string, options *model.UserSearchO
 func (us SqlUserStore) SearchNotInTeam(notInTeamId string, term string, options *model.UserSearchOptions) store.StoreChannel {
 	return store.Do(func(result *store.StoreResult) {
 		query := us.usersQuery.
-			LeftJoin("TeamMembers tm ON ( tm.UserId = u.Id AND tm.DeleteAt = 0 AND tm.TeamId = ? )", notInTeamId).
+			LeftJoin("TeamMembers tm ON ( tm.UserId = u.ClientId AND tm.DeleteAt = 0 AND tm.TeamId = ? )", notInTeamId).
 			Where("tm.UserId IS NULL").
 			OrderBy("u.Username ASC").
 			Limit(uint64(options.Limit))
@@ -1189,13 +1190,13 @@ func (us SqlUserStore) SearchNotInTeam(notInTeamId string, term string, options 
 func (us SqlUserStore) SearchNotInChannel(teamId string, channelId string, term string, options *model.UserSearchOptions) store.StoreChannel {
 	return store.Do(func(result *store.StoreResult) {
 		query := us.usersQuery.
-			LeftJoin("ChannelMembers cm ON ( cm.UserId = u.Id AND cm.ChannelId = ? )", channelId).
+			LeftJoin("ChannelMembers cm ON ( cm.UserId = u.ClientId AND cm.ChannelId = ? )", channelId).
 			Where("cm.UserId IS NULL").
 			OrderBy("Username ASC").
 			Limit(uint64(options.Limit))
 
 		if teamId != "" {
-			query = query.Join("TeamMembers tm ON ( tm.UserId = u.Id AND tm.DeleteAt = 0 AND tm.TeamId = ? )", teamId)
+			query = query.Join("TeamMembers tm ON ( tm.UserId = u.ClientId AND tm.DeleteAt = 0 AND tm.TeamId = ? )", teamId)
 		}
 
 		*result = us.performSearch(query, term, options)
@@ -1205,7 +1206,7 @@ func (us SqlUserStore) SearchNotInChannel(teamId string, channelId string, term 
 func (us SqlUserStore) SearchInChannel(channelId string, term string, options *model.UserSearchOptions) store.StoreChannel {
 	return store.Do(func(result *store.StoreResult) {
 		query := us.usersQuery.
-			Join("ChannelMembers cm ON ( cm.UserId = u.Id AND cm.ChannelId = ? )", channelId).
+			Join("ChannelMembers cm ON ( cm.UserId = u.ClientId AND cm.ChannelId = ? )", channelId).
 			OrderBy("Username ASC").
 			Limit(uint64(options.Limit))
 
@@ -1339,7 +1340,7 @@ func (us SqlUserStore) AnalyticsGetSystemAdminCount() store.StoreChannel {
 func (us SqlUserStore) GetProfilesNotInTeam(teamId string, offset int, limit int) store.StoreChannel {
 	return store.Do(func(result *store.StoreResult) {
 		query := us.usersQuery.
-			LeftJoin("TeamMembers tm ON ( tm.UserId = u.Id AND tm.DeleteAt = 0 AND tm.TeamId = ? )", teamId).
+			LeftJoin("TeamMembers tm ON ( tm.UserId = u.ClientId AND tm.DeleteAt = 0 AND tm.TeamId = ? )", teamId).
 			Where("tm.UserId IS NULL").
 			OrderBy("u.Username ASC").
 			Offset(uint64(offset)).Limit(uint64(limit))
@@ -1374,7 +1375,7 @@ func (us SqlUserStore) GetEtagForProfilesNotInTeam(teamId string) store.StoreCha
 			FROM 
 				Users as u
 			LEFT JOIN TeamMembers tm 
-				ON tm.UserId = u.Id 
+				ON tm.UserId = u.ClientId 
 				AND tm.TeamId = :TeamId 
 				AND tm.DeleteAt = 0
 			WHERE 
@@ -1415,7 +1416,7 @@ func (us SqlUserStore) ClearAllCustomRoleAssignments() store.StoreChannel {
 			}
 
 			for _, user := range users {
-				lastUserId = user.Id
+				lastUserId = user.ClientId
 
 				var newRoles []string
 
@@ -1430,7 +1431,7 @@ func (us SqlUserStore) ClearAllCustomRoleAssignments() store.StoreChannel {
 
 				newRolesString := strings.Join(newRoles, " ")
 				if newRolesString != user.Roles {
-					if _, err := transaction.Exec("UPDATE Users SET Roles = :Roles WHERE Id = :Id", map[string]interface{}{"Roles": newRolesString, "Id": user.Id}); err != nil {
+					if _, err := transaction.Exec("UPDATE Users SET Roles = :Roles WHERE Id = :Id", map[string]interface{}{"Roles": newRolesString, "Id": user.ClientId}); err != nil {
 						result.Err = model.NewAppError("SqlUserStore.ClearAllCustomRoleAssignments", "store.sql_user.clear_all_custom_role_assignments.update.app_error", nil, err.Error(), http.StatusInternalServerError)
 						return
 					}

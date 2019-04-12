@@ -957,7 +957,7 @@ func (c *Client4) SearchUsers(search *UserSearch) ([]*User, *Response) {
 
 // UpdateUser updates a user in the system based on the provided user struct.
 func (c *Client4) UpdateUser(user *User) (*User, *Response) {
-	r, err := c.DoApiPut(c.GetUserRoute(user.Id), user.ToJson())
+	r, err := c.DoApiPut(c.GetUserRoute(user.ClientId), user.ToJson())
 	if err != nil {
 		return nil, BuildErrorResponse(r, err)
 	}

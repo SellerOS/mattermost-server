@@ -165,7 +165,7 @@ func BotPatchFromJson(data io.Reader) *BotPatch {
 // UserFromBot returns a user model describing the bot fields stored in the User store.
 func UserFromBot(b *Bot) *User {
 	return &User{
-		Id:        b.UserId,
+		ClientId:        b.UserId,
 		Username:  b.Username,
 		Email:     fmt.Sprintf("%s@localhost", strings.ToLower(b.Username)),
 		FirstName: b.DisplayName,

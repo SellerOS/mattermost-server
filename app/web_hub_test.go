@@ -54,9 +54,9 @@ func TestHubStopWithMultipleConnections(t *testing.T) {
 	defer s.Close()
 
 	th.App.HubStart()
-	wc1 := registerDummyWebConn(t, th.App, s.Listener.Addr(), th.BasicUser.Id)
-	wc2 := registerDummyWebConn(t, th.App, s.Listener.Addr(), th.BasicUser.Id)
-	wc3 := registerDummyWebConn(t, th.App, s.Listener.Addr(), th.BasicUser.Id)
+	wc1 := registerDummyWebConn(t, th.App, s.Listener.Addr(), th.BasicUser.ClientId)
+	wc2 := registerDummyWebConn(t, th.App, s.Listener.Addr(), th.BasicUser.ClientId)
+	wc3 := registerDummyWebConn(t, th.App, s.Listener.Addr(), th.BasicUser.ClientId)
 	defer wc1.Close()
 	defer wc2.Close()
 	defer wc3.Close()
@@ -71,7 +71,7 @@ func TestHubStopRaceCondition(t *testing.T) {
 	s := httptest.NewServer(http.HandlerFunc(dummyWebsocketHandler(t)))
 
 	th.App.HubStart()
-	wc1 := registerDummyWebConn(t, th.App, s.Listener.Addr(), th.BasicUser.Id)
+	wc1 := registerDummyWebConn(t, th.App, s.Listener.Addr(), th.BasicUser.ClientId)
 	defer wc1.Close()
 
 	hub := th.App.Srv.Hubs[0]
@@ -80,8 +80,8 @@ func TestHubStopRaceCondition(t *testing.T) {
 
 	done := make(chan bool)
 	go func() {
-		wc4 := registerDummyWebConn(t, th.App, s.Listener.Addr(), th.BasicUser.Id)
-		wc5 := registerDummyWebConn(t, th.App, s.Listener.Addr(), th.BasicUser.Id)
+		wc4 := registerDummyWebConn(t, th.App, s.Listener.Addr(), th.BasicUser.ClientId)
+		wc5 := registerDummyWebConn(t, th.App, s.Listener.Addr(), th.BasicUser.ClientId)
 		hub.Register(wc4)
 		hub.Register(wc5)
 

@@ -54,7 +54,7 @@ const (
 )
 
 type User struct {
-	Id                 string    `json:"id"`
+	ClientId                 string    `json:"client_id"`
 	CreateAt           int64     `json:"create_at,omitempty"`
 	UpdateAt           int64     `json:"update_at,omitempty"`
 	DeleteAt           int64     `json:"delete_at"`
@@ -125,60 +125,60 @@ func (u *User) DeepCopy() *User {
 // correctly.
 func (u *User) IsValid() *AppError {
 
-	if len(u.Id) != 26 {
+	if len(u.ClientId) != 26 {
 		return InvalidUserError("id", "")
 	}
 
 	if u.CreateAt == 0 {
-		return InvalidUserError("create_at", u.Id)
+		return InvalidUserError("create_at", u.ClientId)
 	}
 
 	if u.UpdateAt == 0 {
-		return InvalidUserError("update_at", u.Id)
+		return InvalidUserError("update_at", u.ClientId)
 	}
 
 	if !IsValidUsername(u.Username) {
-		return InvalidUserError("username", u.Id)
+		return InvalidUserError("username", u.ClientId)
 	}
 
 	if len(u.Email) > USER_EMAIL_MAX_LENGTH || len(u.Email) == 0 || !IsValidEmail(u.Email) {
-		return InvalidUserError("email", u.Id)
+		return InvalidUserError("email", u.ClientId)
 	}
 
 	if utf8.RuneCountInString(u.Nickname) > USER_NICKNAME_MAX_RUNES {
-		return InvalidUserError("nickname", u.Id)
+		return InvalidUserError("nickname", u.ClientId)
 	}
 
 	if utf8.RuneCountInString(u.Position) > USER_POSITION_MAX_RUNES {
-		return InvalidUserError("position", u.Id)
+		return InvalidUserError("position", u.ClientId)
 	}
 
 	if utf8.RuneCountInString(u.FirstName) > USER_FIRST_NAME_MAX_RUNES {
-		return InvalidUserError("first_name", u.Id)
+		return InvalidUserError("first_name", u.ClientId)
 	}
 
 	if utf8.RuneCountInString(u.LastName) > USER_LAST_NAME_MAX_RUNES {
-		return InvalidUserError("last_name", u.Id)
+		return InvalidUserError("last_name", u.ClientId)
 	}
 
 	if u.AuthData != nil && len(*u.AuthData) > USER_AUTH_DATA_MAX_LENGTH {
-		return InvalidUserError("auth_data", u.Id)
+		return InvalidUserError("auth_data", u.ClientId)
 	}
 
 	if u.AuthData != nil && len(*u.AuthData) > 0 && len(u.AuthService) == 0 {
-		return InvalidUserError("auth_data_type", u.Id)
+		return InvalidUserError("auth_data_type", u.ClientId)
 	}
 
 	if len(u.Password) > 0 && u.AuthData != nil && len(*u.AuthData) > 0 {
-		return InvalidUserError("auth_data_pwd", u.Id)
+		return InvalidUserError("auth_data_pwd", u.ClientId)
 	}
 
 	if len(u.Password) > USER_PASSWORD_MAX_LENGTH {
-		return InvalidUserError("password_limit", u.Id)
+		return InvalidUserError("password_limit", u.ClientId)
 	}
 
 	if !IsValidLocale(u.Locale) {
-		return InvalidUserError("locale", u.Id)
+		return InvalidUserError("locale", u.ClientId)
 	}
 
 	return nil
@@ -205,8 +205,8 @@ func NormalizeEmail(email string) string {
 // in the CreateAt, UpdateAt times.  It will also hash the password.  It should
 // be run before saving the user to the db.
 func (u *User) PreSave() {
-	if u.Id == "" {
-		u.Id = NewId()
+	if u.ClientId == "" {
+		u.ClientId = NewId()
 	}
 
 	if u.Username == "" {
@@ -363,7 +363,7 @@ func (u *UserAuth) ToJson() string {
 
 // Generate a valid strong etag so the browser can cache the results
 func (u *User) Etag(showFullName, showEmail bool) string {
-	return Etag(u.Id, u.UpdateAt, showFullName, showEmail)
+	return Etag(u.ClientId, u.UpdateAt, showFullName, showEmail)
 }
 
 // Remove any private data from the user object

@@ -31,6 +31,7 @@ import (
 	"github.com/mattermost/mattermost-server/model"
 	"github.com/mattermost/mattermost-server/plugin"
 	"github.com/mattermost/mattermost-server/services/mfa"
+	"github.com/mattermost/mattermost-server/store"
 	"github.com/mattermost/mattermost-server/utils"
 	"github.com/mattermost/mattermost-server/utils/fileutils"
 )
@@ -186,6 +187,40 @@ func (a *App) IsFirstUserAccount() bool {
 	return false
 }
 
+// indexUser fetches the required information to index a user from the database and
+// calls the elasticsearch interface method
+func (a *App) indexUser(user *model.User) *model.AppError {
+	userTeams := <-a.Srv.Store.Team().GetTeamsByUserId(user.ClientId)
+	if userTeams.Err != nil {
+		return userTeams.Err
+	}
+
+	userTeamsIds := []string{}
+	for _, team := range userTeams.Data.([]*model.Team) {
+		userTeamsIds = append(userTeamsIds, team.Id)
+	}
+
+	userChannelMembers := <-a.Srv.Store.Channel().GetAllChannelMembersForUser(user.ClientId, false, true)
+	if userChannelMembers.Err != nil {
+		return userChannelMembers.Err
+	}
+
+	userChannelsIds := []string{}
+	for channelId := range userChannelMembers.Data.(map[string]string) {
+		userChannelsIds = append(userChannelsIds, channelId)
+	}
+
+	return a.Elasticsearch.IndexUser(user, userTeamsIds, userChannelsIds)
+}
+
+func (a *App) indexUserFromId(userId string) *model.AppError {
+	user, err := a.GetUser(userId)
+	if err != nil {
+		return err
+	}
+	return a.indexUser(user)
+}
+
 // CreateUser creates a user and sets several fields of the returned User struct to
 // their zero values.
 func (a *App) CreateUser(user *model.User) (*model.User, *model.AppError) {
@@ -228,6 +263,15 @@ func (a *App) CreateUser(user *model.User) (*model.User, *model.AppError) {
 				hooks.UserHasBeenCreated(pluginContext, user)
 				return true
 			}, plugin.UserHasBeenCreatedId)
+		})
+	}
+
+	esInterface := a.Elasticsearch
+	if esInterface != nil && *a.Config().ElasticsearchSettings.EnableIndexing {
+		a.Srv.Go(func() {
+			if err := a.indexUser(user); err != nil {
+				mlog.Error("Encountered error indexing user", mlog.String("user_id", user.ClientId), mlog.Err(err))
+			}
 		})
 	}
 
@@ -355,11 +399,7 @@ func (a *App) IsUsernameTaken(name string) bool {
 }
 
 func (a *App) GetUser(userId string) (*model.User, *model.AppError) {
-	result := <-a.Srv.Store.User().Get(userId)
-	if result.Err != nil {
-		return nil, result.Err
-	}
-	return result.Data.(*model.User), nil
+	return a.Srv.Store.User().Get(userId)
 }
 
 func (a *App) GetUserByUsername(username string) (*model.User, *model.AppError) {
@@ -553,6 +593,24 @@ func (a *App) GetUsersWithoutTeam(offset int, limit int) ([]*model.User, *model.
 	return result.Data.([]*model.User), nil
 }
 
+// GetTeamGroupUsers returns the users who are associated to the team via GroupTeams and GroupMembers.
+func (a *App) GetTeamGroupUsers(teamID string) ([]*model.User, *model.AppError) {
+	result := <-a.Srv.Store.User().GetTeamGroupUsers(teamID)
+	if result.Err != nil {
+		return nil, result.Err
+	}
+	return result.Data.([]*model.User), nil
+}
+
+// GetChannelGroupUsers returns the users who are associated to the channel via GroupChannels and GroupMembers.
+func (a *App) GetChannelGroupUsers(channelID string) ([]*model.User, *model.AppError) {
+	result := <-a.Srv.Store.User().GetChannelGroupUsers(channelID)
+	if result.Err != nil {
+		return nil, result.Err
+	}
+	return result.Data.([]*model.User), nil
+}
+
 func (a *App) GetUsersByIds(userIds []string, asAdmin bool) ([]*model.User, *model.AppError) {
 	result := <-a.Srv.Store.User().GetProfileByIds(userIds, true)
 	if result.Err != nil {
@@ -594,11 +652,10 @@ func (a *App) GenerateMfaSecret(userId string) (*model.MfaSecret, *model.AppErro
 }
 
 func (a *App) ActivateMfa(userId, token string) *model.AppError {
-	result := <-a.Srv.Store.User().Get(userId)
-	if result.Err != nil {
-		return result.Err
+	user, err := a.Srv.Store.User().Get(userId)
+	if err != nil {
+		return err
 	}
-	user := result.Data.(*model.User)
 
 	if len(user.AuthService) > 0 && user.AuthService != model.USER_AUTH_SERVICE_LDAP {
 		return model.NewAppError("ActivateMfa", "api.user.activate_mfa.email_and_ldap_only.app_error", nil, "", http.StatusBadRequest)
@@ -706,7 +763,7 @@ func getFont(initialFont string) (*truetype.Font, error) {
 
 func (a *App) GetProfileImage(user *model.User) ([]byte, bool, *model.AppError) {
 	if len(*a.Config().FileSettings.DriverName) == 0 {
-		img, appErr := CreateProfileImage(user.Username, user.ClientId, *a.Config().FileSettings.InitialFont)
+		img, appErr := a.GetDefaultProfileImage(user)
 		if appErr != nil {
 			return nil, false, appErr
 		}
@@ -717,7 +774,7 @@ func (a *App) GetProfileImage(user *model.User) ([]byte, bool, *model.AppError) 
 
 	data, err := a.ReadFile(path)
 	if err != nil {
-		img, appErr := CreateProfileImage(user.Username, user.ClientId, *a.Config().FileSettings.InitialFont)
+		img, appErr := a.GetDefaultProfileImage(user)
 		if appErr != nil {
 			return nil, false, appErr
 		}
@@ -734,7 +791,15 @@ func (a *App) GetProfileImage(user *model.User) ([]byte, bool, *model.AppError) 
 }
 
 func (a *App) GetDefaultProfileImage(user *model.User) ([]byte, *model.AppError) {
-	img, appErr := CreateProfileImage(user.Username, user.ClientId, *a.Config().FileSettings.InitialFont)
+	var img []byte
+	var appErr *model.AppError
+
+	if user.IsBot {
+		img = model.BotDefaultImage
+		appErr = nil
+	} else {
+		img, appErr = CreateProfileImage(user.Username, user.ClientId, *a.Config().FileSettings.InitialFont)
+	}
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -742,7 +807,7 @@ func (a *App) GetDefaultProfileImage(user *model.User) ([]byte, *model.AppError)
 }
 
 func (a *App) SetDefaultProfileImage(user *model.User) *model.AppError {
-	img, appErr := CreateProfileImage(user.Username, user.ClientId, *a.Config().FileSettings.InitialFont)
+	img, appErr := a.GetDefaultProfileImage(user)
 	if appErr != nil {
 		return appErr
 	}
@@ -1021,11 +1086,10 @@ func (a *App) sendUpdatedUserEvent(user model.User) {
 }
 
 func (a *App) UpdateUser(user *model.User, sendNotifications bool) (*model.User, *model.AppError) {
-	result := <-a.Srv.Store.User().Get(user.ClientId)
-	if result.Err != nil {
-		return nil, result.Err
+	prev, err := a.Srv.Store.User().Get(user.ClientId)
+	if err != nil {
+		return nil, err
 	}
-	prev := result.Data.(*model.User)
 
 	if !CheckUserDomain(user, *a.Config().TeamSettings.RestrictCreationToDomains) {
 		if !prev.IsLDAPUser() && !prev.IsSAMLUser() && user.Email != prev.Email {
@@ -1047,7 +1111,7 @@ func (a *App) UpdateUser(user *model.User, sendNotifications bool) (*model.User,
 		user.Email = prev.Email
 	}
 
-	result = <-a.Srv.Store.User().Update(user, false)
+	result := <-a.Srv.Store.User().Update(user, false)
 	if result.Err != nil {
 		return nil, result.Err
 	}
@@ -1080,6 +1144,15 @@ func (a *App) UpdateUser(user *model.User, sendNotifications bool) (*model.User,
 	}
 
 	a.InvalidateCacheForUser(user.ClientId)
+
+	esInterface := a.Elasticsearch
+	if esInterface != nil && *a.Config().ElasticsearchSettings.EnableIndexing {
+		a.Srv.Go(func() {
+			if err := a.indexUser(user); err != nil {
+				mlog.Error("Encountered error indexing user", mlog.String("user_id", user.ClientId), mlog.Err(err))
+			}
+		})
+	}
 
 	return rusers[0], nil
 }
@@ -1408,8 +1481,8 @@ func (a *App) PermanentDeleteUser(user *model.User) *model.AppError {
 		return result.Err
 	}
 
-	if result := <-a.Srv.Store.Audit().PermanentDeleteByUser(user.ClientId); result.Err != nil {
-		return result.Err
+	if err := a.Srv.Store.Audit().PermanentDeleteByUser(user.ClientId); err != nil {
+		return err
 	}
 
 	if result := <-a.Srv.Store.Team().RemoveAllMembersByUser(user.ClientId); result.Err != nil {
@@ -1417,6 +1490,15 @@ func (a *App) PermanentDeleteUser(user *model.User) *model.AppError {
 	}
 
 	mlog.Warn(fmt.Sprintf("Permanently deleted account %v id=%v", user.Email, user.ClientId), mlog.String("user_id", user.ClientId))
+
+	esInterface := a.Elasticsearch
+	if esInterface != nil && *a.Config().ElasticsearchSettings.EnableIndexing {
+		a.Srv.Go(func() {
+			if err := a.Elasticsearch.DeleteUser(user); err != nil {
+				mlog.Error("Encountered error deleting user", mlog.String("user_id", user.ClientId), mlog.Err(err))
+			}
+		})
+	}
 
 	return nil
 }
@@ -1601,7 +1683,21 @@ func (a *App) SearchUsersNotInChannel(teamId string, channelId string, term stri
 }
 
 func (a *App) SearchUsersInTeam(teamId string, term string, options *model.UserSearchOptions) ([]*model.User, *model.AppError) {
-	result := <-a.Srv.Store.User().Search(teamId, term, options)
+	var result store.StoreResult
+
+	esInterface := a.Elasticsearch
+	license := a.License()
+	if esInterface != nil && *a.Config().ElasticsearchSettings.EnableAutocomplete && license != nil && *license.Features.Elasticsearch {
+		ClientIds, err := a.Elasticsearch.SearchUsersInTeam(teamId, term, options)
+		if err != nil {
+			return nil, err
+		}
+
+		result = <-a.Srv.Store.User().GetProfileByIds(ClientIds, false)
+	} else {
+		result = <-a.Srv.Store.User().Search(teamId, term, options)
+	}
+
 	if result.Err != nil {
 		return nil, result.Err
 	}
@@ -1643,8 +1739,21 @@ func (a *App) SearchUsersWithoutTeam(term string, options *model.UserSearchOptio
 }
 
 func (a *App) AutocompleteUsersInChannel(teamId string, channelId string, term string, options *model.UserSearchOptions) (*model.UserAutocompleteInChannel, *model.AppError) {
-	uchan := a.Srv.Store.User().SearchInChannel(channelId, term, options)
-	nuchan := a.Srv.Store.User().SearchNotInChannel(teamId, channelId, term, options)
+	var uchan, nuchan store.StoreChannel
+
+	esInterface := a.Elasticsearch
+	license := a.License()
+	if esInterface != nil && *a.Config().ElasticsearchSettings.EnableAutocomplete && license != nil && *license.Features.Elasticsearch {
+		uchanIds, nuchanIds, err := a.Elasticsearch.SearchUsersInChannel(teamId, channelId, term, options)
+		if err != nil {
+			return nil, err
+		}
+		uchan = a.Srv.Store.User().GetProfileByIds(uchanIds, false)
+		nuchan = a.Srv.Store.User().GetProfileByIds(nuchanIds, false)
+	} else {
+		uchan = a.Srv.Store.User().SearchInChannel(channelId, term, options)
+		nuchan = a.Srv.Store.User().SearchNotInChannel(teamId, channelId, term, options)
+	}
 
 	autocomplete := &model.UserAutocompleteInChannel{}
 
@@ -1677,8 +1786,21 @@ func (a *App) AutocompleteUsersInChannel(teamId string, channelId string, term s
 
 func (a *App) AutocompleteUsersInTeam(teamId string, term string, options *model.UserSearchOptions) (*model.UserAutocompleteInTeam, *model.AppError) {
 	autocomplete := &model.UserAutocompleteInTeam{}
+	var result store.StoreResult
 
-	result := <-a.Srv.Store.User().Search(teamId, term, options)
+	esInterface := a.Elasticsearch
+	license := a.License()
+	if esInterface != nil && *a.Config().ElasticsearchSettings.EnableAutocomplete && license != nil && *license.Features.Elasticsearch {
+		ClientIds, err := a.Elasticsearch.SearchUsersInTeam(teamId, term, options)
+		if err != nil {
+			return nil, err
+		}
+
+		result = <-a.Srv.Store.User().GetProfileByIds(ClientIds, false)
+	} else {
+		result = <-a.Srv.Store.User().Search(teamId, term, options)
+	}
+
 	if result.Err != nil {
 		return nil, result.Err
 	}
@@ -1735,7 +1857,82 @@ func (a *App) UpdateOAuthUserAttrs(userData io.Reader, user *model.User, provide
 
 		user = result.Data.([2]*model.User)[0]
 		a.InvalidateCacheForUser(user.ClientId)
+
+		esInterface := a.Elasticsearch
+		if esInterface != nil && *a.Config().ElasticsearchSettings.EnableIndexing {
+			a.Srv.Go(func() {
+				if err := a.indexUser(user); err != nil {
+					mlog.Error("Encountered error indexing user", mlog.String("user_id", user.ClientId), mlog.Err(err))
+				}
+			})
+		}
 	}
 
 	return nil
+}
+
+// FilterNonGroupTeamMembers returns the subset of the given user IDs of the users who are not members of groups
+// associated to the team.
+func (a *App) FilterNonGroupTeamMembers(userIDs []string, team *model.Team) ([]string, error) {
+	teamGroupUsers, err := a.GetTeamGroupUsers(team.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	// possible if no groups associated or no group members in any of the associated groups
+	if len(teamGroupUsers) == 0 {
+		return userIDs, nil
+	}
+
+	nonMemberIDs := []string{}
+
+	for _, userID := range userIDs {
+		userIsMember := false
+
+		for _, pu := range teamGroupUsers {
+			if pu.ClientId == userID {
+				userIsMember = true
+				break
+			}
+		}
+
+		if !userIsMember {
+			nonMemberIDs = append(nonMemberIDs, userID)
+		}
+	}
+
+	return nonMemberIDs, nil
+}
+
+// FilterNonGroupChannelMembers returns the subset of the given user IDs of the users who are not members of groups
+// associated to the channel.
+func (a *App) FilterNonGroupChannelMembers(userIDs []string, channel *model.Channel) ([]string, error) {
+	channelGroupUsers, err := a.GetChannelGroupUsers(channel.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	// possible if no groups associated or no group members in any of the associated groups
+	if len(channelGroupUsers) == 0 {
+		return userIDs, nil
+	}
+
+	nonMemberIDs := []string{}
+
+	for _, userID := range userIDs {
+		userIsMember := false
+
+		for _, pu := range channelGroupUsers {
+			if pu.ClientId == userID {
+				userIsMember = true
+				break
+			}
+		}
+
+		if !userIsMember {
+			nonMemberIDs = append(nonMemberIDs, userID)
+		}
+	}
+
+	return nonMemberIDs, nil
 }

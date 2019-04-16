@@ -529,6 +529,8 @@ func (a *App) trackConfig() {
 		"isdefault_client_side_cert_check":   isDefault(*cfg.ExperimentalSettings.ClientSideCertCheck, model.CLIENT_SIDE_CERT_CHECK_PRIMARY_AUTH),
 		"enable_post_metadata":               !*cfg.ExperimentalSettings.DisablePostMetadata,
 		"link_metadata_timeout_milliseconds": *cfg.ExperimentalSettings.LinkMetadataTimeoutMilliseconds,
+		"enable_click_to_reply":              *cfg.ExperimentalSettings.EnableClickToReply,
+		"restrict_system_admin":              *cfg.ExperimentalSettings.RestrictSystemAdmin,
 	})
 
 	a.SendDiagnostic(TRACK_CONFIG_ANALYTICS, map[string]interface{}{
@@ -548,9 +550,14 @@ func (a *App) trackConfig() {
 		"isdefault_password":                isDefault(*cfg.ElasticsearchSettings.Password, model.ELASTICSEARCH_SETTINGS_DEFAULT_PASSWORD),
 		"enable_indexing":                   *cfg.ElasticsearchSettings.EnableIndexing,
 		"enable_searching":                  *cfg.ElasticsearchSettings.EnableSearching,
+		"enable_autocomplete":               *cfg.ElasticsearchSettings.EnableAutocomplete,
 		"sniff":                             *cfg.ElasticsearchSettings.Sniff,
 		"post_index_replicas":               *cfg.ElasticsearchSettings.PostIndexReplicas,
 		"post_index_shards":                 *cfg.ElasticsearchSettings.PostIndexShards,
+		"channel_index_replicas":            *cfg.ElasticsearchSettings.ChannelIndexReplicas,
+		"channel_index_shards":              *cfg.ElasticsearchSettings.ChannelIndexShards,
+		"user_index_replicas":               *cfg.ElasticsearchSettings.UserIndexReplicas,
+		"user_index_shards":                 *cfg.ElasticsearchSettings.UserIndexShards,
 		"isdefault_index_prefix":            isDefault(*cfg.ElasticsearchSettings.IndexPrefix, model.ELASTICSEARCH_SETTINGS_DEFAULT_INDEX_PREFIX),
 		"live_indexing_batch_size":          *cfg.ElasticsearchSettings.LiveIndexingBatchSize,
 		"bulk_indexing_time_window_seconds": *cfg.ElasticsearchSettings.BulkIndexingTimeWindowSeconds,

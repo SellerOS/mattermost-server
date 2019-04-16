@@ -99,19 +99,28 @@ func (_m *UserStore) Count(options model.UserCountOptions) store.StoreChannel {
 }
 
 // Get provides a mock function with given fields: id
-func (_m *UserStore) Get(id string) store.StoreChannel {
+func (_m *UserStore) Get(id string) (*model.User, *model.AppError) {
 	ret := _m.Called(id)
 
-	var r0 store.StoreChannel
-	if rf, ok := ret.Get(0).(func(string) store.StoreChannel); ok {
+	var r0 *model.User
+	if rf, ok := ret.Get(0).(func(string) *model.User); ok {
 		r0 = rf(id)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(store.StoreChannel)
+			r0 = ret.Get(0).(*model.User)
 		}
 	}
 
-	return r0
+	var r1 *model.AppError
+	if rf, ok := ret.Get(1).(func(string) *model.AppError); ok {
+		r1 = rf(id)
+	} else {
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).(*model.AppError)
+		}
+	}
+
+	return r0, r1
 }
 
 // GetAll provides a mock function with given fields:
@@ -530,6 +539,22 @@ func (_m *UserStore) GetUnreadCountForChannel(userId string, channelId string) s
 	return r0
 }
 
+// GetUsersBatchForIndexing provides a mock function with given fields: startTime, endTime, limit
+func (_m *UserStore) GetUsersBatchForIndexing(startTime int64, endTime int64, limit int) store.StoreChannel {
+	ret := _m.Called(startTime, endTime, limit)
+
+	var r0 store.StoreChannel
+	if rf, ok := ret.Get(0).(func(int64, int64, int) store.StoreChannel); ok {
+		r0 = rf(startTime, endTime, limit)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(store.StoreChannel)
+		}
+	}
+
+	return r0
+}
+
 // InferSystemInstallDate provides a mock function with given fields:
 func (_m *UserStore) InferSystemInstallDate() store.StoreChannel {
 	ret := _m.Called()
@@ -824,6 +849,38 @@ func (_m *UserStore) VerifyEmail(userId string, email string) store.StoreChannel
 	var r0 store.StoreChannel
 	if rf, ok := ret.Get(0).(func(string, string) store.StoreChannel); ok {
 		r0 = rf(userId, email)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(store.StoreChannel)
+		}
+	}
+
+	return r0
+}
+
+// GetTeamGroupUsers provides a mock function with given fields: userId, email
+func (_m *UserStore) GetTeamGroupUsers(teamID string) store.StoreChannel {
+	ret := _m.Called(teamID)
+
+	var r0 store.StoreChannel
+	if rf, ok := ret.Get(0).(func(string) store.StoreChannel); ok {
+		r0 = rf(teamID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(store.StoreChannel)
+		}
+	}
+
+	return r0
+}
+
+// GetChannelGroupUsers provides a mock function with given fields: userId, email
+func (_m *UserStore) GetChannelGroupUsers(teamID string) store.StoreChannel {
+	ret := _m.Called(teamID)
+
+	var r0 store.StoreChannel
+	if rf, ok := ret.Get(0).(func(string) store.StoreChannel); ok {
+		r0 = rf(teamID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(store.StoreChannel)

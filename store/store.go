@@ -89,8 +89,11 @@ type TeamStore interface {
 	SearchByName(name string) StoreChannel
 	SearchAll(term string) StoreChannel
 	SearchOpen(term string) StoreChannel
+	SearchPrivate(term string) StoreChannel
 	GetAll() StoreChannel
 	GetAllPage(offset int, limit int) StoreChannel
+	GetAllPrivateTeamListing() StoreChannel
+	GetAllPrivateTeamPageListing(offset int, limit int) StoreChannel
 	GetAllTeamListing() StoreChannel
 	GetAllTeamPageListing(offset int, limit int) StoreChannel
 	GetTeamsByUserId(userId string) StoreChannel
@@ -148,11 +151,12 @@ type ChannelStore interface {
 	GetChannelCounts(teamId string, userId string) StoreChannel
 	GetTeamChannels(teamId string) StoreChannel
 	GetAll(teamId string) StoreChannel
+	GetChannelsByIds(channelIds []string) StoreChannel
 	GetForPost(postId string) StoreChannel
 	SaveMember(member *model.ChannelMember) StoreChannel
 	UpdateMember(member *model.ChannelMember) StoreChannel
 	GetMembers(channelId string, offset, limit int) StoreChannel
-	GetMember(channelId string, userId string) StoreChannel
+	GetMember(channelId string, userId string) (*model.ChannelMember, *model.AppError)
 	GetChannelMembersTimezones(channelId string) StoreChannel
 	GetAllChannelMembersForUser(userId string, allowFromCache bool, includeDeleted bool) StoreChannel
 	InvalidateAllChannelMembersForUser(userId string)
@@ -187,8 +191,10 @@ type ChannelStore interface {
 	ClearAllCustomRoleAssignments() StoreChannel
 	MigratePublicChannels() error
 	GetAllChannelsForExportAfter(limit int, afterId string) StoreChannel
+	GetAllDirectChannelsForExportAfter(limit int, afterId string) StoreChannel
 	GetChannelMembersForExport(userId string, teamId string) StoreChannel
 	RemoveAllDeactivatedMembers(channelId string) StoreChannel
+	GetChannelsBatchForIndexing(startTime, endTime int64, limit int) StoreChannel
 }
 
 type ChannelMemberHistoryStore interface {
@@ -229,6 +235,7 @@ type PostStore interface {
 	GetMaxPostSize() StoreChannel
 	GetParentsForExportAfter(limit int, afterId string) StoreChannel
 	GetRepliesForExport(parentId string) StoreChannel
+	GetDirectPostParentsForExportAfter(limit int, afterId string) StoreChannel
 }
 
 type UserStore interface {
@@ -241,7 +248,7 @@ type UserStore interface {
 	UpdateAuthData(userId string, service string, authData *string, email string, resetMfa bool) StoreChannel
 	UpdateMfaSecret(userId, secret string) StoreChannel
 	UpdateMfaActive(userId string, active bool) StoreChannel
-	Get(id string) StoreChannel
+	Get(id string) (*model.User, *model.AppError)
 	GetAll() StoreChannel
 	ClearCaches()
 	InvalidateProfilesInChannelCacheByUser(userId string)
@@ -285,7 +292,10 @@ type UserStore interface {
 	ClearAllCustomRoleAssignments() StoreChannel
 	InferSystemInstallDate() StoreChannel
 	GetAllAfter(limit int, afterId string) StoreChannel
+	GetUsersBatchForIndexing(startTime, endTime int64, limit int) StoreChannel
 	Count(options model.UserCountOptions) StoreChannel
+	GetTeamGroupUsers(teamID string) StoreChannel
+	GetChannelGroupUsers(channelID string) StoreChannel
 }
 
 type BotStore interface {
@@ -312,10 +322,10 @@ type SessionStore interface {
 }
 
 type AuditStore interface {
-	Save(audit *model.Audit) StoreChannel
-	Get(user_id string, offset int, limit int) StoreChannel
-	PermanentDeleteByUser(userId string) StoreChannel
-	PermanentDeleteBatch(endTime int64, limit int64) StoreChannel
+	Save(audit *model.Audit) *model.AppError
+	Get(user_id string, offset int, limit int) (model.Audits, *model.AppError)
+	PermanentDeleteByUser(userId string) *model.AppError
+	PermanentDeleteBatch(endTime int64, limit int64) (int64, *model.AppError)
 }
 
 type ClusterDiscoveryStore interface {
@@ -435,6 +445,7 @@ type TokenStore interface {
 	Delete(token string) StoreChannel
 	GetByToken(token string) StoreChannel
 	Cleanup()
+	RemoveAllTokensByType(tokenType string) StoreChannel
 }
 
 type EmojiStore interface {
@@ -571,8 +582,14 @@ type GroupStore interface {
 	UpdateGroupSyncable(groupSyncable *model.GroupSyncable) StoreChannel
 	DeleteGroupSyncable(groupID string, syncableID string, syncableType model.GroupSyncableType) StoreChannel
 
-	PendingAutoAddTeamMembers(minGroupMembersCreateAt int64) StoreChannel
-	PendingAutoAddChannelMembers(minGroupMembersCreateAt int64) StoreChannel
+	TeamMembersToAdd(since int64) StoreChannel
+	ChannelMembersToAdd(since int64) StoreChannel
+
+	TeamMembersToRemove() StoreChannel
+	ChannelMembersToRemove() StoreChannel
+
+	GetGroupsByChannel(channelId string, page, perPage int) StoreChannel
+	GetGroupsByTeam(teamId string, page, perPage int) StoreChannel
 }
 
 type LinkMetadataStore interface {

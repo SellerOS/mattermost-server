@@ -18,6 +18,7 @@ import (
 	"github.com/mattermost/mattermost-server/mlog"
 	"github.com/mattermost/mattermost-server/model"
 	"github.com/mattermost/mattermost-server/plugin"
+	"github.com/mattermost/mattermost-server/store"
 	"github.com/mattermost/mattermost-server/utils"
 )
 
@@ -122,6 +123,7 @@ func (a *App) UpdateTeam(team *model.Team) (*model.Team, *model.AppError) {
 	oldTeam.CompanyName = team.CompanyName
 	oldTeam.AllowedDomains = team.AllowedDomains
 	oldTeam.LastTeamIconUpdate = team.LastTeamIconUpdate
+	oldTeam.GroupConstrained = team.GroupConstrained
 
 	oldTeam, err = a.updateTeamUnsanitized(oldTeam)
 	if err != nil {
@@ -326,7 +328,12 @@ func (a *App) sendUpdatedMemberRoleEvent(userId string, member *model.TeamMember
 
 func (a *App) AddUserToTeam(teamId string, userId string, userRequestorId string) (*model.Team, *model.AppError) {
 	tchan := a.Srv.Store.Team().Get(teamId)
-	uchan := a.Srv.Store.User().Get(userId)
+	uchan := make(chan store.StoreResult, 1)
+	go func() {
+		user, err := a.Srv.Store.User().Get(userId)
+		uchan <- store.StoreResult{Data: user, Err: err}
+		close(uchan)
+	}()
 
 	result := <-tchan
 	if result.Err != nil {
@@ -374,7 +381,12 @@ func (a *App) AddUserToTeamByToken(userId string, tokenId string) (*model.Team, 
 	tokenData := model.MapFromJson(strings.NewReader(token.Extra))
 
 	tchan := a.Srv.Store.Team().Get(tokenData["teamId"])
-	uchan := a.Srv.Store.User().Get(userId)
+	uchan := make(chan store.StoreResult, 1)
+	go func() {
+		user, err := a.Srv.Store.User().Get(userId)
+		uchan <- store.StoreResult{Data: user, Err: err}
+		close(uchan)
+	}()
 
 	result = <-tchan
 	if result.Err != nil {
@@ -401,7 +413,12 @@ func (a *App) AddUserToTeamByToken(userId string, tokenId string) (*model.Team, 
 
 func (a *App) AddUserToTeamByInviteId(inviteId string, userId string) (*model.Team, *model.AppError) {
 	tchan := a.Srv.Store.Team().GetByInviteId(inviteId)
-	uchan := a.Srv.Store.User().Get(userId)
+	uchan := make(chan store.StoreResult, 1)
+	go func() {
+		user, err := a.Srv.Store.User().Get(userId)
+		uchan <- store.StoreResult{Data: user, Err: err}
+		close(uchan)
+	}()
 
 	result := <-tchan
 	if result.Err != nil {
@@ -562,8 +579,32 @@ func (a *App) GetAllTeamsPage(offset int, limit int) ([]*model.Team, *model.AppE
 	return result.Data.([]*model.Team), nil
 }
 
-func (a *App) GetAllOpenTeams() ([]*model.Team, *model.AppError) {
+func (a *App) GetAllPrivateTeams() ([]*model.Team, *model.AppError) {
+	result := <-a.Srv.Store.Team().GetAllPrivateTeamListing()
+	if result.Err != nil {
+		return nil, result.Err
+	}
+	return result.Data.([]*model.Team), nil
+}
+
+func (a *App) GetAllPrivateTeamsPage(offset int, limit int) ([]*model.Team, *model.AppError) {
+	result := <-a.Srv.Store.Team().GetAllPrivateTeamPageListing(offset, limit)
+	if result.Err != nil {
+		return nil, result.Err
+	}
+	return result.Data.([]*model.Team), nil
+}
+
+func (a *App) GetAllPublicTeams() ([]*model.Team, *model.AppError) {
 	result := <-a.Srv.Store.Team().GetAllTeamListing()
+	if result.Err != nil {
+		return nil, result.Err
+	}
+	return result.Data.([]*model.Team), nil
+}
+
+func (a *App) GetAllPublicTeamsPage(offset int, limit int) ([]*model.Team, *model.AppError) {
+	result := <-a.Srv.Store.Team().GetAllTeamPageListing(offset, limit)
 	if result.Err != nil {
 		return nil, result.Err
 	}
@@ -578,7 +619,7 @@ func (a *App) SearchAllTeams(term string) ([]*model.Team, *model.AppError) {
 	return result.Data.([]*model.Team), nil
 }
 
-func (a *App) SearchOpenTeams(term string) ([]*model.Team, *model.AppError) {
+func (a *App) SearchPublicTeams(term string) ([]*model.Team, *model.AppError) {
 	result := <-a.Srv.Store.Team().SearchOpen(term)
 	if result.Err != nil {
 		return nil, result.Err
@@ -586,8 +627,8 @@ func (a *App) SearchOpenTeams(term string) ([]*model.Team, *model.AppError) {
 	return result.Data.([]*model.Team), nil
 }
 
-func (a *App) GetAllOpenTeamsPage(offset int, limit int) ([]*model.Team, *model.AppError) {
-	result := <-a.Srv.Store.Team().GetAllTeamPageListing(offset, limit)
+func (a *App) SearchPrivateTeams(term string) ([]*model.Team, *model.AppError) {
+	result := <-a.Srv.Store.Team().SearchPrivate(term)
 	if result.Err != nil {
 		return nil, result.Err
 	}
@@ -736,7 +777,12 @@ func (a *App) GetTeamUnread(teamId, userId string) (*model.TeamUnread, *model.Ap
 
 func (a *App) RemoveUserFromTeam(teamId string, userId string, requestorId string) *model.AppError {
 	tchan := a.Srv.Store.Team().Get(teamId)
-	uchan := a.Srv.Store.User().Get(userId)
+	uchan := make(chan store.StoreResult, 1)
+	go func() {
+		user, err := a.Srv.Store.User().Get(userId)
+		uchan <- store.StoreResult{Data: user, Err: err}
+		close(uchan)
+	}()
 
 	result := <-tchan
 	if result.Err != nil {
@@ -830,6 +876,15 @@ func (a *App) LeaveTeam(team *model.Team, user *model.User, requestorId string) 
 		})
 	}
 
+	esInterface := a.Elasticsearch
+	if esInterface != nil && *a.Config().ElasticsearchSettings.EnableIndexing {
+		a.Srv.Go(func() {
+			if err := a.indexUser(user); err != nil {
+				mlog.Error("Encountered error indexing user", mlog.String("user_id", user.ClientId), mlog.Err(err))
+			}
+		})
+	}
+
 	if uua := <-a.Srv.Store.User().UpdateUpdateAt(user.ClientId); uua.Err != nil {
 		return uua.Err
 	}
@@ -892,7 +947,12 @@ func (a *App) InviteNewUsersToTeam(emailList []string, teamId, senderId string) 
 	}
 
 	tchan := a.Srv.Store.Team().Get(teamId)
-	uchan := a.Srv.Store.User().Get(senderId)
+	uchan := make(chan store.StoreResult, 1)
+	go func() {
+		user, err := a.Srv.Store.User().Get(senderId)
+		uchan <- store.StoreResult{Data: user, Err: err}
+		close(uchan)
+	}()
 
 	result := <-tchan
 	if result.Err != nil {
@@ -1221,5 +1281,12 @@ func (a *App) RemoveTeamIcon(teamId string) *model.AppError {
 
 	a.sendTeamEvent(team, model.WEBSOCKET_EVENT_UPDATE_TEAM)
 
+	return nil
+}
+
+func (a *App) InvalidateAllEmailInvites() *model.AppError {
+	if result := <-a.Srv.Store.Token().RemoveAllTokensByType(TOKEN_TYPE_TEAM_INVITATION); result.Err != nil {
+		return model.NewAppError("InvalidateAllEmailInvites", "api.team.invalidate_all_email_invites.app_error", nil, result.Err.Error(), http.StatusBadRequest)
+	}
 	return nil
 }

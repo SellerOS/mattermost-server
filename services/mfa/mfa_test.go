@@ -26,7 +26,7 @@ func TestGenerateSecret(t *testing.T) {
 	configService := testutils.StaticConfigService{Cfg: &config}
 	storeMock := mocks.Store{}
 	userStoreMock := mocks.UserStore{}
-	userStoreMock.On("UpdateMfaSecret", user.Id, mock.AnythingOfType("string")).Return(func(userId string, secret string) store.StoreChannel {
+	userStoreMock.On("UpdateMfaSecret", user.ClientId, mock.AnythingOfType("string")).Return(func(userId string, secret string) store.StoreChannel {
 		return store.Do(func(result *store.StoreResult) {
 			result.Data = nil
 			result.Err = nil

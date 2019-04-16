@@ -207,7 +207,7 @@ func MakeSqlSettings(driver string) *model.SqlSettings {
 		panic("unsupported driver " + driver)
 	}
 
-	log("Created temporary " + driver + " database " + dbName)
+	log("CreateAt temporary " + driver + " database " + dbName)
 
 	return settings
 }

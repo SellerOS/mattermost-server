@@ -23,13 +23,13 @@ func TestSaveStatus(t *testing.T) {
 	} {
 		t.Run(statusString, func(t *testing.T) {
 			status := &model.Status{
-				UserId: user.Id,
+				UserId: user.ClientId,
 				Status: statusString,
 			}
 
 			th.App.SaveAndBroadcastStatus(status)
 
-			after, err := th.App.GetStatus(user.Id)
+			after, err := th.App.GetStatus(user.ClientId)
 			if err != nil {
 				t.Fatalf("failed to get status after save: %v", err)
 			} else if after.Status != statusString {

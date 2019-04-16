@@ -373,7 +373,7 @@ func TestCreatePostPublic(t *testing.T) {
 	_, resp = Client.CreatePost(post)
 	CheckForbiddenStatus(t, resp)
 
-	th.App.UpdateUserRoles(ruser.Id, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_POST_ALL_PUBLIC_ROLE_ID, false)
+	th.App.UpdateUserRoles(ruser.ClientId, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_POST_ALL_PUBLIC_ROLE_ID, false)
 	th.App.InvalidateAllCaches()
 
 	Client.Login(user.Email, user.Password)
@@ -385,9 +385,9 @@ func TestCreatePostPublic(t *testing.T) {
 	_, resp = Client.CreatePost(post)
 	CheckForbiddenStatus(t, resp)
 
-	th.App.UpdateUserRoles(ruser.Id, model.SYSTEM_USER_ROLE_ID, false)
+	th.App.UpdateUserRoles(ruser.ClientId, model.SYSTEM_USER_ROLE_ID, false)
 	th.App.JoinUserToTeam(th.BasicTeam, ruser, "")
-	th.App.UpdateTeamMemberRoles(th.BasicTeam.Id, ruser.Id, model.TEAM_USER_ROLE_ID+" "+model.TEAM_POST_ALL_PUBLIC_ROLE_ID)
+	th.App.UpdateTeamMemberRoles(th.BasicTeam.Id, ruser.ClientId, model.TEAM_USER_ROLE_ID+" "+model.TEAM_POST_ALL_PUBLIC_ROLE_ID)
 	th.App.InvalidateAllCaches()
 
 	Client.Login(user.Email, user.Password)
@@ -420,7 +420,7 @@ func TestCreatePostAll(t *testing.T) {
 	_, resp = Client.CreatePost(post)
 	CheckForbiddenStatus(t, resp)
 
-	th.App.UpdateUserRoles(ruser.Id, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_POST_ALL_ROLE_ID, false)
+	th.App.UpdateUserRoles(ruser.ClientId, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_POST_ALL_ROLE_ID, false)
 	th.App.InvalidateAllCaches()
 
 	Client.Login(user.Email, user.Password)
@@ -436,9 +436,9 @@ func TestCreatePostAll(t *testing.T) {
 	_, resp = Client.CreatePost(post)
 	CheckNoError(t, resp)
 
-	th.App.UpdateUserRoles(ruser.Id, model.SYSTEM_USER_ROLE_ID, false)
+	th.App.UpdateUserRoles(ruser.ClientId, model.SYSTEM_USER_ROLE_ID, false)
 	th.App.JoinUserToTeam(th.BasicTeam, ruser, "")
-	th.App.UpdateTeamMemberRoles(th.BasicTeam.Id, ruser.Id, model.TEAM_USER_ROLE_ID+" "+model.TEAM_POST_ALL_ROLE_ID)
+	th.App.UpdateTeamMemberRoles(th.BasicTeam.Id, ruser.ClientId, model.TEAM_USER_ROLE_ID+" "+model.TEAM_POST_ALL_ROLE_ID)
 	th.App.InvalidateAllCaches()
 
 	Client.Login(user.Email, user.Password)
@@ -923,22 +923,22 @@ func TestGetFlaggedPostsForUser(t *testing.T) {
 	post2 := th.CreatePostWithClient(Client, channel2)
 
 	preference := model.Preference{
-		UserId:   user.Id,
+		UserId:   user.ClientId,
 		Category: model.PREFERENCE_CATEGORY_FLAGGED_POST,
 		Name:     post1.Id,
 		Value:    "true",
 	}
-	_, resp := Client.UpdatePreferences(user.Id, &model.Preferences{preference})
+	_, resp := Client.UpdatePreferences(user.ClientId, &model.Preferences{preference})
 	CheckNoError(t, resp)
 	preference.Name = post2.Id
-	_, resp = Client.UpdatePreferences(user.Id, &model.Preferences{preference})
+	_, resp = Client.UpdatePreferences(user.ClientId, &model.Preferences{preference})
 	CheckNoError(t, resp)
 
 	opl := model.NewPostList()
 	opl.AddPost(post1)
 	opl.AddOrder(post1.Id)
 
-	rpl, resp := Client.GetFlaggedPostsForUserInChannel(user.Id, channel1.Id, 0, 10)
+	rpl, resp := Client.GetFlaggedPostsForUserInChannel(user.ClientId, channel1.Id, 0, 10)
 	CheckNoError(t, resp)
 
 	if len(rpl.Posts) != 1 {
@@ -949,28 +949,28 @@ func TestGetFlaggedPostsForUser(t *testing.T) {
 		t.Fatal("posts should have matched")
 	}
 
-	rpl, resp = Client.GetFlaggedPostsForUserInChannel(user.Id, channel1.Id, 0, 1)
+	rpl, resp = Client.GetFlaggedPostsForUserInChannel(user.ClientId, channel1.Id, 0, 1)
 	CheckNoError(t, resp)
 
 	if len(rpl.Posts) != 1 {
 		t.Fatal("should have returned 1 post")
 	}
 
-	rpl, resp = Client.GetFlaggedPostsForUserInChannel(user.Id, channel1.Id, 1, 1)
+	rpl, resp = Client.GetFlaggedPostsForUserInChannel(user.ClientId, channel1.Id, 1, 1)
 	CheckNoError(t, resp)
 
 	if len(rpl.Posts) != 0 {
 		t.Fatal("should be empty")
 	}
 
-	rpl, resp = Client.GetFlaggedPostsForUserInChannel(user.Id, GenerateTestId(), 0, 10)
+	rpl, resp = Client.GetFlaggedPostsForUserInChannel(user.ClientId, GenerateTestId(), 0, 10)
 	CheckNoError(t, resp)
 
 	if len(rpl.Posts) != 0 {
 		t.Fatal("should be empty")
 	}
 
-	rpl, resp = Client.GetFlaggedPostsForUserInChannel(user.Id, "junk", 0, 10)
+	rpl, resp = Client.GetFlaggedPostsForUserInChannel(user.ClientId, "junk", 0, 10)
 	CheckBadRequestStatus(t, resp)
 
 	if rpl != nil {
@@ -980,7 +980,7 @@ func TestGetFlaggedPostsForUser(t *testing.T) {
 	opl.AddPost(post2)
 	opl.AddOrder(post2.Id)
 
-	rpl, resp = Client.GetFlaggedPostsForUserInTeam(user.Id, team1.Id, 0, 10)
+	rpl, resp = Client.GetFlaggedPostsForUserInTeam(user.ClientId, team1.Id, 0, 10)
 	CheckNoError(t, resp)
 
 	if len(rpl.Posts) != 2 {
@@ -991,35 +991,35 @@ func TestGetFlaggedPostsForUser(t *testing.T) {
 		t.Fatal("posts should have matched")
 	}
 
-	rpl, resp = Client.GetFlaggedPostsForUserInTeam(user.Id, team1.Id, 0, 1)
+	rpl, resp = Client.GetFlaggedPostsForUserInTeam(user.ClientId, team1.Id, 0, 1)
 	CheckNoError(t, resp)
 
 	if len(rpl.Posts) != 1 {
 		t.Fatal("should have returned 1 post")
 	}
 
-	rpl, resp = Client.GetFlaggedPostsForUserInTeam(user.Id, team1.Id, 1, 1)
+	rpl, resp = Client.GetFlaggedPostsForUserInTeam(user.ClientId, team1.Id, 1, 1)
 	CheckNoError(t, resp)
 
 	if len(rpl.Posts) != 1 {
 		t.Fatal("should have returned 1 post")
 	}
 
-	rpl, resp = Client.GetFlaggedPostsForUserInTeam(user.Id, team1.Id, 1000, 10)
+	rpl, resp = Client.GetFlaggedPostsForUserInTeam(user.ClientId, team1.Id, 1000, 10)
 	CheckNoError(t, resp)
 
 	if len(rpl.Posts) != 0 {
 		t.Fatal("should be empty")
 	}
 
-	rpl, resp = Client.GetFlaggedPostsForUserInTeam(user.Id, GenerateTestId(), 0, 10)
+	rpl, resp = Client.GetFlaggedPostsForUserInTeam(user.ClientId, GenerateTestId(), 0, 10)
 	CheckNoError(t, resp)
 
 	if len(rpl.Posts) != 0 {
 		t.Fatal("should be empty")
 	}
 
-	rpl, resp = Client.GetFlaggedPostsForUserInTeam(user.Id, "junk", 0, 10)
+	rpl, resp = Client.GetFlaggedPostsForUserInTeam(user.ClientId, "junk", 0, 10)
 	CheckBadRequestStatus(t, resp)
 
 	if rpl != nil {
@@ -1030,12 +1030,12 @@ func TestGetFlaggedPostsForUser(t *testing.T) {
 	post4 := th.CreatePostWithClient(Client, channel3)
 
 	preference.Name = post4.Id
-	Client.UpdatePreferences(user.Id, &model.Preferences{preference})
+	Client.UpdatePreferences(user.ClientId, &model.Preferences{preference})
 
 	opl.AddPost(post4)
 	opl.AddOrder(post4.Id)
 
-	rpl, resp = Client.GetFlaggedPostsForUser(user.Id, 0, 10)
+	rpl, resp = Client.GetFlaggedPostsForUser(user.ClientId, 0, 10)
 	CheckNoError(t, resp)
 
 	if len(rpl.Posts) != 3 {
@@ -1046,21 +1046,21 @@ func TestGetFlaggedPostsForUser(t *testing.T) {
 		t.Fatal("posts should have matched")
 	}
 
-	rpl, resp = Client.GetFlaggedPostsForUser(user.Id, 0, 2)
+	rpl, resp = Client.GetFlaggedPostsForUser(user.ClientId, 0, 2)
 	CheckNoError(t, resp)
 
 	if len(rpl.Posts) != 2 {
 		t.Fatal("should have returned 2 posts")
 	}
 
-	rpl, resp = Client.GetFlaggedPostsForUser(user.Id, 2, 2)
+	rpl, resp = Client.GetFlaggedPostsForUser(user.ClientId, 2, 2)
 	CheckNoError(t, resp)
 
 	if len(rpl.Posts) != 1 {
 		t.Fatal("should have returned 1 post")
 	}
 
-	rpl, resp = Client.GetFlaggedPostsForUser(user.Id, 1000, 10)
+	rpl, resp = Client.GetFlaggedPostsForUser(user.ClientId, 1000, 10)
 	CheckNoError(t, resp)
 
 	if len(rpl.Posts) != 0 {
@@ -1071,10 +1071,10 @@ func TestGetFlaggedPostsForUser(t *testing.T) {
 	post5 := th.CreatePostWithClient(th.SystemAdminClient, channel4)
 
 	preference.Name = post5.Id
-	_, resp = Client.UpdatePreferences(user.Id, &model.Preferences{preference})
+	_, resp = Client.UpdatePreferences(user.ClientId, &model.Preferences{preference})
 	CheckForbiddenStatus(t, resp)
 
-	rpl, resp = Client.GetFlaggedPostsForUser(user.Id, 0, 10)
+	rpl, resp = Client.GetFlaggedPostsForUser(user.ClientId, 0, 10)
 	CheckNoError(t, resp)
 
 	if len(rpl.Posts) != 3 {
@@ -1086,10 +1086,10 @@ func TestGetFlaggedPostsForUser(t *testing.T) {
 	}
 
 	th.AddUserToChannel(user, channel4)
-	_, resp = Client.UpdatePreferences(user.Id, &model.Preferences{preference})
+	_, resp = Client.UpdatePreferences(user.ClientId, &model.Preferences{preference})
 	CheckNoError(t, resp)
 
-	rpl, resp = Client.GetFlaggedPostsForUser(user.Id, 0, 10)
+	rpl, resp = Client.GetFlaggedPostsForUser(user.ClientId, 0, 10)
 	CheckNoError(t, resp)
 
 	opl.AddPost(post5)
@@ -1103,12 +1103,12 @@ func TestGetFlaggedPostsForUser(t *testing.T) {
 		t.Fatal("posts should have matched")
 	}
 
-	err := th.App.RemoveUserFromChannel(user.Id, "", channel4)
+	err := th.App.RemoveUserFromChannel(user.ClientId, "", channel4)
 	if err != nil {
 		t.Error("Unable to remove user from channel")
 	}
 
-	rpl, resp = Client.GetFlaggedPostsForUser(user.Id, 0, 10)
+	rpl, resp = Client.GetFlaggedPostsForUser(user.ClientId, 0, 10)
 	CheckNoError(t, resp)
 
 	opl2 := model.NewPostList()
@@ -1135,22 +1135,22 @@ func TestGetFlaggedPostsForUser(t *testing.T) {
 
 	Client.Logout()
 
-	_, resp = Client.GetFlaggedPostsForUserInChannel(user.Id, channel1.Id, 0, 10)
+	_, resp = Client.GetFlaggedPostsForUserInChannel(user.ClientId, channel1.Id, 0, 10)
 	CheckUnauthorizedStatus(t, resp)
 
-	_, resp = Client.GetFlaggedPostsForUserInTeam(user.Id, team1.Id, 0, 10)
+	_, resp = Client.GetFlaggedPostsForUserInTeam(user.ClientId, team1.Id, 0, 10)
 	CheckUnauthorizedStatus(t, resp)
 
-	_, resp = Client.GetFlaggedPostsForUser(user.Id, 0, 10)
+	_, resp = Client.GetFlaggedPostsForUser(user.ClientId, 0, 10)
 	CheckUnauthorizedStatus(t, resp)
 
-	_, resp = th.SystemAdminClient.GetFlaggedPostsForUserInChannel(user.Id, channel1.Id, 0, 10)
+	_, resp = th.SystemAdminClient.GetFlaggedPostsForUserInChannel(user.ClientId, channel1.Id, 0, 10)
 	CheckNoError(t, resp)
 
-	_, resp = th.SystemAdminClient.GetFlaggedPostsForUserInTeam(user.Id, team1.Id, 0, 10)
+	_, resp = th.SystemAdminClient.GetFlaggedPostsForUserInTeam(user.ClientId, team1.Id, 0, 10)
 	CheckNoError(t, resp)
 
-	_, resp = th.SystemAdminClient.GetFlaggedPostsForUser(user.Id, 0, 10)
+	_, resp = th.SystemAdminClient.GetFlaggedPostsForUser(user.ClientId, 0, 10)
 	CheckNoError(t, resp)
 }
 

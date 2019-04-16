@@ -1059,18 +1059,18 @@ func TestGetTeamMember(t *testing.T) {
 	team := th.BasicTeam
 	user := th.BasicUser
 
-	rmember, resp := Client.GetTeamMember(team.Id, user.Id, "")
+	rmember, resp := Client.GetTeamMember(team.Id, user.ClientId, "")
 	CheckNoError(t, resp)
 
 	if rmember.TeamId != team.Id {
 		t.Fatal("wrong team id")
 	}
 
-	if rmember.UserId != user.Id {
+	if rmember.UserId != user.ClientId {
 		t.Fatal("wrong team id")
 	}
 
-	_, resp = Client.GetTeamMember("junk", user.Id, "")
+	_, resp = Client.GetTeamMember("junk", user.ClientId, "")
 	CheckBadRequestStatus(t, resp)
 
 	_, resp = Client.GetTeamMember(team.Id, "junk", "")
@@ -1082,10 +1082,10 @@ func TestGetTeamMember(t *testing.T) {
 	_, resp = Client.GetTeamMember(team.Id, model.NewId(), "")
 	CheckNotFoundStatus(t, resp)
 
-	_, resp = Client.GetTeamMember(model.NewId(), user.Id, "")
+	_, resp = Client.GetTeamMember(model.NewId(), user.ClientId, "")
 	CheckForbiddenStatus(t, resp)
 
-	_, resp = th.SystemAdminClient.GetTeamMember(team.Id, user.Id, "")
+	_, resp = th.SystemAdminClient.GetTeamMember(team.Id, user.ClientId, "")
 	CheckNoError(t, resp)
 }
 
@@ -1759,13 +1759,13 @@ func TestGetMyTeamsUnread(t *testing.T) {
 	user := th.BasicUser
 	Client.Login(user.Email, user.Password)
 
-	teams, resp := Client.GetTeamsUnreadForUser(user.Id, "")
+	teams, resp := Client.GetTeamsUnreadForUser(user.ClientId, "")
 	CheckNoError(t, resp)
 	if len(teams) == 0 {
 		t.Fatal("should have results")
 	}
 
-	teams, resp = Client.GetTeamsUnreadForUser(user.Id, th.BasicTeam.Id)
+	teams, resp = Client.GetTeamsUnreadForUser(user.ClientId, th.BasicTeam.Id)
 	CheckNoError(t, resp)
 	if len(teams) != 0 {
 		t.Fatal("should not have results")
@@ -1778,7 +1778,7 @@ func TestGetMyTeamsUnread(t *testing.T) {
 	CheckForbiddenStatus(t, resp)
 
 	Client.Logout()
-	_, resp = Client.GetTeamsUnreadForUser(user.Id, "")
+	_, resp = Client.GetTeamsUnreadForUser(user.ClientId, "")
 	CheckUnauthorizedStatus(t, resp)
 }
 

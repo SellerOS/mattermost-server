@@ -23,7 +23,7 @@ func (a *App) SendAutoResponse(channel *model.Channel, receiver *model.User) {
 			RootId:    "",
 			ParentId:  "",
 			Type:      model.POST_AUTO_RESPONDER,
-			UserId:    receiver.Id,
+			UserId:    receiver.ClientId,
 		}
 
 		if _, err := a.CreatePost(autoResponderPost, channel, false); err != nil {
@@ -40,9 +40,9 @@ func (a *App) SetAutoResponderStatus(user *model.User, oldNotifyProps model.Stri
 	autoResponderDisabled := oldActive && !active
 
 	if autoResponderEnabled {
-		a.SetStatusOutOfOffice(user.Id)
+		a.SetStatusOutOfOffice(user.ClientId)
 	} else if autoResponderDisabled {
-		a.SetStatusOnline(user.Id, true)
+		a.SetStatusOnline(user.ClientId, true)
 	}
 }
 

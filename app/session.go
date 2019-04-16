@@ -293,12 +293,12 @@ func (a *App) createSessionForUserAccessToken(tokenString string) (*model.Sessio
 	user = result.Data.(*model.User)
 
 	if user.DeleteAt != 0 {
-		return nil, model.NewAppError("createSessionForUserAccessToken", "app.user_access_token.invalid_or_missing", nil, "inactive_user_id="+user.Id, http.StatusUnauthorized)
+		return nil, model.NewAppError("createSessionForUserAccessToken", "app.user_access_token.invalid_or_missing", nil, "inactive_user_id="+user.ClientId, http.StatusUnauthorized)
 	}
 
 	session := &model.Session{
 		Token:   token.Token,
-		UserId:  user.Id,
+		UserId:  user.ClientId,
 		Roles:   user.GetRawRoles(),
 		IsOAuth: false,
 	}

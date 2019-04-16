@@ -117,7 +117,7 @@ func (a *App) CreateUserWithInviteId(user *model.User, inviteId string) (*model.
 
 	a.AddDirectChannels(team.Id, ruser)
 
-	if err := a.SendWelcomeEmail(ruser.Id, ruser.Email, ruser.EmailVerified, ruser.Locale, a.GetSiteURL()); err != nil {
+	if err := a.SendWelcomeEmail(ruser.ClientId, ruser.Email, ruser.EmailVerified, ruser.Locale, a.GetSiteURL()); err != nil {
 		mlog.Error(err.Error())
 	}
 
@@ -130,7 +130,7 @@ func (a *App) CreateUserAsAdmin(user *model.User) (*model.User, *model.AppError)
 		return nil, err
 	}
 
-	if err := a.SendWelcomeEmail(ruser.Id, ruser.Email, ruser.EmailVerified, ruser.Locale, a.GetSiteURL()); err != nil {
+	if err := a.SendWelcomeEmail(ruser.ClientId, ruser.Email, ruser.EmailVerified, ruser.Locale, a.GetSiteURL()); err != nil {
 		mlog.Error(err.Error())
 	}
 
@@ -154,7 +154,7 @@ func (a *App) CreateUserFromSignup(user *model.User) (*model.User, *model.AppErr
 		return nil, err
 	}
 
-	if err := a.SendWelcomeEmail(ruser.Id, ruser.Email, ruser.EmailVerified, ruser.Locale, a.GetSiteURL()); err != nil {
+	if err := a.SendWelcomeEmail(ruser.ClientId, ruser.Email, ruser.EmailVerified, ruser.Locale, a.GetSiteURL()); err != nil {
 		mlog.Error(err.Error())
 	}
 
@@ -218,7 +218,7 @@ func (a *App) CreateUser(user *model.User) (*model.User, *model.AppError) {
 	}
 	// This message goes to everyone, so the teamId, channelId and userId are irrelevant
 	message := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_NEW_USER, "", "", "", nil)
-	message.Add("user_id", ruser.Id)
+	message.Add("user_id", ruser.ClientId)
 	a.Publish(message)
 
 	if pluginsEnvironment := a.GetPluginsEnvironment(); pluginsEnvironment != nil {
@@ -249,12 +249,12 @@ func (a *App) createUser(user *model.User) (*model.User, *model.AppError) {
 	ruser := result.Data.(*model.User)
 
 	if user.EmailVerified {
-		if err := a.VerifyUserEmail(ruser.Id, user.Email); err != nil {
+		if err := a.VerifyUserEmail(ruser.ClientId, user.Email); err != nil {
 			mlog.Error(fmt.Sprintf("Failed to set email verified err=%v", err))
 		}
 	}
 
-	pref := model.Preference{UserId: ruser.Id, Category: model.PREFERENCE_CATEGORY_TUTORIAL_STEPS, Name: ruser.Id, Value: "0"}
+	pref := model.Preference{UserId: ruser.ClientId, Category: model.PREFERENCE_CATEGORY_TUTORIAL_STEPS, Name: ruser.ClientId, Value: "0"}
 	if presult := <-a.Srv.Store.Preference().Save(&model.Preferences{pref}); presult.Err != nil {
 		mlog.Error(fmt.Sprintf("Encountered error saving tutorial preference, err=%v", presult.Err.Message))
 	}
@@ -481,7 +481,7 @@ func (a *App) GetUsersInChannelMap(channelId string, offset int, limit int, asAd
 
 	for _, user := range users {
 		a.SanitizeProfile(user, asAdmin)
-		userMap[user.Id] = user
+		userMap[user.ClientId] = user
 	}
 
 	return userMap, nil
@@ -521,7 +521,7 @@ func (a *App) GetUsersNotInChannelMap(teamId string, channelId string, offset in
 
 	for _, user := range users {
 		a.SanitizeProfile(user, asAdmin)
-		userMap[user.Id] = user
+		userMap[user.ClientId] = user
 	}
 
 	return userMap, nil
@@ -706,18 +706,18 @@ func getFont(initialFont string) (*truetype.Font, error) {
 
 func (a *App) GetProfileImage(user *model.User) ([]byte, bool, *model.AppError) {
 	if len(*a.Config().FileSettings.DriverName) == 0 {
-		img, appErr := CreateProfileImage(user.Username, user.Id, *a.Config().FileSettings.InitialFont)
+		img, appErr := CreateProfileImage(user.Username, user.ClientId, *a.Config().FileSettings.InitialFont)
 		if appErr != nil {
 			return nil, false, appErr
 		}
 		return img, false, nil
 	}
 
-	path := "users/" + user.Id + "/profile.png"
+	path := "users/" + user.ClientId + "/profile.png"
 
 	data, err := a.ReadFile(path)
 	if err != nil {
-		img, appErr := CreateProfileImage(user.Username, user.Id, *a.Config().FileSettings.InitialFont)
+		img, appErr := CreateProfileImage(user.Username, user.ClientId, *a.Config().FileSettings.InitialFont)
 		if appErr != nil {
 			return nil, false, appErr
 		}
@@ -734,7 +734,7 @@ func (a *App) GetProfileImage(user *model.User) ([]byte, bool, *model.AppError) 
 }
 
 func (a *App) GetDefaultProfileImage(user *model.User) ([]byte, *model.AppError) {
-	img, appErr := CreateProfileImage(user.Username, user.Id, *a.Config().FileSettings.InitialFont)
+	img, appErr := CreateProfileImage(user.Username, user.ClientId, *a.Config().FileSettings.InitialFont)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -742,24 +742,24 @@ func (a *App) GetDefaultProfileImage(user *model.User) ([]byte, *model.AppError)
 }
 
 func (a *App) SetDefaultProfileImage(user *model.User) *model.AppError {
-	img, appErr := CreateProfileImage(user.Username, user.Id, *a.Config().FileSettings.InitialFont)
+	img, appErr := CreateProfileImage(user.Username, user.ClientId, *a.Config().FileSettings.InitialFont)
 	if appErr != nil {
 		return appErr
 	}
 
-	path := "users/" + user.Id + "/profile.png"
+	path := "users/" + user.ClientId + "/profile.png"
 
 	if _, err := a.WriteFile(bytes.NewReader(img), path); err != nil {
 		return err
 	}
 
-	<-a.Srv.Store.User().ResetLastPictureUpdate(user.Id)
+	<-a.Srv.Store.User().ResetLastPictureUpdate(user.ClientId)
 
-	a.InvalidateCacheForUser(user.Id)
+	a.InvalidateCacheForUser(user.ClientId)
 
-	updatedUser, appErr := a.GetUser(user.Id)
+	updatedUser, appErr := a.GetUser(user.ClientId)
 	if appErr != nil {
-		mlog.Error(fmt.Sprintf("Error in getting users profile for id=%v forcing logout", user.Id), mlog.String("user_id", user.Id))
+		mlog.Error(fmt.Sprintf("Error in getting users profile for id=%v forcing logout", user.ClientId), mlog.String("user_id", user.ClientId))
 		return nil
 	}
 
@@ -873,27 +873,27 @@ func (a *App) UpdatePasswordAsUser(userId, currentPassword, newPassword string) 
 }
 
 func (a *App) userDeactivated(user *model.User) *model.AppError {
-	if err := a.RevokeAllSessions(user.Id); err != nil {
+	if err := a.RevokeAllSessions(user.ClientId); err != nil {
 		return err
 	}
 
-	a.SetStatusOffline(user.Id, false)
+	a.SetStatusOffline(user.ClientId, false)
 
 	if *a.Config().ServiceSettings.DisableBotsWhenOwnerIsDeactivated {
-		a.disableUserBots(user.Id)
+		a.disableUserBots(user.ClientId)
 	}
 
 	return nil
 }
 
 func (a *App) invalidateUserChannelMembersCaches(user *model.User) *model.AppError {
-	teamsForUser, err := a.GetTeamsForUser(user.Id)
+	teamsForUser, err := a.GetTeamsForUser(user.ClientId)
 	if err != nil {
 		return err
 	}
 
 	for _, team := range teamsForUser {
-		channelsForUser, err := a.GetChannelsForUser(team.Id, user.Id, false)
+		channelsForUser, err := a.GetChannelsForUser(team.Id, user.ClientId, false)
 		if err != nil {
 			return err
 		}
@@ -1021,7 +1021,7 @@ func (a *App) sendUpdatedUserEvent(user model.User) {
 }
 
 func (a *App) UpdateUser(user *model.User, sendNotifications bool) (*model.User, *model.AppError) {
-	result := <-a.Srv.Store.User().Get(user.Id)
+	result := <-a.Srv.Store.User().Get(user.ClientId)
 	if result.Err != nil {
 		return nil, result.Err
 	}
@@ -1041,7 +1041,7 @@ func (a *App) UpdateUser(user *model.User, sendNotifications bool) (*model.User,
 
 		_, err := a.GetUserByEmail(newEmail)
 		if err == nil {
-			return nil, model.NewAppError("UpdateUser", "store.sql_user.update.email_taken.app_error", nil, "user_id="+user.Id, http.StatusBadRequest)
+			return nil, model.NewAppError("UpdateUser", "store.sql_user.update.email_taken.app_error", nil, "user_id="+user.ClientId, http.StatusBadRequest)
 		}
 
 		user.Email = prev.Email
@@ -1079,7 +1079,7 @@ func (a *App) UpdateUser(user *model.User, sendNotifications bool) (*model.User,
 		}
 	}
 
-	a.InvalidateCacheForUser(user.Id)
+	a.InvalidateCacheForUser(user.ClientId)
 
 	return rusers[0], nil
 }
@@ -1155,7 +1155,7 @@ func (a *App) UpdatePassword(user *model.User, newPassword string) *model.AppErr
 
 	hashedPassword := model.HashPassword(newPassword, user.Salt)
 
-	if result := <-a.Srv.Store.User().UpdatePassword(user.Id, hashedPassword); result.Err != nil {
+	if result := <-a.Srv.Store.User().UpdatePassword(user.ClientId, hashedPassword); result.Err != nil {
 		return model.NewAppError("UpdatePassword", "api.user.update_password.failed.app_error", nil, result.Err.Error(), http.StatusInternalServerError)
 	}
 
@@ -1205,7 +1205,7 @@ func (a *App) ResetPasswordFromToken(userSuppliedTokenString, newPassword string
 	}
 
 	if user.IsSSOUser() {
-		return model.NewAppError("ResetPasswordFromCode", "api.user.reset_password.sso.app_error", nil, "userId="+user.Id, http.StatusBadRequest)
+		return model.NewAppError("ResetPasswordFromCode", "api.user.reset_password.sso.app_error", nil, "userId="+user.ClientId, http.StatusBadRequest)
 	}
 
 	T := utils.GetUserTranslations(user.Locale)
@@ -1228,10 +1228,10 @@ func (a *App) SendPasswordReset(email string, siteURL string) (bool, *model.AppE
 	}
 
 	if user.AuthData != nil && len(*user.AuthData) != 0 {
-		return false, model.NewAppError("SendPasswordReset", "api.user.send_password_reset.sso.app_error", nil, "userId="+user.Id, http.StatusBadRequest)
+		return false, model.NewAppError("SendPasswordReset", "api.user.send_password_reset.sso.app_error", nil, "userId="+user.ClientId, http.StatusBadRequest)
 	}
 
-	token, err := a.CreatePasswordRecoveryToken(user.Id, user.Email)
+	token, err := a.CreatePasswordRecoveryToken(user.ClientId, user.Email)
 	if err != nil {
 		return false, err
 	}
@@ -1296,7 +1296,7 @@ func (a *App) UpdateUserRoles(userId string, newRoles string, sendWebSocketEvent
 
 	user.Roles = newRoles
 	uchan := a.Srv.Store.User().Update(user, true)
-	schan := a.Srv.Store.Session().UpdateRoles(user.Id, newRoles)
+	schan := a.Srv.Store.Session().UpdateRoles(user.ClientId, newRoles)
 
 	result := <-uchan
 	if result.Err != nil {
@@ -1309,11 +1309,11 @@ func (a *App) UpdateUserRoles(userId string, newRoles string, sendWebSocketEvent
 		mlog.Error(fmt.Sprint(result.Err))
 	}
 
-	a.ClearSessionCacheForUser(user.Id)
+	a.ClearSessionCacheForUser(user.ClientId)
 
 	if sendWebSocketEvent {
-		message := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_USER_ROLE_UPDATED, "", "", user.Id, nil)
-		message.Add("user_id", user.Id)
+		message := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_USER_ROLE_UPDATED, "", "", user.ClientId, nil)
+		message.Add("user_id", user.ClientId)
 		message.Add("roles", newRoles)
 		a.Publish(message)
 	}
@@ -1322,7 +1322,7 @@ func (a *App) UpdateUserRoles(userId string, newRoles string, sendWebSocketEvent
 }
 
 func (a *App) PermanentDeleteUser(user *model.User) *model.AppError {
-	mlog.Warn(fmt.Sprintf("Attempting to permanently delete account %v id=%v", user.Email, user.Id), mlog.String("user_id", user.Id))
+	mlog.Warn(fmt.Sprintf("Attempting to permanently delete account %v id=%v", user.Email, user.ClientId), mlog.String("user_id", user.ClientId))
 	if user.IsInRole(model.SYSTEM_ADMIN_ROLE_ID) {
 		mlog.Warn(fmt.Sprintf("You are deleting %v that is a system administrator.  You may need to set another account as the system administrator using the command line tools.", user.Email))
 	}
@@ -1331,43 +1331,43 @@ func (a *App) PermanentDeleteUser(user *model.User) *model.AppError {
 		return err
 	}
 
-	if result := <-a.Srv.Store.Session().PermanentDeleteSessionsByUser(user.Id); result.Err != nil {
+	if result := <-a.Srv.Store.Session().PermanentDeleteSessionsByUser(user.ClientId); result.Err != nil {
 		return result.Err
 	}
 
-	if result := <-a.Srv.Store.UserAccessToken().DeleteAllForUser(user.Id); result.Err != nil {
+	if result := <-a.Srv.Store.UserAccessToken().DeleteAllForUser(user.ClientId); result.Err != nil {
 		return result.Err
 	}
 
-	if result := <-a.Srv.Store.OAuth().PermanentDeleteAuthDataByUser(user.Id); result.Err != nil {
+	if result := <-a.Srv.Store.OAuth().PermanentDeleteAuthDataByUser(user.ClientId); result.Err != nil {
 		return result.Err
 	}
 
-	if result := <-a.Srv.Store.Webhook().PermanentDeleteIncomingByUser(user.Id); result.Err != nil {
+	if result := <-a.Srv.Store.Webhook().PermanentDeleteIncomingByUser(user.ClientId); result.Err != nil {
 		return result.Err
 	}
 
-	if result := <-a.Srv.Store.Webhook().PermanentDeleteOutgoingByUser(user.Id); result.Err != nil {
+	if result := <-a.Srv.Store.Webhook().PermanentDeleteOutgoingByUser(user.ClientId); result.Err != nil {
 		return result.Err
 	}
 
-	if result := <-a.Srv.Store.Command().PermanentDeleteByUser(user.Id); result.Err != nil {
+	if result := <-a.Srv.Store.Command().PermanentDeleteByUser(user.ClientId); result.Err != nil {
 		return result.Err
 	}
 
-	if result := <-a.Srv.Store.Preference().PermanentDeleteByUser(user.Id); result.Err != nil {
+	if result := <-a.Srv.Store.Preference().PermanentDeleteByUser(user.ClientId); result.Err != nil {
 		return result.Err
 	}
 
-	if result := <-a.Srv.Store.Channel().PermanentDeleteMembersByUser(user.Id); result.Err != nil {
+	if result := <-a.Srv.Store.Channel().PermanentDeleteMembersByUser(user.ClientId); result.Err != nil {
 		return result.Err
 	}
 
-	if result := <-a.Srv.Store.Post().PermanentDeleteByUser(user.Id); result.Err != nil {
+	if result := <-a.Srv.Store.Post().PermanentDeleteByUser(user.ClientId); result.Err != nil {
 		return result.Err
 	}
 
-	result := <-a.Srv.Store.FileInfo().GetForUser(user.Id)
+	result := <-a.Srv.Store.FileInfo().GetForUser(user.ClientId)
 	if result.Err != nil {
 		mlog.Warn("Error getting file list for user from FileInfoStore")
 	}
@@ -1400,23 +1400,23 @@ func (a *App) PermanentDeleteUser(user *model.User) *model.AppError {
 		}
 	}
 
-	if result := <-a.Srv.Store.FileInfo().PermanentDeleteByUser(user.Id); result.Err != nil {
+	if result := <-a.Srv.Store.FileInfo().PermanentDeleteByUser(user.ClientId); result.Err != nil {
 		return result.Err
 	}
 
-	if result := <-a.Srv.Store.User().PermanentDelete(user.Id); result.Err != nil {
+	if result := <-a.Srv.Store.User().PermanentDelete(user.ClientId); result.Err != nil {
 		return result.Err
 	}
 
-	if result := <-a.Srv.Store.Audit().PermanentDeleteByUser(user.Id); result.Err != nil {
+	if result := <-a.Srv.Store.Audit().PermanentDeleteByUser(user.ClientId); result.Err != nil {
 		return result.Err
 	}
 
-	if result := <-a.Srv.Store.Team().RemoveAllMembersByUser(user.Id); result.Err != nil {
+	if result := <-a.Srv.Store.Team().RemoveAllMembersByUser(user.ClientId); result.Err != nil {
 		return result.Err
 	}
 
-	mlog.Warn(fmt.Sprintf("Permanently deleted account %v id=%v", user.Email, user.Id), mlog.String("user_id", user.Id))
+	mlog.Warn(fmt.Sprintf("Permanently deleted account %v id=%v", user.Email, user.ClientId), mlog.String("user_id", user.ClientId))
 
 	return nil
 }
@@ -1435,12 +1435,12 @@ func (a *App) PermanentDeleteAllUsers() *model.AppError {
 }
 
 func (a *App) SendEmailVerification(user *model.User, newEmail string) *model.AppError {
-	token, err := a.CreateVerifyEmailToken(user.Id, newEmail)
+	token, err := a.CreateVerifyEmailToken(user.ClientId, newEmail)
 	if err != nil {
 		return err
 	}
 
-	if _, err := a.GetStatus(user.Id); err != nil {
+	if _, err := a.GetStatus(user.ClientId); err != nil {
 		return a.SendVerifyEmail(newEmail, user.Locale, a.GetSiteURL(), token.Token)
 	}
 	return a.SendEmailChangeVerifyEmail(newEmail, user.Locale, a.GetSiteURL(), token.Token)
@@ -1734,7 +1734,7 @@ func (a *App) UpdateOAuthUserAttrs(userData io.Reader, user *model.User, provide
 		}
 
 		user = result.Data.([2]*model.User)[0]
-		a.InvalidateCacheForUser(user.Id)
+		a.InvalidateCacheForUser(user.ClientId)
 	}
 
 	return nil

@@ -182,7 +182,7 @@ func (me *TestHelper) CreateDmChannel(user *model.User) *model.Channel {
 	utils.DisableDebugLogForTest()
 	var err *model.AppError
 	var channel *model.Channel
-	if channel, err = me.App.GetOrCreateDirectChannel(me.BasicUser.Id, user.Id); err != nil {
+	if channel, err = me.App.GetOrCreateDirectChannel(me.BasicUser.Id, user.ClientId); err != nil {
 		mlog.Error(err.Error())
 
 		time.Sleep(time.Second)

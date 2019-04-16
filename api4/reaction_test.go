@@ -229,7 +229,7 @@ func TestGetReactions(t *testing.T) {
 	defer th.TearDown()
 	Client := th.Client
 	userId := th.BasicUser.Id
-	user2Id := th.BasicUser2.Id
+	user.ClientId := th.BasicUser2.Id
 	postId := th.BasicPost.Id
 
 	userReactions := []*model.Reaction{
@@ -249,12 +249,12 @@ func TestGetReactions(t *testing.T) {
 			EmojiName: "sad",
 		},
 		{
-			UserId:    user2Id,
+			UserId:    user.ClientId,
 			PostId:    postId,
 			EmojiName: "smile",
 		},
 		{
-			UserId:    user2Id,
+			UserId:    user.ClientId,
 			PostId:    postId,
 			EmojiName: "sad",
 		},
@@ -310,7 +310,7 @@ func TestDeleteReaction(t *testing.T) {
 	defer th.TearDown()
 	Client := th.Client
 	userId := th.BasicUser.Id
-	user2Id := th.BasicUser2.Id
+	user.ClientId := th.BasicUser2.Id
 	postId := th.BasicPost.Id
 
 	r1 := &model.Reaction{
@@ -332,7 +332,7 @@ func TestDeleteReaction(t *testing.T) {
 	}
 
 	r4 := &model.Reaction{
-		UserId:    user2Id,
+		UserId:    user.ClientId,
 		PostId:    postId,
 		EmojiName: "smile_",
 	}
@@ -573,13 +573,13 @@ func TestGetBulkReactions(t *testing.T) {
 	defer th.TearDown()
 	Client := th.Client
 	userId := th.BasicUser.Id
-	user2Id := th.BasicUser2.Id
+	user.ClientId := th.BasicUser2.Id
 	post1 := &model.Post{UserId: userId, ChannelId: th.BasicChannel.Id, Message: "zz" + model.NewId() + "a"}
 	post2 := &model.Post{UserId: userId, ChannelId: th.BasicChannel.Id, Message: "zz" + model.NewId() + "a"}
 	post3 := &model.Post{UserId: userId, ChannelId: th.BasicChannel.Id, Message: "zz" + model.NewId() + "a"}
 
-	post4 := &model.Post{UserId: user2Id, ChannelId: th.BasicChannel.Id, Message: "zz" + model.NewId() + "a"}
-	post5 := &model.Post{UserId: user2Id, ChannelId: th.BasicChannel.Id, Message: "zz" + model.NewId() + "a"}
+	post4 := &model.Post{UserId: user.ClientId, ChannelId: th.BasicChannel.Id, Message: "zz" + model.NewId() + "a"}
+	post5 := &model.Post{UserId: user.ClientId, ChannelId: th.BasicChannel.Id, Message: "zz" + model.NewId() + "a"}
 
 	post1, _ = Client.CreatePost(post1)
 	post2, _ = Client.CreatePost(post2)
@@ -610,7 +610,7 @@ func TestGetBulkReactions(t *testing.T) {
 			EmojiName: "smile",
 		},
 		{
-			UserId:    user2Id,
+			UserId:    user.ClientId,
 			PostId:    post4.Id,
 			EmojiName: "smile",
 		},

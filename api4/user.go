@@ -126,7 +126,7 @@ func getUser(c *Context, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if c.App.Session.UserId == user.Id {
+	if c.App.Session.UserId == user.ClientId {
 		user.Sanitize(map[string]bool{})
 	} else {
 		c.App.SanitizeProfile(user, c.IsSystemAdmin())
@@ -156,7 +156,7 @@ func getUserByUsername(c *Context, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if c.App.Session.UserId == user.Id {
+	if c.App.Session.UserId == user.ClientId {
 		user.Sanitize(map[string]bool{})
 	} else {
 		c.App.SanitizeProfile(user, c.IsSystemAdmin())
@@ -676,17 +676,17 @@ func updateUser(c *Context, w http.ResponseWriter, r *http.Request) {
 	}
 
 	// The user being updated in the payload must be the same one as indicated in the URL.
-	if user.Id != c.Params.UserId {
+	if user.ClientId != c.Params.UserId {
 		c.SetInvalidParam("user_id")
 		return
 	}
 
-	if !c.App.SessionHasPermissionToUser(c.App.Session, user.Id) {
+	if !c.App.SessionHasPermissionToUser(c.App.Session, user.ClientId) {
 		c.SetPermissionError(model.PERMISSION_EDIT_OTHER_USERS)
 		return
 	}
 
-	ouser, err := c.App.GetUser(user.Id)
+	ouser, err := c.App.GetUser(user.ClientId)
 	if err != nil {
 		c.Err = err
 		return
@@ -878,7 +878,7 @@ func updateUserActive(c *Context, w http.ResponseWriter, r *http.Request) {
 		c.Err = err
 	}
 
-	c.LogAudit(fmt.Sprintf("user_id=%s active=%v", user.Id, active))
+	c.LogAudit(fmt.Sprintf("user_id=%s active=%v", user.ClientId, active))
 	if isSelfDeactive {
 		c.App.Srv.Go(func() {
 			if err = c.App.SendDeactivateAccountEmail(user.Email, user.Locale, c.App.GetSiteURL()); err != nil {
@@ -1154,7 +1154,7 @@ func login(c *Context, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c.LogAuditWithUserId(user.Id, "authenticated")
+	c.LogAuditWithUserId(user.ClientId, "authenticated")
 
 	session, err := c.App.DoLogin(w, r, user, deviceId)
 	if err != nil {
@@ -1162,7 +1162,7 @@ func login(c *Context, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c.LogAuditWithUserId(user.Id, "success")
+	c.LogAuditWithUserId(user.ClientId, "success")
 
 	c.App.Session = *session
 

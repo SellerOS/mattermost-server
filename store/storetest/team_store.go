@@ -743,7 +743,7 @@ func testSaveTeamMemberMaxMembers(t *testing.T, ss store.Store) {
 		userIds[i] = store.Must(ss.User().Save(&model.User{
 			Username: model.NewId(),
 			Email:    MakeEmail(),
-		})).(*model.User).Id
+		})).(*model.User).ClientId
 
 		defer func(userId string) {
 			<-ss.User().PermanentDelete(userId)
@@ -768,7 +768,7 @@ func testSaveTeamMemberMaxMembers(t *testing.T, ss store.Store) {
 	newUserId := store.Must(ss.User().Save(&model.User{
 		Username: model.NewId(),
 		Email:    MakeEmail(),
-	})).(*model.User).Id
+	})).(*model.User).ClientId
 	defer func() {
 		<-ss.User().PermanentDelete(newUserId)
 	}()
@@ -821,7 +821,7 @@ func testSaveTeamMemberMaxMembers(t *testing.T, ss store.Store) {
 	newUserId2 := store.Must(ss.User().Save(&model.User{
 		Username: model.NewId(),
 		Email:    MakeEmail(),
-	})).(*model.User).Id
+	})).(*model.User).ClientId
 	if result := <-ss.Team().SaveMember(&model.TeamMember{TeamId: team.Id, UserId: newUserId2}, maxUsersPerTeam); result.Err != nil {
 		t.Fatal("should've been able to save new member after deleting one", result.Err)
 	} else {
@@ -940,10 +940,10 @@ func testTeamStoreMemberCount(t *testing.T, ss store.Store) {
 	store.Must(ss.User().Save(u2))
 
 	teamId1 := model.NewId()
-	m1 := &model.TeamMember{TeamId: teamId1, UserId: u1.Id}
+	m1 := &model.TeamMember{TeamId: teamId1, UserId: u1.ClientId}
 	store.Must(ss.Team().SaveMember(m1, -1))
 
-	m2 := &model.TeamMember{TeamId: teamId1, UserId: u2.Id}
+	m2 := &model.TeamMember{TeamId: teamId1, UserId: u2.ClientId}
 	store.Must(ss.Team().SaveMember(m2, -1))
 
 	if result := <-ss.Team().GetTotalMemberCount(teamId1); result.Err != nil {
@@ -1429,13 +1429,13 @@ func testTeamStoreGetTeamMembersForExport(t *testing.T, ss store.Store) {
 	u2.Nickname = model.NewId()
 	store.Must(ss.User().Save(&u2))
 
-	m1 := &model.TeamMember{TeamId: t1.Id, UserId: u1.Id}
+	m1 := &model.TeamMember{TeamId: t1.Id, UserId: u1.ClientId}
 	store.Must(ss.Team().SaveMember(m1, -1))
 
-	m2 := &model.TeamMember{TeamId: t1.Id, UserId: u2.Id}
+	m2 := &model.TeamMember{TeamId: t1.Id, UserId: u2.ClientId}
 	store.Must(ss.Team().SaveMember(m2, -1))
 
-	r1 := <-ss.Team().GetTeamMembersForExport(u1.Id)
+	r1 := <-ss.Team().GetTeamMembersForExport(u1.ClientId)
 	assert.Nil(t, r1.Err)
 
 	d1 := r1.Data.([]*model.TeamMemberForExport)
@@ -1443,6 +1443,6 @@ func testTeamStoreGetTeamMembersForExport(t *testing.T, ss store.Store) {
 
 	tmfe1 := d1[0]
 	assert.Equal(t, t1.Id, tmfe1.TeamId)
-	assert.Equal(t, u1.Id, tmfe1.UserId)
+	assert.Equal(t, u1.ClientId, tmfe1.UserId)
 	assert.Equal(t, t1.Name, tmfe1.TeamName)
 }

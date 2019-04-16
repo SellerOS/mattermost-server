@@ -31,7 +31,7 @@ func TestAssignRole(t *testing.T) {
 	} else {
 		user := result.Data.(*model.User)
 		if user.Roles != "system_user" {
-			t.Fatal("Got wrong roles:", user.Roles, user.Id)
+			t.Fatal("Got wrong roles:", user.Roles, user.ClientId)
 		}
 	}
 }

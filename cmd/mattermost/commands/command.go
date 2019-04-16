@@ -108,7 +108,7 @@ func createCommandCmdF(command *cobra.Command, args []string) error {
 	}
 
 	// check if creator has permission to create slash commands
-	if !a.HasPermissionToTeam(user.Id, team.Id, model.PERMISSION_MANAGE_SLASH_COMMANDS) {
+	if !a.HasPermissionToTeam(user.ClientId, team.Id, model.PERMISSION_MANAGE_SLASH_COMMANDS) {
 		return errors.New("the creator must be a user who has permissions to manage slash commands")
 	}
 
@@ -136,7 +136,7 @@ func createCommandCmdF(command *cobra.Command, args []string) error {
 	}
 
 	newCommand := &model.Command{
-		CreatorId:        user.Id,
+		CreatorId:        user.ClientId,
 		TeamId:           team.Id,
 		Trigger:          trigger,
 		Method:           method,

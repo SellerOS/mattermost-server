@@ -78,7 +78,7 @@ func makeSystemAdminCmdF(command *cobra.Command, args []string) error {
 			roles = append(roles, model.SYSTEM_ADMIN_ROLE_ID)
 		}
 
-		if _, err := a.UpdateUserRoles(user.Id, strings.Join(roles, " "), true); err != nil {
+		if _, err := a.UpdateUserRoles(user.ClientId, strings.Join(roles, " "), true); err != nil {
 			return err
 		}
 	}
@@ -122,7 +122,7 @@ func makeMemberCmdF(command *cobra.Command, args []string) error {
 			newRoles = append(roles, model.SYSTEM_USER_ROLE_ID)
 		}
 
-		if _, err := a.UpdateUserRoles(user.Id, strings.Join(newRoles, " "), true); err != nil {
+		if _, err := a.UpdateUserRoles(user.ClientId, strings.Join(newRoles, " "), true); err != nil {
 			return err
 		}
 	}

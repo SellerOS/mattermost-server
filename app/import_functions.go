@@ -453,7 +453,7 @@ func (a *App) ImportUser(data *UserImportData, dryRun bool) *model.AppError {
 
 	var err *model.AppError
 	var savedUser *model.User
-	if user.Id == "" {
+	if user.ClientId == "" {
 		if savedUser, err = a.createUser(user); err != nil {
 			return err
 		}
@@ -464,12 +464,12 @@ func (a *App) ImportUser(data *UserImportData, dryRun bool) *model.AppError {
 			}
 		}
 		if hasUserRolesChanged {
-			if savedUser, err = a.UpdateUserRoles(user.Id, roles, false); err != nil {
+			if savedUser, err = a.UpdateUserRoles(user.ClientId, roles, false); err != nil {
 				return err
 			}
 		}
 		if hasNotifyPropsChanged {
-			if savedUser, err = a.UpdateUserNotifyProps(user.Id, user.NotifyProps); err != nil {
+			if savedUser, err = a.UpdateUserNotifyProps(user.ClientId, user.NotifyProps); err != nil {
 				return err
 			}
 		}
@@ -479,14 +479,14 @@ func (a *App) ImportUser(data *UserImportData, dryRun bool) *model.AppError {
 			}
 		} else {
 			if hasUserAuthDataChanged {
-				if res := <-a.Srv.Store.User().UpdateAuthData(user.Id, authService, authData, user.Email, false); res.Err != nil {
+				if res := <-a.Srv.Store.User().UpdateAuthData(user.ClientId, authService, authData, user.Email, false); res.Err != nil {
 					return res.Err
 				}
 			}
 		}
 		if emailVerified {
 			if hasUserEmailVerifiedChanged {
-				if err := a.VerifyUserEmail(user.Id, user.Email); err != nil {
+				if err := a.VerifyUserEmail(user.ClientId, user.Email); err != nil {
 					return err
 				}
 			}
@@ -502,7 +502,7 @@ func (a *App) ImportUser(data *UserImportData, dryRun bool) *model.AppError {
 		if err != nil {
 			mlog.Error("Unable to open the profile image.", mlog.Any("err", err))
 		}
-		if err := a.SetProfileImageFromMultiPartFile(savedUser.Id, file); err != nil {
+		if err := a.SetProfileImageFromMultiPartFile(savedUser.ClientId, file); err != nil {
 			mlog.Error("Unable to set the profile image from a file.", mlog.Any("err", err))
 		}
 	}
@@ -512,7 +512,7 @@ func (a *App) ImportUser(data *UserImportData, dryRun bool) *model.AppError {
 
 	if data.Theme != nil {
 		preferences = append(preferences, model.Preference{
-			UserId:   savedUser.Id,
+			UserId:   savedUser.ClientId,
 			Category: model.PREFERENCE_CATEGORY_THEME,
 			Name:     "",
 			Value:    *data.Theme,
@@ -521,7 +521,7 @@ func (a *App) ImportUser(data *UserImportData, dryRun bool) *model.AppError {
 
 	if data.UseMilitaryTime != nil {
 		preferences = append(preferences, model.Preference{
-			UserId:   savedUser.Id,
+			UserId:   savedUser.ClientId,
 			Category: model.PREFERENCE_CATEGORY_DISPLAY_SETTINGS,
 			Name:     model.PREFERENCE_NAME_USE_MILITARY_TIME,
 			Value:    *data.UseMilitaryTime,
@@ -530,7 +530,7 @@ func (a *App) ImportUser(data *UserImportData, dryRun bool) *model.AppError {
 
 	if data.CollapsePreviews != nil {
 		preferences = append(preferences, model.Preference{
-			UserId:   savedUser.Id,
+			UserId:   savedUser.ClientId,
 			Category: model.PREFERENCE_CATEGORY_DISPLAY_SETTINGS,
 			Name:     model.PREFERENCE_NAME_COLLAPSE_SETTING,
 			Value:    *data.CollapsePreviews,
@@ -539,7 +539,7 @@ func (a *App) ImportUser(data *UserImportData, dryRun bool) *model.AppError {
 
 	if data.MessageDisplay != nil {
 		preferences = append(preferences, model.Preference{
-			UserId:   savedUser.Id,
+			UserId:   savedUser.ClientId,
 			Category: model.PREFERENCE_CATEGORY_DISPLAY_SETTINGS,
 			Name:     model.PREFERENCE_NAME_MESSAGE_DISPLAY,
 			Value:    *data.MessageDisplay,
@@ -548,7 +548,7 @@ func (a *App) ImportUser(data *UserImportData, dryRun bool) *model.AppError {
 
 	if data.ChannelDisplayMode != nil {
 		preferences = append(preferences, model.Preference{
-			UserId:   savedUser.Id,
+			UserId:   savedUser.ClientId,
 			Category: model.PREFERENCE_CATEGORY_DISPLAY_SETTINGS,
 			Name:     "channel_display_mode",
 			Value:    *data.ChannelDisplayMode,
@@ -557,16 +557,16 @@ func (a *App) ImportUser(data *UserImportData, dryRun bool) *model.AppError {
 
 	if data.TutorialStep != nil {
 		preferences = append(preferences, model.Preference{
-			UserId:   savedUser.Id,
+			UserId:   savedUser.ClientId,
 			Category: model.PREFERENCE_CATEGORY_TUTORIAL_STEPS,
-			Name:     savedUser.Id,
+			Name:     savedUser.ClientId,
 			Value:    *data.TutorialStep,
 		})
 	}
 
 	if data.UseMarkdownPreview != nil {
 		preferences = append(preferences, model.Preference{
-			UserId:   savedUser.Id,
+			UserId:   savedUser.ClientId,
 			Category: model.PREFERENCE_CATEGORY_ADVANCED_SETTINGS,
 			Name:     "feature_enabled_markdown_preview",
 			Value:    *data.UseMarkdownPreview,
@@ -575,7 +575,7 @@ func (a *App) ImportUser(data *UserImportData, dryRun bool) *model.AppError {
 
 	if data.UseFormatting != nil {
 		preferences = append(preferences, model.Preference{
-			UserId:   savedUser.Id,
+			UserId:   savedUser.ClientId,
 			Category: model.PREFERENCE_CATEGORY_ADVANCED_SETTINGS,
 			Name:     "formatting",
 			Value:    *data.UseFormatting,
@@ -584,7 +584,7 @@ func (a *App) ImportUser(data *UserImportData, dryRun bool) *model.AppError {
 
 	if data.ShowUnreadSection != nil {
 		preferences = append(preferences, model.Preference{
-			UserId:   savedUser.Id,
+			UserId:   savedUser.ClientId,
 			Category: model.PREFERENCE_CATEGORY_SIDEBAR_SETTINGS,
 			Name:     "show_unread_section",
 			Value:    *data.ShowUnreadSection,
@@ -607,7 +607,7 @@ func (a *App) ImportUser(data *UserImportData, dryRun bool) *model.AppError {
 		}
 		if intervalSeconds != "" {
 			preferences = append(preferences, model.Preference{
-				UserId:   savedUser.Id,
+				UserId:   savedUser.ClientId,
 				Category: model.PREFERENCE_CATEGORY_NOTIFICATIONS,
 				Name:     model.PREFERENCE_NAME_EMAIL_INTERVAL,
 				Value:    intervalSeconds,
@@ -639,7 +639,7 @@ func (a *App) ImportUserTeams(user *model.User, data *[]UserTeamImportData) *mod
 		// Team-specific theme Preferences.
 		if tdata.Theme != nil {
 			teamThemePreferences = append(teamThemePreferences, model.Preference{
-				UserId:   user.Id,
+				UserId:   user.ClientId,
 				Category: model.PREFERENCE_CATEGORY_THEME,
 				Name:     team.Id,
 				Value:    *tdata.Theme,
@@ -673,13 +673,13 @@ func (a *App) ImportUserTeams(user *model.User, data *[]UserTeamImportData) *mod
 		}
 
 		if member.ExplicitRoles != roles {
-			if _, err = a.UpdateTeamMemberRoles(team.Id, user.Id, roles); err != nil {
+			if _, err = a.UpdateTeamMemberRoles(team.Id, user.ClientId, roles); err != nil {
 				return err
 			}
 		}
 
 		if member.SchemeAdmin != isSchemeAdmin || member.SchemeUser != isSchemeUser {
-			a.UpdateTeamMemberSchemeRoles(team.Id, user.Id, isSchemeUser, isSchemeAdmin)
+			a.UpdateTeamMemberSchemeRoles(team.Id, user.ClientId, isSchemeUser, isSchemeAdmin)
 		}
 
 		defaultChannel, err := a.GetChannelByName(model.DEFAULT_CHANNEL, team.Id, true)
@@ -741,7 +741,7 @@ func (a *App) ImportUserChannels(user *model.User, team *model.Team, teamMember 
 		}
 
 		var member *model.ChannelMember
-		member, err = a.GetChannelMember(channel.Id, user.Id)
+		member, err = a.GetChannelMember(channel.Id, user.ClientId)
 		if err != nil {
 			member, err = a.addUserToChannel(user, channel, teamMember)
 			if err != nil {
@@ -750,13 +750,13 @@ func (a *App) ImportUserChannels(user *model.User, team *model.Team, teamMember 
 		}
 
 		if member.ExplicitRoles != roles {
-			if _, err := a.UpdateChannelMemberRoles(channel.Id, user.Id, roles); err != nil {
+			if _, err := a.UpdateChannelMemberRoles(channel.Id, user.ClientId, roles); err != nil {
 				return err
 			}
 		}
 
 		if member.SchemeAdmin != isSchemeAdmin || member.SchemeUser != isSchemeUser {
-			a.UpdateChannelMemberSchemeRoles(channel.Id, user.Id, isSchemeUser, isSchemeAdmin)
+			a.UpdateChannelMemberSchemeRoles(channel.Id, user.ClientId, isSchemeUser, isSchemeAdmin)
 		}
 
 		if cdata.NotifyProps != nil {
@@ -774,14 +774,14 @@ func (a *App) ImportUserChannels(user *model.User, team *model.Team, teamMember 
 				notifyProps[model.MARK_UNREAD_NOTIFY_PROP] = *cdata.NotifyProps.MarkUnread
 			}
 
-			if _, err := a.UpdateChannelMemberNotifyProps(notifyProps, channel.Id, user.Id); err != nil {
+			if _, err := a.UpdateChannelMemberNotifyProps(notifyProps, channel.Id, user.ClientId); err != nil {
 				return err
 			}
 		}
 
 		if cdata.Favorite != nil && *cdata.Favorite {
 			preferences = append(preferences, model.Preference{
-				UserId:   user.Id,
+				UserId:   user.ClientId,
 				Category: model.PREFERENCE_CATEGORY_FAVORITE_CHANNEL,
 				Name:     channel.Id,
 				Value:    "true",
@@ -810,7 +810,7 @@ func (a *App) ImportReaction(data *ReactionImportData, post *model.Post, dryRun 
 	user := result.Data.(*model.User)
 
 	reaction := &model.Reaction{
-		UserId:    user.Id,
+		UserId:    user.ClientId,
 		PostId:    post.Id,
 		EmojiName: *data.EmojiName,
 		CreateAt:  *data.CreateAt,
@@ -850,7 +850,7 @@ func (a *App) ImportReply(data *ReplyImportData, post *model.Post, teamId string
 	if reply == nil {
 		reply = &model.Post{}
 	}
-	reply.UserId = user.Id
+	reply.UserId = user.ClientId
 	reply.ChannelId = post.ChannelId
 	reply.ParentId = post.Id
 	reply.RootId = post.Id
@@ -955,7 +955,7 @@ func (a *App) ImportPost(data *PostImportData, dryRun bool) *model.AppError {
 
 	post.ChannelId = channel.Id
 	post.Message = *data.Message
-	post.UserId = user.Id
+	post.UserId = user.ClientId
 	post.CreateAt = *data.CreateAt
 
 	post.Hashtags, _ = model.ParseHashtags(post.Message)
@@ -989,7 +989,7 @@ func (a *App) ImportPost(data *PostImportData, dryRun bool) *model.AppError {
 			user := result.Data.(*model.User)
 
 			preferences = append(preferences, model.Preference{
-				UserId:   user.Id,
+				UserId:   user.ClientId,
 				Category: model.PREFERENCE_CATEGORY_FLAGGED_POST,
 				Name:     post.Id,
 				Value:    "true",
@@ -1060,8 +1060,8 @@ func (a *App) ImportDirectChannel(data *DirectChannelImportData, dryRun bool) *m
 			return model.NewAppError("BulkImport", "app.import.import_direct_channel.member_not_found.error", nil, result.Err.Error(), http.StatusBadRequest)
 		}
 		user := result.Data.(*model.User)
-		userIds = append(userIds, user.Id)
-		userMap[username] = user.Id
+		userIds = append(userIds, user.ClientId)
+		userMap[username] = user.ClientId
 	}
 
 	var channel *model.Channel
@@ -1134,7 +1134,7 @@ func (a *App) ImportDirectPost(data *DirectPostImportData, dryRun bool) *model.A
 			return model.NewAppError("BulkImport", "app.import.import_direct_post.channel_member_not_found.error", nil, result.Err.Error(), http.StatusBadRequest)
 		}
 		user := result.Data.(*model.User)
-		userIds = append(userIds, user.Id)
+		userIds = append(userIds, user.ClientId)
 	}
 
 	var channel *model.Channel
@@ -1179,7 +1179,7 @@ func (a *App) ImportDirectPost(data *DirectPostImportData, dryRun bool) *model.A
 
 	post.ChannelId = channel.Id
 	post.Message = *data.Message
-	post.UserId = user.Id
+	post.UserId = user.ClientId
 	post.CreateAt = *data.CreateAt
 
 	post.Hashtags, _ = model.ParseHashtags(post.Message)
@@ -1213,7 +1213,7 @@ func (a *App) ImportDirectPost(data *DirectPostImportData, dryRun bool) *model.A
 			user := result.Data.(*model.User)
 
 			preferences = append(preferences, model.Preference{
-				UserId:   user.Id,
+				UserId:   user.ClientId,
 				Category: model.PREFERENCE_CATEGORY_FLAGGED_POST,
 				Name:     post.Id,
 				Value:    "true",

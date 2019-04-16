@@ -123,7 +123,7 @@ func TestCreateCommand(t *testing.T) {
 				assert.Contains(t, string(actual), "PASS")
 			} else {
 				if len(cmds) > 1 {
-					t.Fatal("Created command that shouldn't have been created")
+					t.Fatal("CreateAt command that shouldn't have been created")
 				}
 				assert.Contains(t, string(actual), testCase.ExpectedErr)
 			}
@@ -147,7 +147,7 @@ func TestShowCommand(t *testing.T) {
 		Method:      "G",
 		TeamId:      team.Id,
 		Username:    user.Username,
-		CreatorId:   user.Id,
+		CreatorId:   user.ClientId,
 		URL:         url,
 		Trigger:     trigger,
 	}
@@ -192,7 +192,7 @@ func TestDeleteCommand(t *testing.T) {
 		Method:      "G",
 		TeamId:      team.Id,
 		Username:    user.Username,
-		CreatorId:   user.Id,
+		CreatorId:   user.ClientId,
 		URL:         url,
 		Trigger:     "trigger_" + model.NewId(),
 	}

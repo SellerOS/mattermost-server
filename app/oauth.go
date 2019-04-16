@@ -214,7 +214,7 @@ func (a *App) GetOAuthAccessTokenForImplicitFlow(userId string, authRequest *mod
 		return nil, err
 	}
 
-	accessData := &model.AccessData{ClientId: authRequest.ClientId, UserId: user.Id, Token: session.Token, RefreshToken: "", RedirectUri: authRequest.RedirectUri, ExpiresAt: session.ExpiresAt, Scope: authRequest.Scope}
+	accessData := &model.AccessData{ClientId: authRequest.ClientId, UserId: user.ClientId, Token: session.Token, RefreshToken: "", RedirectUri: authRequest.RedirectUri, ExpiresAt: session.ExpiresAt, Scope: authRequest.Scope}
 
 	if result := <-a.Srv.Store.OAuth().SaveAccessData(accessData); result.Err != nil {
 		mlog.Error(fmt.Sprint(result.Err))
@@ -265,7 +265,7 @@ func (a *App) GetOAuthAccessTokenForCodeFlow(clientId, grantType, redirectUri, c
 		}
 		user = result.Data.(*model.User)
 
-		result = <-a.Srv.Store.OAuth().GetPreviousAccessData(user.Id, clientId)
+		result = <-a.Srv.Store.OAuth().GetPreviousAccessData(user.ClientId, clientId)
 		if result.Err != nil {
 			return nil, model.NewAppError("GetOAuthAccessToken", "api.oauth.get_access_token.internal.app_error", nil, "", http.StatusInternalServerError)
 		}
@@ -294,7 +294,7 @@ func (a *App) GetOAuthAccessTokenForCodeFlow(clientId, grantType, redirectUri, c
 				return nil, err
 			}
 
-			accessData = &model.AccessData{ClientId: clientId, UserId: user.Id, Token: session.Token, RefreshToken: model.NewId(), RedirectUri: redirectUri, ExpiresAt: session.ExpiresAt, Scope: authData.Scope}
+			accessData = &model.AccessData{ClientId: clientId, UserId: user.ClientId, Token: session.Token, RefreshToken: model.NewId(), RedirectUri: redirectUri, ExpiresAt: session.ExpiresAt, Scope: authData.Scope}
 
 			if result := <-a.Srv.Store.OAuth().SaveAccessData(accessData); result.Err != nil {
 				mlog.Error(fmt.Sprint(result.Err))
@@ -336,7 +336,7 @@ func (a *App) GetOAuthAccessTokenForCodeFlow(clientId, grantType, redirectUri, c
 
 func (a *App) newSession(appName string, user *model.User) (*model.Session, *model.AppError) {
 	// Set new token an session
-	session := &model.Session{UserId: user.Id, Roles: user.Roles, IsOAuth: true}
+	session := &model.Session{UserId: user.ClientId, Roles: user.Roles, IsOAuth: true}
 	session.GenerateCSRF()
 	session.SetExpireInDays(*a.Config().ServiceSettings.SessionLengthSSOInDays)
 	session.AddProp(model.SESSION_PROP_PLATFORM, appName)
@@ -602,11 +602,11 @@ func (a *App) CompleteSwitchWithOAuth(service string, userData io.Reader, email 
 	}
 	user := result.Data.(*model.User)
 
-	if err := a.RevokeAllSessions(user.Id); err != nil {
+	if err := a.RevokeAllSessions(user.ClientId); err != nil {
 		return nil, err
 	}
 
-	if result = <-a.Srv.Store.User().UpdateAuthData(user.Id, service, &authData, ssoEmail, true); result.Err != nil {
+	if result = <-a.Srv.Store.User().UpdateAuthData(user.ClientId, service, &authData, ssoEmail, true); result.Err != nil {
 		return nil, result.Err
 	}
 
@@ -866,7 +866,7 @@ func (a *App) SwitchOAuthToEmail(email, password, requesterId string) (string, *
 		return "", err
 	}
 
-	if user.Id != requesterId {
+	if user.ClientId != requesterId {
 		return "", model.NewAppError("SwitchOAuthToEmail", "api.user.oauth_to_email.context.app_error", nil, "", http.StatusForbidden)
 	}
 

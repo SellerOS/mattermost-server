@@ -73,7 +73,7 @@ func TestExportUserChannels(t *testing.T) {
 		model.PUSH_NOTIFY_PROP:    model.USER_NOTIFY_NONE,
 	}
 	preference := model.Preference{
-		UserId:   user.Id,
+		UserId:   user.ClientId,
 		Category: model.PREFERENCE_CATEGORY_FAVORITE_CHANNEL,
 		Name:     channel.Id,
 		Value:    "true",
@@ -81,8 +81,8 @@ func TestExportUserChannels(t *testing.T) {
 	var preferences model.Preferences
 	preferences = append(preferences, preference)
 	store.Must(th.App.Srv.Store.Preference().Save(&preferences))
-	th.App.UpdateChannelMemberNotifyProps(notifyProps, channel.Id, user.Id)
-	exportData, err := th.App.buildUserChannelMemberships(user.Id, team.Id)
+	th.App.UpdateChannelMemberNotifyProps(notifyProps, channel.Id, user.ClientId)
+	exportData, err := th.App.buildUserChannelMemberships(user.ClientId, team.Id)
 	require.Nil(t, err)
 	assert.Equal(t, len(*exportData), 3)
 	for _, data := range *exportData {

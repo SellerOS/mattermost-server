@@ -784,7 +784,7 @@ func (a *App) parseAndFetchChannelIdByNameFromInFilter(channelName, userId, team
 			return nil, err
 		}
 		for _, user := range users {
-			userIds = append(userIds, user.Id)
+			userIds = append(userIds, user.ClientId)
 		}
 
 		channel, err := a.GetGroupChannel(userIds)
@@ -799,7 +799,7 @@ func (a *App) parseAndFetchChannelIdByNameFromInFilter(channelName, userId, team
 		if err != nil {
 			return nil, err
 		}
-		channel, err := a.GetOrCreateDirectChannel(userId, user.Id)
+		channel, err := a.GetOrCreateDirectChannel(userId, user.ClientId)
 		if err != nil {
 			return nil, err
 		}
@@ -876,7 +876,7 @@ func (a *App) SearchPostsInTeamForUser(terms string, userId string, teamId strin
 					if user, err := a.GetUserByUsername(username); err != nil {
 						mlog.Error(fmt.Sprint(err))
 					} else {
-						params.FromUsers[idx] = user.Id
+						params.FromUsers[idx] = user.ClientId
 					}
 				}
 

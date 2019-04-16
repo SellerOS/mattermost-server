@@ -141,7 +141,7 @@ func testUserAccessTokenSearch(t *testing.T, ss store.Store) {
 
 	uat := &model.UserAccessToken{
 		Token:       model.NewId(),
-		UserId:      u1.Id,
+		UserId:      u1.ClientId,
 		Description: "testtoken",
 	}
 

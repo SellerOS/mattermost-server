@@ -14,31 +14,31 @@ import (
 )
 
 type ApiResponse struct {
-	code    int
-	message string
-	error   model.AppError
-	data    interface{}
+	Code    int
+	Message string
+	Error   model.AppError
+	Data    interface{}
 }
 
 func NewApiResponse() (ApiResponse) {
 	return ApiResponse{
-		code:    0,
-		message: "OK",
+		Code:    0,
+		Message: "OK",
 	}
 }
 
 func NewErrorApiResponse(code int, message string) (ApiResponse) {
 	return ApiResponse{
-		code:    code,
-		message: message,
+		Code:    code,
+		Message: message,
 	}
 }
 
 func NewApiResponseWithData(data interface{}) (ApiResponse) {
 	return ApiResponse{
-		code:    0,
-		message: "OK",
-		data:    data,
+		Code:    0,
+		Message: "OK",
+		Data:    data,
 	}
 }
 

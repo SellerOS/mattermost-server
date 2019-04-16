@@ -81,13 +81,13 @@ func testComplianceExport(t *testing.T, ss store.Store) {
 	u1.Email = MakeEmail()
 	u1.Username = model.NewId()
 	u1 = store.Must(ss.User().Save(u1)).(*model.User)
-	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: t1.Id, UserId: u1.Id}, -1))
+	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: t1.Id, UserId: u1.ClientId}, -1))
 
 	u2 := &model.User{}
 	u2.Email = MakeEmail()
 	u2.Username = model.NewId()
 	u2 = store.Must(ss.User().Save(u2)).(*model.User)
-	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: t1.Id, UserId: u2.Id}, -1))
+	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: t1.Id, UserId: u2.ClientId}, -1))
 
 	c1 := &model.Channel{}
 	c1.TeamId = t1.Id
@@ -98,28 +98,28 @@ func testComplianceExport(t *testing.T, ss store.Store) {
 
 	o1 := &model.Post{}
 	o1.ChannelId = c1.Id
-	o1.UserId = u1.Id
+	o1.UserId = u1.ClientId
 	o1.CreateAt = model.GetMillis()
 	o1.Message = "zz" + model.NewId() + "b"
 	o1 = store.Must(ss.Post().Save(o1)).(*model.Post)
 
 	o1a := &model.Post{}
 	o1a.ChannelId = c1.Id
-	o1a.UserId = u1.Id
+	o1a.UserId = u1.ClientId
 	o1a.CreateAt = o1.CreateAt + 10
 	o1a.Message = "zz" + model.NewId() + "b"
 	_ = store.Must(ss.Post().Save(o1a)).(*model.Post)
 
 	o2 := &model.Post{}
 	o2.ChannelId = c1.Id
-	o2.UserId = u1.Id
+	o2.UserId = u1.ClientId
 	o2.CreateAt = o1.CreateAt + 20
 	o2.Message = "zz" + model.NewId() + "b"
 	_ = store.Must(ss.Post().Save(o2)).(*model.Post)
 
 	o2a := &model.Post{}
 	o2a.ChannelId = c1.Id
-	o2a.UserId = u2.Id
+	o2a.UserId = u2.ClientId
 	o2a.CreateAt = o1.CreateAt + 30
 	o2a.Message = "zz" + model.NewId() + "b"
 	o2a = store.Must(ss.Post().Save(o2a)).(*model.Post)
@@ -243,13 +243,13 @@ func testComplianceExportDirectMessages(t *testing.T, ss store.Store) {
 	u1.Email = MakeEmail()
 	u1.Username = model.NewId()
 	u1 = store.Must(ss.User().Save(u1)).(*model.User)
-	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: t1.Id, UserId: u1.Id}, -1))
+	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: t1.Id, UserId: u1.ClientId}, -1))
 
 	u2 := &model.User{}
 	u2.Email = MakeEmail()
 	u2.Username = model.NewId()
 	u2 = store.Must(ss.User().Save(u2)).(*model.User)
-	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: t1.Id, UserId: u2.Id}, -1))
+	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: t1.Id, UserId: u2.ClientId}, -1))
 
 	c1 := &model.Channel{}
 	c1.TeamId = t1.Id
@@ -258,39 +258,39 @@ func testComplianceExportDirectMessages(t *testing.T, ss store.Store) {
 	c1.Type = model.CHANNEL_OPEN
 	c1 = store.Must(ss.Channel().Save(c1, -1)).(*model.Channel)
 
-	cDM := store.Must(ss.Channel().CreateDirectChannel(u1.Id, u2.Id)).(*model.Channel)
+	cDM := store.Must(ss.Channel().CreateDirectChannel(u1.ClientId, u2.ClientId)).(*model.Channel)
 
 	o1 := &model.Post{}
 	o1.ChannelId = c1.Id
-	o1.UserId = u1.Id
+	o1.UserId = u1.ClientId
 	o1.CreateAt = model.GetMillis()
 	o1.Message = "zz" + model.NewId() + "b"
 	o1 = store.Must(ss.Post().Save(o1)).(*model.Post)
 
 	o1a := &model.Post{}
 	o1a.ChannelId = c1.Id
-	o1a.UserId = u1.Id
+	o1a.UserId = u1.ClientId
 	o1a.CreateAt = o1.CreateAt + 10
 	o1a.Message = "zz" + model.NewId() + "b"
 	_ = store.Must(ss.Post().Save(o1a)).(*model.Post)
 
 	o2 := &model.Post{}
 	o2.ChannelId = c1.Id
-	o2.UserId = u1.Id
+	o2.UserId = u1.ClientId
 	o2.CreateAt = o1.CreateAt + 20
 	o2.Message = "zz" + model.NewId() + "b"
 	_ = store.Must(ss.Post().Save(o2)).(*model.Post)
 
 	o2a := &model.Post{}
 	o2a.ChannelId = c1.Id
-	o2a.UserId = u2.Id
+	o2a.UserId = u2.ClientId
 	o2a.CreateAt = o1.CreateAt + 30
 	o2a.Message = "zz" + model.NewId() + "b"
 	_ = store.Must(ss.Post().Save(o2a)).(*model.Post)
 
 	o3 := &model.Post{}
 	o3.ChannelId = cDM.Id
-	o3.UserId = u1.Id
+	o3.UserId = u1.ClientId
 	o3.CreateAt = o1.CreateAt + 40
 	o3.Message = "zz" + model.NewId() + "b"
 	o3 = store.Must(ss.Post().Save(o3)).(*model.Post)
@@ -345,7 +345,7 @@ func testMessageExportPublicChannel(t *testing.T, ss store.Store) {
 	user1 = store.Must(ss.User().Save(user1)).(*model.User)
 	store.Must(ss.Team().SaveMember(&model.TeamMember{
 		TeamId: team.Id,
-		UserId: user1.Id,
+		UserId: user1.ClientId,
 	}, -1))
 
 	user2 := &model.User{
@@ -355,7 +355,7 @@ func testMessageExportPublicChannel(t *testing.T, ss store.Store) {
 	user2 = store.Must(ss.User().Save(user2)).(*model.User)
 	store.Must(ss.Team().SaveMember(&model.TeamMember{
 		TeamId: team.Id,
-		UserId: user2.Id,
+		UserId: user2.ClientId,
 	}, -1))
 
 	// need a public channel
@@ -370,7 +370,7 @@ func testMessageExportPublicChannel(t *testing.T, ss store.Store) {
 	// user1 posts twice in the public channel
 	post1 := &model.Post{
 		ChannelId: channel.Id,
-		UserId:    user1.Id,
+		UserId:    user1.ClientId,
 		CreateAt:  startTime,
 		Message:   "zz" + model.NewId() + "a",
 	}
@@ -378,7 +378,7 @@ func testMessageExportPublicChannel(t *testing.T, ss store.Store) {
 
 	post2 := &model.Post{
 		ChannelId: channel.Id,
-		UserId:    user1.Id,
+		UserId:    user1.ClientId,
 		CreateAt:  startTime + 10,
 		Message:   "zz" + model.NewId() + "b",
 	}
@@ -403,7 +403,7 @@ func testMessageExportPublicChannel(t *testing.T, ss store.Store) {
 	assert.Equal(t, post1.Message, *messageExportMap[post1.Id].PostMessage)
 	assert.Equal(t, channel.Id, *messageExportMap[post1.Id].ChannelId)
 	assert.Equal(t, channel.DisplayName, *messageExportMap[post1.Id].ChannelDisplayName)
-	assert.Equal(t, user1.Id, *messageExportMap[post1.Id].UserId)
+	assert.Equal(t, user1.ClientId, *messageExportMap[post1.Id].UserId)
 	assert.Equal(t, user1.Email, *messageExportMap[post1.Id].UserEmail)
 	assert.Equal(t, user1.Username, *messageExportMap[post1.Id].Username)
 
@@ -413,7 +413,7 @@ func testMessageExportPublicChannel(t *testing.T, ss store.Store) {
 	assert.Equal(t, post2.Message, *messageExportMap[post2.Id].PostMessage)
 	assert.Equal(t, channel.Id, *messageExportMap[post2.Id].ChannelId)
 	assert.Equal(t, channel.DisplayName, *messageExportMap[post2.Id].ChannelDisplayName)
-	assert.Equal(t, user1.Id, *messageExportMap[post2.Id].UserId)
+	assert.Equal(t, user1.ClientId, *messageExportMap[post2.Id].UserId)
 	assert.Equal(t, user1.Email, *messageExportMap[post2.Id].UserEmail)
 	assert.Equal(t, user1.Username, *messageExportMap[post2.Id].Username)
 }
@@ -446,7 +446,7 @@ func testMessageExportPrivateChannel(t *testing.T, ss store.Store) {
 	user1 = store.Must(ss.User().Save(user1)).(*model.User)
 	store.Must(ss.Team().SaveMember(&model.TeamMember{
 		TeamId: team.Id,
-		UserId: user1.Id,
+		UserId: user1.ClientId,
 	}, -1))
 
 	user2 := &model.User{
@@ -456,7 +456,7 @@ func testMessageExportPrivateChannel(t *testing.T, ss store.Store) {
 	user2 = store.Must(ss.User().Save(user2)).(*model.User)
 	store.Must(ss.Team().SaveMember(&model.TeamMember{
 		TeamId: team.Id,
-		UserId: user2.Id,
+		UserId: user2.ClientId,
 	}, -1))
 
 	// need a private channel
@@ -471,7 +471,7 @@ func testMessageExportPrivateChannel(t *testing.T, ss store.Store) {
 	// user1 posts twice in the private channel
 	post1 := &model.Post{
 		ChannelId: channel.Id,
-		UserId:    user1.Id,
+		UserId:    user1.ClientId,
 		CreateAt:  startTime,
 		Message:   "zz" + model.NewId() + "a",
 	}
@@ -479,7 +479,7 @@ func testMessageExportPrivateChannel(t *testing.T, ss store.Store) {
 
 	post2 := &model.Post{
 		ChannelId: channel.Id,
-		UserId:    user1.Id,
+		UserId:    user1.ClientId,
 		CreateAt:  startTime + 10,
 		Message:   "zz" + model.NewId() + "b",
 	}
@@ -505,7 +505,7 @@ func testMessageExportPrivateChannel(t *testing.T, ss store.Store) {
 	assert.Equal(t, channel.Id, *messageExportMap[post1.Id].ChannelId)
 	assert.Equal(t, channel.DisplayName, *messageExportMap[post1.Id].ChannelDisplayName)
 	assert.Equal(t, channel.Type, *messageExportMap[post1.Id].ChannelType)
-	assert.Equal(t, user1.Id, *messageExportMap[post1.Id].UserId)
+	assert.Equal(t, user1.ClientId, *messageExportMap[post1.Id].UserId)
 	assert.Equal(t, user1.Email, *messageExportMap[post1.Id].UserEmail)
 	assert.Equal(t, user1.Username, *messageExportMap[post1.Id].Username)
 
@@ -516,7 +516,7 @@ func testMessageExportPrivateChannel(t *testing.T, ss store.Store) {
 	assert.Equal(t, channel.Id, *messageExportMap[post2.Id].ChannelId)
 	assert.Equal(t, channel.DisplayName, *messageExportMap[post2.Id].ChannelDisplayName)
 	assert.Equal(t, channel.Type, *messageExportMap[post2.Id].ChannelType)
-	assert.Equal(t, user1.Id, *messageExportMap[post2.Id].UserId)
+	assert.Equal(t, user1.ClientId, *messageExportMap[post2.Id].UserId)
 	assert.Equal(t, user1.Email, *messageExportMap[post2.Id].UserEmail)
 	assert.Equal(t, user1.Username, *messageExportMap[post2.Id].Username)
 }
@@ -549,7 +549,7 @@ func testMessageExportDirectMessageChannel(t *testing.T, ss store.Store) {
 	user1 = store.Must(ss.User().Save(user1)).(*model.User)
 	store.Must(ss.Team().SaveMember(&model.TeamMember{
 		TeamId: team.Id,
-		UserId: user1.Id,
+		UserId: user1.ClientId,
 	}, -1))
 
 	user2 := &model.User{
@@ -559,16 +559,16 @@ func testMessageExportDirectMessageChannel(t *testing.T, ss store.Store) {
 	user2 = store.Must(ss.User().Save(user2)).(*model.User)
 	store.Must(ss.Team().SaveMember(&model.TeamMember{
 		TeamId: team.Id,
-		UserId: user2.Id,
+		UserId: user2.ClientId,
 	}, -1))
 
 	// as well as a DM channel between those users
-	directMessageChannel := store.Must(ss.Channel().CreateDirectChannel(user1.Id, user2.Id)).(*model.Channel)
+	directMessageChannel := store.Must(ss.Channel().CreateDirectChannel(user1.ClientId, user2.ClientId)).(*model.Channel)
 
 	// user1 also sends a DM to user2
 	post := &model.Post{
 		ChannelId: directMessageChannel.Id,
-		UserId:    user1.Id,
+		UserId:    user1.ClientId,
 		CreateAt:  startTime + 20,
 		Message:   "zz" + model.NewId() + "c",
 	}
@@ -594,7 +594,7 @@ func testMessageExportDirectMessageChannel(t *testing.T, ss store.Store) {
 	assert.Equal(t, post.Message, *messageExportMap[post.Id].PostMessage)
 	assert.Equal(t, directMessageChannel.Id, *messageExportMap[post.Id].ChannelId)
 	assert.Equal(t, "Direct Message", *messageExportMap[post.Id].ChannelDisplayName)
-	assert.Equal(t, user1.Id, *messageExportMap[post.Id].UserId)
+	assert.Equal(t, user1.ClientId, *messageExportMap[post.Id].UserId)
 	assert.Equal(t, user1.Email, *messageExportMap[post.Id].UserEmail)
 	assert.Equal(t, user1.Username, *messageExportMap[post.Id].Username)
 }
@@ -627,7 +627,7 @@ func testMessageExportGroupMessageChannel(t *testing.T, ss store.Store) {
 	user1 = store.Must(ss.User().Save(user1)).(*model.User)
 	store.Must(ss.Team().SaveMember(&model.TeamMember{
 		TeamId: team.Id,
-		UserId: user1.Id,
+		UserId: user1.ClientId,
 	}, -1))
 
 	user2 := &model.User{
@@ -637,7 +637,7 @@ func testMessageExportGroupMessageChannel(t *testing.T, ss store.Store) {
 	user2 = store.Must(ss.User().Save(user2)).(*model.User)
 	store.Must(ss.Team().SaveMember(&model.TeamMember{
 		TeamId: team.Id,
-		UserId: user2.Id,
+		UserId: user2.ClientId,
 	}, -1))
 
 	user3 := &model.User{
@@ -647,7 +647,7 @@ func testMessageExportGroupMessageChannel(t *testing.T, ss store.Store) {
 	user3 = store.Must(ss.User().Save(user3)).(*model.User)
 	store.Must(ss.Team().SaveMember(&model.TeamMember{
 		TeamId: team.Id,
-		UserId: user3.Id,
+		UserId: user3.ClientId,
 	}, -1))
 
 	// can't create a group channel directly, because importing app creates an import cycle, so we have to fake it
@@ -661,7 +661,7 @@ func testMessageExportGroupMessageChannel(t *testing.T, ss store.Store) {
 	// user1 posts in the GM
 	post := &model.Post{
 		ChannelId: groupMessageChannel.Id,
-		UserId:    user1.Id,
+		UserId:    user1.ClientId,
 		CreateAt:  startTime + 20,
 		Message:   "zz" + model.NewId() + "c",
 	}
@@ -687,7 +687,7 @@ func testMessageExportGroupMessageChannel(t *testing.T, ss store.Store) {
 	assert.Equal(t, post.Message, *messageExportMap[post.Id].PostMessage)
 	assert.Equal(t, groupMessageChannel.Id, *messageExportMap[post.Id].ChannelId)
 	assert.Equal(t, "Group Message", *messageExportMap[post.Id].ChannelDisplayName)
-	assert.Equal(t, user1.Id, *messageExportMap[post.Id].UserId)
+	assert.Equal(t, user1.ClientId, *messageExportMap[post.Id].UserId)
 	assert.Equal(t, user1.Email, *messageExportMap[post.Id].UserEmail)
 	assert.Equal(t, user1.Username, *messageExportMap[post.Id].Username)
 }

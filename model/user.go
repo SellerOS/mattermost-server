@@ -54,20 +54,20 @@ const (
 )
 
 type User struct {
-	ClientId                 string    `json:"client_id"`
-	CreateAt           int64     `json:"create_at,omitempty"`
-	UpdateAt           int64     `json:"update_at,omitempty"`
-	DeleteAt           int64     `json:"delete_at"`
-	Username           string    `json:"username"`
-	Password           string    `json:"password,omitempty"`
-	Salt               string    `json:"salt,omitempty"`
-	AuthData           *string   `json:"auth_data,omitempty"`
-	AuthService        string    `json:"auth_service"`
-	Email              string    `json:"email"`
-	EmailVerified      bool      `json:"email_verified,omitempty"`
-	Nickname           string    `json:"nickname"`
-	FirstName          string    `json:"first_name"`
-	LastName           string    `json:"last_name"`
+	ClientId      string  `json:"client_id"`
+	CreateAt      int64   `json:"create_at,omitempty"`
+	UpdateAt      int64   `json:"update_at,omitempty"`
+	DeleteAt      int64   `json:"delete_at"`
+	Username      string  `json:"username"`
+	Password      string  `json:"password,omitempty"`
+	Salt          string  `json:"salt,omitempty"`
+	AuthData      *string `json:"auth_data,omitempty"`
+	AuthService   string  `json:"auth_service"`
+	Email         string  `json:"email"`
+	EmailVerified bool    `json:"email_verified,omitempty"`
+	Nickname      string  `json:"nickname"`
+	FirstName     string  `json:"first_name"`
+	LastName      string  `json:"last_name"`
 	Position           string    `json:"position"`
 	Roles              string    `json:"roles"`
 	AllowMarketing     bool      `json:"allow_marketing,omitempty"`

@@ -193,7 +193,7 @@ func TestLoadTestSetupCommands(t *testing.T) {
 	th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableTesting = true })
 
 	rs := Client.Must(Client.ExecuteCommand(channel.Id, "/test setup fuzz 1 1 1")).(*model.CommandResponse)
-	if rs.Text != "Created environment" {
+	if rs.Text != "CreateAt environment" {
 		t.Fatal(rs.Text)
 	}
 
@@ -466,7 +466,7 @@ func commandAndTest(t *testing.T, th *TestHelper, status string) {
 
 	time.Sleep(1000 * time.Millisecond)
 
-	rstatus := Client.Must(Client.GetUserStatus(user.Id, "")).(*model.Status)
+	rstatus := Client.Must(Client.GetUserStatus(user.ClientId, "")).(*model.Status)
 
 	if rstatus.Status != status {
 		t.Fatal("Error setting status " + status)

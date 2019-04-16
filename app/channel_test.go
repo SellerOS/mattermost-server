@@ -175,7 +175,7 @@ func TestJoinDefaultChannelsCreatesChannelMemberHistoryRecordTownSquare(t *testi
 
 	found := false
 	for _, history := range histories {
-		if user.Id == history.UserId && townSquareChannelId == history.ChannelId {
+		if user.ClientId == history.UserId && townSquareChannelId == history.ChannelId {
 			found = true
 			break
 		}
@@ -201,7 +201,7 @@ func TestJoinDefaultChannelsCreatesChannelMemberHistoryRecordOffTopic(t *testing
 
 	found := false
 	for _, history := range histories {
-		if user.Id == history.UserId && offTopicChannelId == history.ChannelId {
+		if user.ClientId == history.UserId && offTopicChannelId == history.ChannelId {
 			found = true
 			break
 		}
@@ -227,7 +227,7 @@ func TestJoinDefaultChannelsExperimentalDefaultChannels(t *testing.T) {
 			t.Errorf("Expected nil, got %s", err)
 		}
 
-		member, err := th.App.GetChannelMember(channel.Id, user.Id)
+		member, err := th.App.GetChannelMember(channel.Id, user.ClientId)
 
 		if member == nil {
 			t.Errorf("Expected member object, got nil")
@@ -374,13 +374,13 @@ func TestAddUserToChannelCreatesChannelMemberHistoryRecord(t *testing.T) {
 
 	// create a user and add it to a channel
 	user := th.CreateUser()
-	if _, err := th.App.AddTeamMember(th.BasicTeam.Id, user.Id); err != nil {
+	if _, err := th.App.AddTeamMember(th.BasicTeam.Id, user.ClientId); err != nil {
 		t.Fatal("Failed to add user to team. Error: " + err.Message)
 	}
 
 	groupUserIds := make([]string, 0)
 	groupUserIds = append(groupUserIds, th.BasicUser.Id)
-	groupUserIds = append(groupUserIds, user.Id)
+	groupUserIds = append(groupUserIds, user.ClientId)
 
 	channel := th.createChannel(th.BasicTeam, model.CHANNEL_OPEN)
 	if _, err := th.App.AddUserToChannel(user, channel); err != nil {
@@ -427,18 +427,18 @@ func TestAddChannelMemberNoUserRequestor(t *testing.T) {
 
 	// create a user and add it to a channel
 	user := th.CreateUser()
-	if _, err := th.App.AddTeamMember(th.BasicTeam.Id, user.Id); err != nil {
+	if _, err := th.App.AddTeamMember(th.BasicTeam.Id, user.ClientId); err != nil {
 		t.Fatal("Failed to add user to team. Error: " + err.Message)
 	}
 
 	groupUserIds := make([]string, 0)
 	groupUserIds = append(groupUserIds, th.BasicUser.Id)
-	groupUserIds = append(groupUserIds, user.Id)
+	groupUserIds = append(groupUserIds, user.ClientId)
 
 	channel := th.createChannel(th.BasicTeam, model.CHANNEL_OPEN)
 	userRequestorId := ""
 	postRootId := ""
-	if _, err := th.App.AddChannelMember(user.Id, channel, userRequestorId, postRootId, false); err != nil {
+	if _, err := th.App.AddChannelMember(user.ClientId, channel, userRequestorId, postRootId, false); err != nil {
 		t.Fatal("Failed to add user to channel. Error: " + err.Message)
 	}
 
@@ -457,7 +457,7 @@ func TestAddChannelMemberNoUserRequestor(t *testing.T) {
 		post := postList.Posts[postList.Order[0]]
 
 		assert.Equal(t, model.POST_JOIN_CHANNEL, post.Type)
-		assert.Equal(t, user.Id, post.UserId)
+		assert.Equal(t, user.ClientId, post.UserId)
 		assert.Equal(t, user.Username, post.Props["username"])
 	}
 }

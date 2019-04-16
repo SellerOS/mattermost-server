@@ -223,7 +223,7 @@ func (me *TestHelper) CreateDmChannel(user *model.User) *model.Channel {
 	utils.DisableDebugLogForTest()
 	var err *model.AppError
 	var channel *model.Channel
-	if channel, err = me.App.GetOrCreateDirectChannel(me.BasicUser.Id, user.Id); err != nil {
+	if channel, err = me.App.GetOrCreateDirectChannel(me.BasicUser.Id, user.ClientId); err != nil {
 		mlog.Error(err.Error())
 
 		time.Sleep(time.Second)
@@ -375,7 +375,7 @@ func (me *TestHelper) AddReactionToPost(post *model.Post, user *model.User, emoj
 	utils.DisableDebugLogForTest()
 
 	reaction, err := me.App.SaveReactionForPost(&model.Reaction{
-		UserId:    user.Id,
+		UserId:    user.ClientId,
 		PostId:    post.Id,
 		EmojiName: emojiName,
 	})

@@ -257,7 +257,7 @@ func (a *App) GetRecentlyActiveUsersForTeam(teamId string) (map[string]*model.Us
 	userMap := make(map[string]*model.User)
 
 	for _, user := range users {
-		userMap[user.Id] = user
+		userMap[user.ClientId] = user
 	}
 
 	return userMap, nil

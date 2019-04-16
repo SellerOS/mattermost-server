@@ -858,7 +858,7 @@ func TestUserHasBeenCreated(t *testing.T) {
 
 	time.Sleep(1 * time.Second)
 
-	user, err = th.App.GetUser(user.Id)
+	user, err = th.App.GetUser(user.ClientId)
 	require.Nil(t, err)
 
 	require.Equal(t, "plugin-callback-success", user.Nickname)

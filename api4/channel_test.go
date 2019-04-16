@@ -229,7 +229,7 @@ func TestUpdateChannel(t *testing.T) {
 	Client.Logout()
 	Client.Login(user.Email, user.Password)
 
-	directChannel, resp := Client.CreateDirectChannel(user.Id, user1.Id)
+	directChannel, resp := Client.CreateDirectChannel(user.ClientId, user1.Id)
 	CheckNoError(t, resp)
 
 	directChannel.Header = "lolololol"
@@ -316,7 +316,7 @@ func TestPatchChannel(t *testing.T) {
 	Client.Logout()
 	Client.Login(user.Email, user.Password)
 
-	directChannel, resp := Client.CreateDirectChannel(user.Id, user1.Id)
+	directChannel, resp := Client.CreateDirectChannel(user.ClientId, user1.Id)
 	CheckNoError(t, resp)
 
 	Client.Logout()
@@ -384,7 +384,7 @@ func TestDeleteDirectChannel(t *testing.T) {
 	user := th.BasicUser
 	user2 := th.BasicUser2
 
-	rgc, resp := Client.CreateDirectChannel(user.Id, user2.Id)
+	rgc, resp := Client.CreateDirectChannel(user.ClientId, user2.Id)
 	CheckNoError(t, resp)
 	CheckCreatedStatus(t, resp)
 	require.NotNil(t, rgc, "should have created a direct channel")
@@ -402,7 +402,7 @@ func TestCreateGroupChannel(t *testing.T) {
 	user2 := th.BasicUser2
 	user3 := th.CreateUser()
 
-	userIds := []string{user.Id, user2.Id, user3.Id}
+	userIds := []string{user.ClientId, user2.Id, user3.Id}
 
 	rgc, resp := Client.CreateGroupChannel(userIds)
 	CheckNoError(t, resp)
@@ -444,17 +444,17 @@ func TestCreateGroupChannel(t *testing.T) {
 	user8 := th.CreateUser()
 	user9 := th.CreateUser()
 
-	rgc, resp = Client.CreateGroupChannel([]string{user.Id, user2.Id, user3.Id, user4.Id, user5.Id, user6.Id, user7.Id, user8.Id, user9.Id})
+	rgc, resp = Client.CreateGroupChannel([]string{user.ClientId, user2.Id, user3.Id, user4.Id, user5.Id, user6.Id, user7.Id, user8.Id, user9.Id})
 	CheckBadRequestStatus(t, resp)
 
 	if rgc != nil {
 		t.Fatal("should return nil")
 	}
 
-	_, resp = Client.CreateGroupChannel([]string{user.Id, user2.Id, user3.Id, GenerateTestId()})
+	_, resp = Client.CreateGroupChannel([]string{user.ClientId, user2.Id, user3.Id, GenerateTestId()})
 	CheckBadRequestStatus(t, resp)
 
-	_, resp = Client.CreateGroupChannel([]string{user.Id, user2.Id, user3.Id, "junk"})
+	_, resp = Client.CreateGroupChannel([]string{user.ClientId, user2.Id, user3.Id, "junk"})
 	CheckBadRequestStatus(t, resp)
 
 	Client.Logout()
@@ -474,7 +474,7 @@ func TestDeleteGroupChannel(t *testing.T) {
 	user2 := th.BasicUser2
 	user3 := th.CreateUser()
 
-	userIds := []string{user.Id, user2.Id, user3.Id}
+	userIds := []string{user.ClientId, user2.Id, user3.Id}
 
 	rgc, resp := Client.CreateGroupChannel(userIds)
 	CheckNoError(t, resp)
@@ -963,7 +963,7 @@ func TestDeleteChannel(t *testing.T) {
 	publicChannel5 := th.CreatePublicChannel()
 	Client.Logout()
 
-	Client.Login(user.Id, user.Password)
+	Client.Login(user.ClientId, user.Password)
 	_, resp = Client.DeleteChannel(publicChannel5.Id)
 	CheckUnauthorizedStatus(t, resp)
 
@@ -1539,7 +1539,7 @@ func TestGetChannelUnread(t *testing.T) {
 	user := th.BasicUser
 	channel := th.BasicChannel
 
-	channelUnread, resp := Client.GetChannelUnread(channel.Id, user.Id)
+	channelUnread, resp := Client.GetChannelUnread(channel.Id, user.ClientId)
 	CheckNoError(t, resp)
 	if channelUnread.TeamId != th.BasicTeam.Id {
 		t.Fatal("wrong team id returned for a regular user call")
@@ -1547,7 +1547,7 @@ func TestGetChannelUnread(t *testing.T) {
 		t.Fatal("wrong team id returned for a regular user call")
 	}
 
-	_, resp = Client.GetChannelUnread("junk", user.Id)
+	_, resp = Client.GetChannelUnread("junk", user.ClientId)
 	CheckBadRequestStatus(t, resp)
 
 	_, resp = Client.GetChannelUnread(channel.Id, "junk")
@@ -1556,20 +1556,20 @@ func TestGetChannelUnread(t *testing.T) {
 	_, resp = Client.GetChannelUnread(channel.Id, model.NewId())
 	CheckForbiddenStatus(t, resp)
 
-	_, resp = Client.GetChannelUnread(model.NewId(), user.Id)
+	_, resp = Client.GetChannelUnread(model.NewId(), user.ClientId)
 	CheckForbiddenStatus(t, resp)
 
 	newUser := th.CreateUser()
 	Client.Login(newUser.Email, newUser.Password)
-	_, resp = Client.GetChannelUnread(th.BasicChannel.Id, user.Id)
+	_, resp = Client.GetChannelUnread(th.BasicChannel.Id, user.ClientId)
 	CheckForbiddenStatus(t, resp)
 
 	Client.Logout()
 
-	_, resp = th.SystemAdminClient.GetChannelUnread(channel.Id, user.Id)
+	_, resp = th.SystemAdminClient.GetChannelUnread(channel.Id, user.ClientId)
 	CheckNoError(t, resp)
 
-	_, resp = th.SystemAdminClient.GetChannelUnread(model.NewId(), user.Id)
+	_, resp = th.SystemAdminClient.GetChannelUnread(model.NewId(), user.ClientId)
 	CheckForbiddenStatus(t, resp)
 
 	_, resp = th.SystemAdminClient.GetChannelUnread(channel.Id, model.NewId())
@@ -1896,20 +1896,20 @@ func TestAddChannelMember(t *testing.T) {
 		t.Fatal("should have created a post")
 	}
 
-	Client.RemoveUserFromChannel(publicChannel.Id, user.Id)
-	_, resp = Client.AddChannelMemberWithRootId(publicChannel.Id, user.Id, rpost.Id)
+	Client.RemoveUserFromChannel(publicChannel.Id, user.ClientId)
+	_, resp = Client.AddChannelMemberWithRootId(publicChannel.Id, user.ClientId, rpost.Id)
 	CheckNoError(t, resp)
 	CheckCreatedStatus(t, resp)
 
-	Client.RemoveUserFromChannel(publicChannel.Id, user.Id)
-	_, resp = Client.AddChannelMemberWithRootId(publicChannel.Id, user.Id, "junk")
+	Client.RemoveUserFromChannel(publicChannel.Id, user.ClientId)
+	_, resp = Client.AddChannelMemberWithRootId(publicChannel.Id, user.ClientId, "junk")
 	CheckBadRequestStatus(t, resp)
 
-	_, resp = Client.AddChannelMemberWithRootId(publicChannel.Id, user.Id, GenerateTestId())
+	_, resp = Client.AddChannelMemberWithRootId(publicChannel.Id, user.ClientId, GenerateTestId())
 	CheckNotFoundStatus(t, resp)
 
-	Client.RemoveUserFromChannel(publicChannel.Id, user.Id)
-	_, resp = Client.AddChannelMember(publicChannel.Id, user.Id)
+	Client.RemoveUserFromChannel(publicChannel.Id, user.ClientId)
+	_, resp = Client.AddChannelMember(publicChannel.Id, user.ClientId)
 	CheckNoError(t, resp)
 
 	cm, resp = Client.AddChannelMember(publicChannel.Id, "junk")
@@ -1943,7 +1943,7 @@ func TestAddChannelMember(t *testing.T) {
 	CheckUnauthorizedStatus(t, resp)
 
 	Client.Logout()
-	Client.Login(user.Id, user.Password)
+	Client.Login(user.ClientId, user.Password)
 
 	// should fail adding user who is not a member of the team
 	_, resp = Client.AddChannelMember(otherChannel.Id, otherUser.Id)
@@ -1979,7 +1979,7 @@ func TestAddChannelMember(t *testing.T) {
 	// Check that a regular channel user can add other users.
 	Client.Login(user2.Username, user2.Password)
 	privateChannel = th.CreatePrivateChannel()
-	_, resp = Client.AddChannelMember(privateChannel.Id, user.Id)
+	_, resp = Client.AddChannelMember(privateChannel.Id, user.ClientId)
 	CheckNoError(t, resp)
 	Client.Logout()
 
@@ -1994,7 +1994,7 @@ func TestAddChannelMember(t *testing.T) {
 
 	Client.Login(user2.Username, user2.Password)
 	privateChannel = th.CreatePrivateChannel()
-	_, resp = Client.AddChannelMember(privateChannel.Id, user.Id)
+	_, resp = Client.AddChannelMember(privateChannel.Id, user.ClientId)
 	CheckNoError(t, resp)
 	Client.Logout()
 

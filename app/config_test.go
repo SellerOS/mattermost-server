@@ -120,7 +120,7 @@ func TestEnsureInstallationDate(t *testing.T) {
 			for _, createAt := range tc.UsersCreationDates {
 				user := th.CreateUser()
 				user.CreateAt = createAt
-				sqlStore.GetMaster().Exec("UPDATE Users SET CreateAt = :CreateAt WHERE Id = :UserId", map[string]interface{}{"CreateAt": createAt, "UserId": user.Id})
+				sqlStore.GetMaster().Exec("UPDATE Users SET CreateAt = :CreateAt WHERE Id = :UserId", map[string]interface{}{"CreateAt": createAt, "UserId": user.ClientId})
 			}
 
 			if tc.PrevInstallationDate == nil {

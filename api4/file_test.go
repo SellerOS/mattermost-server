@@ -1085,7 +1085,7 @@ func TestGetFileInfo(t *testing.T) {
 		t.Fatal(err)
 	} else if info.Id != fileId {
 		t.Fatal("got incorrect file")
-	} else if info.CreatorId != user.Id {
+	} else if info.CreatorId != user.ClientId {
 		t.Fatal("file should be assigned to user")
 	} else if info.PostId != "" {
 		t.Fatal("file shouldn't have a post")

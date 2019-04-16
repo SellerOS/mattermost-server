@@ -369,7 +369,7 @@ func TestPostAttachPostToChildPost(t *testing.T) {
 		RootId:        rootPost.Id,
 		ParentId:      rootPost.Id,
 		PendingPostId: model.NewId() + ":" + fmt.Sprint(model.GetMillis()),
-		UserId:        user.Id,
+		UserId:        user.ClientId,
 		CreateAt:      0,
 	}
 
@@ -384,7 +384,7 @@ func TestPostAttachPostToChildPost(t *testing.T) {
 		RootId:        res1.Id,
 		ParentId:      res1.Id,
 		PendingPostId: model.NewId() + ":" + fmt.Sprint(model.GetMillis()),
-		UserId:        user.Id,
+		UserId:        user.ClientId,
 		CreateAt:      0,
 	}
 
@@ -399,7 +399,7 @@ func TestPostAttachPostToChildPost(t *testing.T) {
 		RootId:        rootPost.Id,
 		ParentId:      rootPost.Id,
 		PendingPostId: model.NewId() + ":" + fmt.Sprint(model.GetMillis()),
-		UserId:        user.Id,
+		UserId:        user.ClientId,
 		CreateAt:      0,
 	}
 
@@ -433,7 +433,7 @@ func TestPostChannelMentions(t *testing.T) {
 		Message:       fmt.Sprintf("hello, ~%v!", channelToMention.Name),
 		ChannelId:     channel.Id,
 		PendingPostId: model.NewId() + ":" + fmt.Sprint(model.GetMillis()),
-		UserId:        user.Id,
+		UserId:        user.ClientId,
 		CreateAt:      0,
 	}
 

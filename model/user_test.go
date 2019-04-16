@@ -43,7 +43,7 @@ func TestUserDeepCopy(t *testing.T) {
 	copyUser.NotifyProps[mapKey] = "changed"
 	copyUser.Timezone[mapKey] = "changed"
 
-	assert.Equal(t, id, user.Id)
+	assert.Equal(t, id, user.ClientId)
 	assert.Equal(t, authData, *user.AuthData)
 	assert.Equal(t, mapValue, user.Props[mapKey])
 	assert.Equal(t, mapValue, user.NotifyProps[mapKey])
@@ -60,7 +60,7 @@ func TestUserJson(t *testing.T) {
 	json := user.ToJson()
 	ruser := UserFromJson(strings.NewReader(json))
 
-	if user.Id != ruser.Id {
+	if user.ClientId != ruser.ClientId {
 		t.Fatal("Ids do not match")
 	}
 }
@@ -117,35 +117,35 @@ func TestUserIsValid(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	user.Id = NewId()
+	user.ClientId = NewId()
 	err := user.IsValid()
-	require.True(t, HasExpectedUserIsValidError(err, "create_at", user.Id), "expected user is valid error: %s", err.Error())
+	require.True(t, HasExpectedUserIsValidError(err, "create_at", user.ClientId), "expected user is valid error: %s", err.Error())
 
 	user.CreateAt = GetMillis()
 	err = user.IsValid()
-	require.True(t, HasExpectedUserIsValidError(err, "update_at", user.Id), "expected user is valid error: %s", err.Error())
+	require.True(t, HasExpectedUserIsValidError(err, "update_at", user.ClientId), "expected user is valid error: %s", err.Error())
 
 	user.UpdateAt = GetMillis()
 	err = user.IsValid()
-	require.True(t, HasExpectedUserIsValidError(err, "username", user.Id), "expected user is valid error: %s", err.Error())
+	require.True(t, HasExpectedUserIsValidError(err, "username", user.ClientId), "expected user is valid error: %s", err.Error())
 
 	user.Username = NewId() + "^hello#"
 	err = user.IsValid()
-	require.True(t, HasExpectedUserIsValidError(err, "username", user.Id), "expected user is valid error: %s", err.Error())
+	require.True(t, HasExpectedUserIsValidError(err, "username", user.ClientId), "expected user is valid error: %s", err.Error())
 
 	user.Username = NewId()
 	err = user.IsValid()
-	require.True(t, HasExpectedUserIsValidError(err, "email", user.Id), "expected user is valid error: %s", err.Error())
+	require.True(t, HasExpectedUserIsValidError(err, "email", user.ClientId), "expected user is valid error: %s", err.Error())
 
 	user.Email = strings.Repeat("01234567890", 20)
 	err = user.IsValid()
-	require.True(t, HasExpectedUserIsValidError(err, "email", user.Id), "expected user is valid error: %s", err.Error())
+	require.True(t, HasExpectedUserIsValidError(err, "email", user.ClientId), "expected user is valid error: %s", err.Error())
 
 	user.Email = "user@example.com"
 
 	user.Nickname = strings.Repeat("a", 65)
 	err = user.IsValid()
-	require.True(t, HasExpectedUserIsValidError(err, "nickname", user.Id), "expected user is valid error: %s", err.Error())
+	require.True(t, HasExpectedUserIsValidError(err, "nickname", user.ClientId), "expected user is valid error: %s", err.Error())
 
 	user.Nickname = strings.Repeat("a", 64)
 	if err := user.IsValid(); err != nil {
@@ -159,13 +159,13 @@ func TestUserIsValid(t *testing.T) {
 	}
 
 	user.FirstName = strings.Repeat("a", 65)
-	if err := user.IsValid(); !HasExpectedUserIsValidError(err, "first_name", user.Id) {
+	if err := user.IsValid(); !HasExpectedUserIsValidError(err, "first_name", user.ClientId) {
 		t.Fatal(err)
 	}
 
 	user.FirstName = strings.Repeat("a", 64)
 	user.LastName = strings.Repeat("a", 65)
-	if err := user.IsValid(); !HasExpectedUserIsValidError(err, "last_name", user.Id) {
+	if err := user.IsValid(); !HasExpectedUserIsValidError(err, "last_name", user.ClientId) {
 		t.Fatal(err)
 	}
 
@@ -176,7 +176,7 @@ func TestUserIsValid(t *testing.T) {
 	}
 
 	user.Position = strings.Repeat("a", 129)
-	if err := user.IsValid(); !HasExpectedUserIsValidError(err, "position", user.Id) {
+	if err := user.IsValid(); !HasExpectedUserIsValidError(err, "position", user.ClientId) {
 		t.Fatal(err)
 	}
 }

@@ -70,7 +70,7 @@ func (a *App) JoinDefaultChannels(teamId string, user *model.User, shouldBeAdmin
 
 			cm := &model.ChannelMember{
 				ChannelId:   channel.Id,
-				UserId:      user.Id,
+				UserId:      user.ClientId,
 				SchemeUser:  true,
 				SchemeAdmin: shouldBeAdmin,
 				NotifyProps: model.GetDefaultChannelNotifyProps(),
@@ -79,7 +79,7 @@ func (a *App) JoinDefaultChannels(teamId string, user *model.User, shouldBeAdmin
 			if cmResult := <-a.Srv.Store.Channel().SaveMember(cm); cmResult.Err != nil {
 				err = cmResult.Err
 			}
-			if result = <-a.Srv.Store.ChannelMemberHistory().LogJoinEvent(user.Id, channel.Id, model.GetMillis()); result.Err != nil {
+			if result = <-a.Srv.Store.ChannelMemberHistory().LogJoinEvent(user.ClientId, channel.Id, model.GetMillis()); result.Err != nil {
 				mlog.Warn(fmt.Sprintf("Failed to update ChannelMemberHistory table %v", result.Err))
 			}
 
@@ -379,7 +379,7 @@ func (a *App) createGroupChannel(userIds []string, creatorId string) (*model.Cha
 
 	for _, user := range users {
 		cm := &model.ChannelMember{
-			UserId:      user.Id,
+			UserId:      user.ClientId,
 			ChannelId:   group.Id,
 			NotifyProps: model.GetDefaultChannelNotifyProps(),
 			SchemeUser:  true,
@@ -388,7 +388,7 @@ func (a *App) createGroupChannel(userIds []string, creatorId string) (*model.Cha
 		if result := <-a.Srv.Store.Channel().SaveMember(cm); result.Err != nil {
 			return nil, result.Err
 		}
-		if result := <-a.Srv.Store.ChannelMemberHistory().LogJoinEvent(user.Id, channel.Id, model.GetMillis()); result.Err != nil {
+		if result := <-a.Srv.Store.ChannelMemberHistory().LogJoinEvent(user.ClientId, channel.Id, model.GetMillis()); result.Err != nil {
 			mlog.Warn(fmt.Sprintf("Failed to update ChannelMemberHistory table %v", result.Err))
 		}
 	}
@@ -486,7 +486,7 @@ func (a *App) postChannelPrivacyMessage(user *model.User, channel *model.Channel
 		ChannelId: channel.Id,
 		Message:   message,
 		Type:      model.POST_CHANGE_CHANNEL_PRIVACY,
-		UserId:    user.Id,
+		UserId:    user.ClientId,
 		Props: model.StringInterface{
 			"username": user.Username,
 		},
@@ -777,7 +777,7 @@ func (a *App) addUserToChannel(user *model.User, channel *model.Channel, teamMem
 		return nil, model.NewAppError("AddUserToChannel", "api.channel.add_user_to_channel.type.app_error", nil, "", http.StatusBadRequest)
 	}
 
-	cmchan := a.Srv.Store.Channel().GetMember(channel.Id, user.Id)
+	cmchan := a.Srv.Store.Channel().GetMember(channel.Id, user.ClientId)
 
 	if result := <-cmchan; result.Err != nil {
 		if result.Err.Id != store.MISSING_CHANNEL_MEMBER_ERROR {
@@ -790,28 +790,28 @@ func (a *App) addUserToChannel(user *model.User, channel *model.Channel, teamMem
 
 	newMember := &model.ChannelMember{
 		ChannelId:   channel.Id,
-		UserId:      user.Id,
+		UserId:      user.ClientId,
 		NotifyProps: model.GetDefaultChannelNotifyProps(),
 		SchemeUser:  true,
 	}
 	if result := <-a.Srv.Store.Channel().SaveMember(newMember); result.Err != nil {
-		mlog.Error(fmt.Sprintf("Failed to add member user_id=%v channel_id=%v err=%v", user.Id, channel.Id, result.Err), mlog.String("user_id", user.Id))
+		mlog.Error(fmt.Sprintf("Failed to add member user_id=%v channel_id=%v err=%v", user.ClientId, channel.Id, result.Err), mlog.String("user_id", user.ClientId))
 		return nil, model.NewAppError("AddUserToChannel", "api.channel.add_user.to.channel.failed.app_error", nil, "", http.StatusInternalServerError)
 	}
-	a.WaitForChannelMembership(channel.Id, user.Id)
+	a.WaitForChannelMembership(channel.Id, user.ClientId)
 
-	if result := <-a.Srv.Store.ChannelMemberHistory().LogJoinEvent(user.Id, channel.Id, model.GetMillis()); result.Err != nil {
+	if result := <-a.Srv.Store.ChannelMemberHistory().LogJoinEvent(user.ClientId, channel.Id, model.GetMillis()); result.Err != nil {
 		mlog.Warn(fmt.Sprintf("Failed to update ChannelMemberHistory table %v", result.Err))
 	}
 
-	a.InvalidateCacheForUser(user.Id)
+	a.InvalidateCacheForUser(user.ClientId)
 	a.InvalidateCacheForChannelMembers(channel.Id)
 
 	return newMember, nil
 }
 
 func (a *App) AddUserToChannel(user *model.User, channel *model.Channel) (*model.ChannelMember, *model.AppError) {
-	tmchan := a.Srv.Store.Team().GetMember(channel.TeamId, user.Id)
+	tmchan := a.Srv.Store.Team().GetMember(channel.TeamId, user.ClientId)
 	var teamMember *model.TeamMember
 
 	result := <-tmchan
@@ -829,7 +829,7 @@ func (a *App) AddUserToChannel(user *model.User, channel *model.Channel) (*model
 	}
 
 	message := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_USER_ADDED, "", channel.Id, "", nil)
-	message.Add("user_id", user.Id)
+	message.Add("user_id", user.ClientId)
 	message.Add("team_id", channel.TeamId)
 	a.Publish(message)
 
@@ -883,7 +883,7 @@ func (a *App) AddChannelMember(userId string, channel *model.Channel, userReques
 	}
 
 	if userRequestor != nil {
-		a.MarkChannelsAsViewed([]string{channel.Id}, userRequestor.Id, clearPushNotifications)
+		a.MarkChannelsAsViewed([]string{channel.Id}, userRequestor.ClientId, clearPushNotifications)
 	}
 
 	return cm, nil
@@ -894,21 +894,21 @@ func (a *App) AddDirectChannels(teamId string, user *model.User) *model.AppError
 	options := &model.UserGetOptions{InTeamId: teamId, Page: 0, PerPage: 100}
 	result := <-a.Srv.Store.User().GetProfiles(options)
 	if result.Err != nil {
-		return model.NewAppError("AddDirectChannels", "api.user.add_direct_channels_and_forget.failed.error", map[string]interface{}{"UserId": user.Id, "TeamId": teamId, "Error": result.Err.Error()}, "", http.StatusInternalServerError)
+		return model.NewAppError("AddDirectChannels", "api.user.add_direct_channels_and_forget.failed.error", map[string]interface{}{"UserId": user.ClientId, "TeamId": teamId, "Error": result.Err.Error()}, "", http.StatusInternalServerError)
 	}
 	profiles = result.Data.([]*model.User)
 
 	var preferences model.Preferences
 
 	for _, profile := range profiles {
-		if profile.Id == user.Id {
+		if profile.ClientId == user.ClientId {
 			continue
 		}
 
 		preference := model.Preference{
-			UserId:   user.Id,
+			UserId:   user.ClientId,
 			Category: model.PREFERENCE_CATEGORY_DIRECT_CHANNEL_SHOW,
-			Name:     profile.Id,
+			Name:     profile.ClientId,
 			Value:    "true",
 		}
 
@@ -920,7 +920,7 @@ func (a *App) AddDirectChannels(teamId string, user *model.User) *model.AppError
 	}
 
 	if result := <-a.Srv.Store.Preference().Save(&preferences); result.Err != nil {
-		return model.NewAppError("AddDirectChannels", "api.user.add_direct_channels_and_forget.failed.error", map[string]interface{}{"UserId": user.Id, "TeamId": teamId, "Error": result.Err.Error()}, "", http.StatusInternalServerError)
+		return model.NewAppError("AddDirectChannels", "api.user.add_direct_channels_and_forget.failed.error", map[string]interface{}{"UserId": user.ClientId, "TeamId": teamId, "Error": result.Err.Error()}, "", http.StatusInternalServerError)
 	}
 
 	return nil
@@ -1301,7 +1301,7 @@ func (a *App) postJoinChannelMessage(user *model.User, channel *model.Channel) *
 		ChannelId: channel.Id,
 		Message:   fmt.Sprintf(utils.T("api.channel.join_channel.post_and_forget"), user.Username),
 		Type:      model.POST_JOIN_CHANNEL,
-		UserId:    user.Id,
+		UserId:    user.ClientId,
 		Props: model.StringInterface{
 			"username": user.Username,
 		},
@@ -1319,7 +1319,7 @@ func (a *App) postJoinTeamMessage(user *model.User, channel *model.Channel) *mod
 		ChannelId: channel.Id,
 		Message:   fmt.Sprintf(utils.T("api.team.join_team.post_and_forget"), user.Username),
 		Type:      model.POST_JOIN_TEAM,
-		UserId:    user.Id,
+		UserId:    user.ClientId,
 		Props: model.StringInterface{
 			"username": user.Username,
 		},
@@ -1360,7 +1360,7 @@ func (a *App) LeaveChannel(channelId string, userId string) *model.AppError {
 	}
 
 	if channel.Type == model.CHANNEL_PRIVATE && membersCount == 1 {
-		err := model.NewAppError("LeaveChannel", "api.channel.leave.last_member.app_error", nil, "userId="+user.Id, http.StatusBadRequest)
+		err := model.NewAppError("LeaveChannel", "api.channel.leave.last_member.app_error", nil, "userId="+user.ClientId, http.StatusBadRequest)
 		return err
 	}
 
@@ -1384,7 +1384,7 @@ func (a *App) postLeaveChannelMessage(user *model.User, channel *model.Channel) 
 		ChannelId: channel.Id,
 		Message:   fmt.Sprintf(utils.T("api.channel.leave.left"), user.Username),
 		Type:      model.POST_LEAVE_CHANNEL,
-		UserId:    user.Id,
+		UserId:    user.ClientId,
 		Props: model.StringInterface{
 			"username": user.Username,
 		},
@@ -1402,12 +1402,12 @@ func (a *App) PostAddToChannelMessage(user *model.User, addedUser *model.User, c
 		ChannelId: channel.Id,
 		Message:   fmt.Sprintf(utils.T("api.channel.add_member.added"), addedUser.Username, user.Username),
 		Type:      model.POST_ADD_TO_CHANNEL,
-		UserId:    user.Id,
+		UserId:    user.ClientId,
 		RootId:    postRootId,
 		Props: model.StringInterface{
-			"userId":                       user.Id,
+			"userId":                       user.ClientId,
 			"username":                     user.Username,
-			model.POST_PROPS_ADDED_USER_ID: addedUser.Id,
+			model.POST_PROPS_ADDED_USER_ID: addedUser.ClientId,
 			"addedUsername":                addedUser.Username,
 		},
 	}
@@ -1424,12 +1424,12 @@ func (a *App) postAddToTeamMessage(user *model.User, addedUser *model.User, chan
 		ChannelId: channel.Id,
 		Message:   fmt.Sprintf(utils.T("api.team.add_user_to_team.added"), addedUser.Username, user.Username),
 		Type:      model.POST_ADD_TO_TEAM,
-		UserId:    user.Id,
+		UserId:    user.ClientId,
 		RootId:    postRootId,
 		Props: model.StringInterface{
-			"userId":                       user.Id,
+			"userId":                       user.ClientId,
 			"username":                     user.Username,
-			model.POST_PROPS_ADDED_USER_ID: addedUser.Id,
+			model.POST_PROPS_ADDED_USER_ID: addedUser.ClientId,
 			"addedUsername":                addedUser.Username,
 		},
 	}
@@ -1448,7 +1448,7 @@ func (a *App) postRemoveFromChannelMessage(removerUserId string, removedUser *mo
 		Type:      model.POST_REMOVE_FROM_CHANNEL,
 		UserId:    removerUserId,
 		Props: model.StringInterface{
-			"removedUserId":   removedUser.Id,
+			"removedUserId":   removedUser.ClientId,
 			"removedUsername": removedUser.Username,
 		},
 	}
@@ -1787,7 +1787,7 @@ func (a *App) postChannelMoveMessage(user *model.User, channel *model.Channel, p
 		ChannelId: channel.Id,
 		Message:   fmt.Sprintf(utils.T("api.team.move_channel.success"), previousTeam.Name),
 		Type:      model.POST_MOVE_CHANNEL,
-		UserId:    user.Id,
+		UserId:    user.ClientId,
 		Props: model.StringInterface{
 			"username": user.Username,
 		},

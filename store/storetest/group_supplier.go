@@ -408,7 +408,7 @@ func testGroupGetMemberUsers(t *testing.T, ss store.Store) {
 	assert.Nil(t, res.Err)
 	user1 := res.Data.(*model.User)
 
-	res = <-ss.Group().CreateOrRestoreMember(group.Id, user1.Id)
+	res = <-ss.Group().CreateOrRestoreMember(group.Id, user1.ClientId)
 	assert.Nil(t, res.Err)
 
 	u2 := &model.User{
@@ -419,7 +419,7 @@ func testGroupGetMemberUsers(t *testing.T, ss store.Store) {
 	assert.Nil(t, res.Err)
 	user2 := res.Data.(*model.User)
 
-	res = <-ss.Group().CreateOrRestoreMember(group.Id, user2.Id)
+	res = <-ss.Group().CreateOrRestoreMember(group.Id, user2.ClientId)
 	assert.Nil(t, res.Err)
 
 	// Check returns members
@@ -433,7 +433,7 @@ func testGroupGetMemberUsers(t *testing.T, ss store.Store) {
 	assert.Equal(t, 0, len(res.Data.([]*model.User)))
 
 	// Delete a member
-	<-ss.Group().DeleteMember(group.Id, user1.Id)
+	<-ss.Group().DeleteMember(group.Id, user1.ClientId)
 
 	// Should not return deleted members
 	res = <-ss.Group().GetMemberUsers(group.Id)
@@ -462,7 +462,7 @@ func testGroupGetMemberUsersPage(t *testing.T, ss store.Store) {
 	assert.Nil(t, res.Err)
 	user1 := res.Data.(*model.User)
 
-	res = <-ss.Group().CreateOrRestoreMember(group.Id, user1.Id)
+	res = <-ss.Group().CreateOrRestoreMember(group.Id, user1.ClientId)
 	assert.Nil(t, res.Err)
 
 	u2 := &model.User{
@@ -473,7 +473,7 @@ func testGroupGetMemberUsersPage(t *testing.T, ss store.Store) {
 	assert.Nil(t, res.Err)
 	user2 := res.Data.(*model.User)
 
-	res = <-ss.Group().CreateOrRestoreMember(group.Id, user2.Id)
+	res = <-ss.Group().CreateOrRestoreMember(group.Id, user2.ClientId)
 	assert.Nil(t, res.Err)
 
 	// Check returns members
@@ -487,21 +487,21 @@ func testGroupGetMemberUsersPage(t *testing.T, ss store.Store) {
 	assert.Nil(t, res.Err)
 	groupMembers = res.Data.([]*model.User)
 	assert.Equal(t, 1, len(groupMembers))
-	assert.Equal(t, user2.Id, groupMembers[0].Id)
+	assert.Equal(t, user2.ClientId, groupMembers[0].ClientId)
 
 	// Check page 2
 	res = <-ss.Group().GetMemberUsersPage(group.Id, 1, 1)
 	assert.Nil(t, res.Err)
 	groupMembers = res.Data.([]*model.User)
 	assert.Equal(t, 1, len(groupMembers))
-	assert.Equal(t, user1.Id, groupMembers[0].Id)
+	assert.Equal(t, user1.ClientId, groupMembers[0].ClientId)
 
 	// Check madeup id
 	res = <-ss.Group().GetMemberUsersPage(model.NewId(), 0, 100)
 	assert.Equal(t, 0, len(res.Data.([]*model.User)))
 
 	// Delete a member
-	<-ss.Group().DeleteMember(group.Id, user1.Id)
+	<-ss.Group().DeleteMember(group.Id, user1.ClientId)
 
 	// Should not return deleted members
 	res = <-ss.Group().GetMemberUsersPage(group.Id, 0, 100)
@@ -531,33 +531,33 @@ func testGroupCreateOrRestoreMember(t *testing.T, ss store.Store) {
 	user := res2.Data.(*model.User)
 
 	// Happy path
-	res3 := <-ss.Group().CreateOrRestoreMember(group.Id, user.Id)
+	res3 := <-ss.Group().CreateOrRestoreMember(group.Id, user.ClientId)
 	assert.Nil(t, res3.Err)
 	d2 := res3.Data.(*model.GroupMember)
 	assert.Equal(t, d2.GroupId, group.Id)
-	assert.Equal(t, d2.UserId, user.Id)
+	assert.Equal(t, d2.UserId, user.ClientId)
 	assert.NotZero(t, d2.CreateAt)
 	assert.Zero(t, d2.DeleteAt)
 
 	// Duplicate composite key (GroupId, UserId)
-	res4 := <-ss.Group().CreateOrRestoreMember(group.Id, user.Id)
+	res4 := <-ss.Group().CreateOrRestoreMember(group.Id, user.ClientId)
 	assert.Equal(t, res4.Err.Id, "store.sql_group.uniqueness_error")
 
 	// Invalid GroupId
-	res6 := <-ss.Group().CreateOrRestoreMember(model.NewId(), user.Id)
+	res6 := <-ss.Group().CreateOrRestoreMember(model.NewId(), user.ClientId)
 	assert.Equal(t, res6.Err.Id, "store.insert_error")
 
 	// Restores a deleted member
-	res := <-ss.Group().CreateOrRestoreMember(group.Id, user.Id)
+	res := <-ss.Group().CreateOrRestoreMember(group.Id, user.ClientId)
 	assert.NotNil(t, res.Err)
 
-	res = <-ss.Group().DeleteMember(group.Id, user.Id)
+	res = <-ss.Group().DeleteMember(group.Id, user.ClientId)
 	assert.Nil(t, res.Err)
 
 	res = <-ss.Group().GetMemberUsers(group.Id)
 	beforeRestoreCount := len(res.Data.([]*model.User))
 
-	res = <-ss.Group().CreateOrRestoreMember(group.Id, user.Id)
+	res = <-ss.Group().CreateOrRestoreMember(group.Id, user.ClientId)
 	assert.Nil(t, res.Err)
 
 	res = <-ss.Group().GetMemberUsers(group.Id)
@@ -588,21 +588,21 @@ func testGroupDeleteMember(t *testing.T, ss store.Store) {
 	user := res2.Data.(*model.User)
 
 	// Create member
-	res3 := <-ss.Group().CreateOrRestoreMember(group.Id, user.Id)
+	res3 := <-ss.Group().CreateOrRestoreMember(group.Id, user.ClientId)
 	assert.Nil(t, res3.Err)
 	d1 := res3.Data.(*model.GroupMember)
 
 	// Happy path
-	res4 := <-ss.Group().DeleteMember(group.Id, user.Id)
+	res4 := <-ss.Group().DeleteMember(group.Id, user.ClientId)
 	assert.Nil(t, res4.Err)
 	d2 := res4.Data.(*model.GroupMember)
 	assert.Equal(t, d2.GroupId, group.Id)
-	assert.Equal(t, d2.UserId, user.Id)
+	assert.Equal(t, d2.UserId, user.ClientId)
 	assert.Equal(t, d2.CreateAt, d1.CreateAt)
 	assert.NotZero(t, d2.DeleteAt)
 
 	// Delete an already deleted member
-	res5 := <-ss.Group().DeleteMember(group.Id, user.Id)
+	res5 := <-ss.Group().DeleteMember(group.Id, user.ClientId)
 	assert.Equal(t, res5.Err.Id, "store.sql_group.no_rows")
 
 	// Delete with non-existent User
@@ -949,7 +949,7 @@ func testPendingAutoAddTeamMembers(t *testing.T, ss store.Store) {
 	user = res.Data.(*model.User)
 
 	// Create GroupMember
-	res = <-ss.Group().CreateOrRestoreMember(group.Id, user.Id)
+	res = <-ss.Group().CreateOrRestoreMember(group.Id, user.ClientId)
 	assert.Nil(t, res.Err)
 
 	// Create Team
@@ -982,7 +982,7 @@ func testPendingAutoAddTeamMembers(t *testing.T, ss store.Store) {
 	assert.Nil(t, res.Err)
 	userTeamIDs := res.Data.([]*model.UserTeamIDPair)
 	assert.Len(t, userTeamIDs, 1)
-	assert.Equal(t, user.Id, userTeamIDs[0].UserID)
+	assert.Equal(t, user.ClientId, userTeamIDs[0].UserID)
 	assert.Equal(t, team.Id, userTeamIDs[0].TeamID)
 
 	// Time after syncable was created
@@ -991,9 +991,9 @@ func testPendingAutoAddTeamMembers(t *testing.T, ss store.Store) {
 	assert.Len(t, res.Data, 0)
 
 	// Delete and restore GroupMember should return result
-	res = <-ss.Group().DeleteMember(group.Id, user.Id)
+	res = <-ss.Group().DeleteMember(group.Id, user.ClientId)
 	assert.Nil(t, res.Err)
-	res = <-ss.Group().CreateOrRestoreMember(group.Id, user.Id)
+	res = <-ss.Group().CreateOrRestoreMember(group.Id, user.ClientId)
 	assert.Nil(t, res.Err)
 	res = <-ss.Group().PendingAutoAddTeamMembers(syncable.CreateAt + 1)
 	assert.Nil(t, res.Err)
@@ -1009,7 +1009,7 @@ func testPendingAutoAddTeamMembers(t *testing.T, ss store.Store) {
 	assert.Nil(t, res.Err)
 	userTeamIDs = res.Data.([]*model.UserTeamIDPair)
 	assert.Len(t, userTeamIDs, 1)
-	assert.Equal(t, user.Id, userTeamIDs[0].UserID)
+	assert.Equal(t, user.ClientId, userTeamIDs[0].UserID)
 	assert.Equal(t, team.Id, userTeamIDs[0].TeamID)
 
 	// Time after syncable was updated
@@ -1077,14 +1077,14 @@ func testPendingAutoAddTeamMembers(t *testing.T, ss store.Store) {
 	assert.Len(t, res.Data, 1)
 
 	// No result if GroupMember deleted
-	res = <-ss.Group().DeleteMember(group.Id, user.Id)
+	res = <-ss.Group().DeleteMember(group.Id, user.ClientId)
 	assert.Nil(t, res.Err)
 	res = <-ss.Group().PendingAutoAddTeamMembers(0)
 	assert.Nil(t, res.Err)
 	assert.Len(t, res.Data, 0)
 
 	// restore group member and verify
-	res = <-ss.Group().CreateOrRestoreMember(group.Id, user.Id)
+	res = <-ss.Group().CreateOrRestoreMember(group.Id, user.ClientId)
 	res = <-ss.Group().PendingAutoAddTeamMembers(0)
 	assert.Nil(t, res.Err)
 	assert.Len(t, res.Data, 1)
@@ -1092,7 +1092,7 @@ func testPendingAutoAddTeamMembers(t *testing.T, ss store.Store) {
 	// adding team membership stops returning result
 	res = <-ss.Team().SaveMember(&model.TeamMember{
 		TeamId: team.Id,
-		UserId: user.Id,
+		UserId: user.ClientId,
 	}, 999)
 	assert.Nil(t, res.Err)
 	res = <-ss.Group().PendingAutoAddTeamMembers(0)
@@ -1121,7 +1121,7 @@ func testPendingAutoAddChannelMembers(t *testing.T, ss store.Store) {
 	user = res.Data.(*model.User)
 
 	// Create GroupMember
-	res = <-ss.Group().CreateOrRestoreMember(group.Id, user.Id)
+	res = <-ss.Group().CreateOrRestoreMember(group.Id, user.ClientId)
 	assert.Nil(t, res.Err)
 
 	// Create Channel
@@ -1150,7 +1150,7 @@ func testPendingAutoAddChannelMembers(t *testing.T, ss store.Store) {
 	assert.Nil(t, res.Err)
 	userChannelIDs := res.Data.([]*model.UserChannelIDPair)
 	assert.Len(t, userChannelIDs, 1)
-	assert.Equal(t, user.Id, userChannelIDs[0].UserID)
+	assert.Equal(t, user.ClientId, userChannelIDs[0].UserID)
 	assert.Equal(t, channel.Id, userChannelIDs[0].ChannelID)
 
 	// Time after syncable was created
@@ -1159,9 +1159,9 @@ func testPendingAutoAddChannelMembers(t *testing.T, ss store.Store) {
 	assert.Len(t, res.Data, 0)
 
 	// Delete and restore GroupMember should return result
-	res = <-ss.Group().DeleteMember(group.Id, user.Id)
+	res = <-ss.Group().DeleteMember(group.Id, user.ClientId)
 	assert.Nil(t, res.Err)
-	res = <-ss.Group().CreateOrRestoreMember(group.Id, user.Id)
+	res = <-ss.Group().CreateOrRestoreMember(group.Id, user.ClientId)
 	assert.Nil(t, res.Err)
 	res = <-ss.Group().PendingAutoAddChannelMembers(syncable.CreateAt + 1)
 	assert.Nil(t, res.Err)
@@ -1177,7 +1177,7 @@ func testPendingAutoAddChannelMembers(t *testing.T, ss store.Store) {
 	assert.Nil(t, res.Err)
 	userChannelIDs = res.Data.([]*model.UserChannelIDPair)
 	assert.Len(t, userChannelIDs, 1)
-	assert.Equal(t, user.Id, userChannelIDs[0].UserID)
+	assert.Equal(t, user.ClientId, userChannelIDs[0].UserID)
 	assert.Equal(t, channel.Id, userChannelIDs[0].ChannelID)
 
 	// Time after syncable was updated
@@ -1244,28 +1244,28 @@ func testPendingAutoAddChannelMembers(t *testing.T, ss store.Store) {
 	assert.Len(t, res.Data, 1)
 
 	// No result if GroupMember deleted
-	res = <-ss.Group().DeleteMember(group.Id, user.Id)
+	res = <-ss.Group().DeleteMember(group.Id, user.ClientId)
 	assert.Nil(t, res.Err)
 	res = <-ss.Group().PendingAutoAddChannelMembers(0)
 	assert.Nil(t, res.Err)
 	assert.Len(t, res.Data, 0)
 
 	// restore group member and verify
-	res = <-ss.Group().CreateOrRestoreMember(group.Id, user.Id)
+	res = <-ss.Group().CreateOrRestoreMember(group.Id, user.ClientId)
 	assert.Nil(t, res.Err)
 	res = <-ss.Group().PendingAutoAddChannelMembers(0)
 	assert.Nil(t, res.Err)
 	assert.Len(t, res.Data, 1)
 
 	// Adding Channel (ChannelMemberHistory) should stop returning result
-	res = <-ss.ChannelMemberHistory().LogJoinEvent(user.Id, channel.Id, model.GetMillis())
+	res = <-ss.ChannelMemberHistory().LogJoinEvent(user.ClientId, channel.Id, model.GetMillis())
 	assert.Nil(t, res.Err)
 	res = <-ss.Group().PendingAutoAddChannelMembers(0)
 	assert.Nil(t, res.Err)
 	assert.Len(t, res.Data, 0)
 
 	// Leaving Channel (ChannelMemberHistory) should still not return result
-	res = <-ss.ChannelMemberHistory().LogLeaveEvent(user.Id, channel.Id, model.GetMillis())
+	res = <-ss.ChannelMemberHistory().LogLeaveEvent(user.ClientId, channel.Id, model.GetMillis())
 	assert.Nil(t, res.Err)
 	res = <-ss.Group().PendingAutoAddChannelMembers(0)
 	assert.Nil(t, res.Err)

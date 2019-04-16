@@ -18,14 +18,14 @@ func TestSetAutoResponderStatus(t *testing.T) {
 	user := th.CreateUser()
 	defer th.App.PermanentDeleteUser(user)
 
-	th.App.SetStatusOnline(user.Id, true)
+	th.App.SetStatusOnline(user.ClientId, true)
 
 	patch := &model.UserPatch{}
 	patch.NotifyProps = make(map[string]string)
 	patch.NotifyProps["auto_responder_active"] = "true"
 	patch.NotifyProps["auto_responder_message"] = "Hello, I'm unavailable today."
 
-	userUpdated1, _ := th.App.PatchUser(user.Id, patch, true)
+	userUpdated1, _ := th.App.PatchUser(user.ClientId, patch, true)
 
 	// autoResponder is enabled, status should be OOO
 	th.App.SetAutoResponderStatus(userUpdated1, user.NotifyProps)
@@ -39,7 +39,7 @@ func TestSetAutoResponderStatus(t *testing.T) {
 	patch2.NotifyProps["auto_responder_active"] = "false"
 	patch2.NotifyProps["auto_responder_message"] = "Hello, I'm unavailable today."
 
-	userUpdated2, _ := th.App.PatchUser(user.Id, patch2, true)
+	userUpdated2, _ := th.App.PatchUser(user.ClientId, patch2, true)
 
 	// autoResponder is disabled, status should be ONLINE
 	th.App.SetAutoResponderStatus(userUpdated2, userUpdated1.NotifyProps)
@@ -57,24 +57,24 @@ func TestDisableAutoResponder(t *testing.T) {
 	user := th.CreateUser()
 	defer th.App.PermanentDeleteUser(user)
 
-	th.App.SetStatusOnline(user.Id, true)
+	th.App.SetStatusOnline(user.ClientId, true)
 
 	patch := &model.UserPatch{}
 	patch.NotifyProps = make(map[string]string)
 	patch.NotifyProps["auto_responder_active"] = "true"
 	patch.NotifyProps["auto_responder_message"] = "Hello, I'm unavailable today."
 
-	th.App.PatchUser(user.Id, patch, true)
+	th.App.PatchUser(user.ClientId, patch, true)
 
-	th.App.DisableAutoResponder(user.Id, true)
+	th.App.DisableAutoResponder(user.ClientId, true)
 
-	userUpdated1, err := th.App.GetUser(user.Id)
+	userUpdated1, err := th.App.GetUser(user.ClientId)
 	require.Nil(t, err)
 	assert.Equal(t, userUpdated1.NotifyProps["auto_responder_active"], "false")
 
-	th.App.DisableAutoResponder(user.Id, true)
+	th.App.DisableAutoResponder(user.ClientId, true)
 
-	userUpdated2, err := th.App.GetUser(user.Id)
+	userUpdated2, err := th.App.GetUser(user.ClientId)
 	require.Nil(t, err)
 	assert.Equal(t, userUpdated2.NotifyProps["auto_responder_active"], "false")
 }
@@ -91,7 +91,7 @@ func TestSendAutoResponseSuccess(t *testing.T) {
 	patch.NotifyProps["auto_responder_active"] = "true"
 	patch.NotifyProps["auto_responder_message"] = "Hello, I'm unavailable today."
 
-	userUpdated1, err := th.App.PatchUser(user.Id, patch, true)
+	userUpdated1, err := th.App.PatchUser(user.ClientId, patch, true)
 	require.Nil(t, err)
 
 	th.App.CreatePost(&model.Post{
@@ -128,7 +128,7 @@ func TestSendAutoResponseFailure(t *testing.T) {
 	patch.NotifyProps["auto_responder_active"] = "false"
 	patch.NotifyProps["auto_responder_message"] = "Hello, I'm unavailable today."
 
-	userUpdated1, err := th.App.PatchUser(user.Id, patch, true)
+	userUpdated1, err := th.App.PatchUser(user.ClientId, patch, true)
 	require.Nil(t, err)
 
 	th.App.CreatePost(&model.Post{

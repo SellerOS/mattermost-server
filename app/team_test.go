@@ -82,7 +82,7 @@ func TestAddUserToTeam(t *testing.T) {
 		ruser, _ := th.App.CreateUser(&user)
 		defer th.App.PermanentDeleteUser(&user)
 
-		if _, err := th.App.AddUserToTeam(th.BasicTeam.Id, ruser.Id, ""); err != nil {
+		if _, err := th.App.AddUserToTeam(th.BasicTeam.Id, ruser.ClientId, ""); err != nil {
 			t.Log(err)
 			t.Fatal("Should add user to the team")
 		}
@@ -99,7 +99,7 @@ func TestAddUserToTeam(t *testing.T) {
 		ruser, _ := th.App.CreateUser(&user)
 		defer th.App.PermanentDeleteUser(&user)
 
-		if _, err := th.App.AddUserToTeam(th.BasicTeam.Id, ruser.Id, ""); err != nil {
+		if _, err := th.App.AddUserToTeam(th.BasicTeam.Id, ruser.ClientId, ""); err != nil {
 			t.Log(err)
 			t.Fatal("Should have allowed whitelisted user")
 		}
@@ -119,7 +119,7 @@ func TestAddUserToTeam(t *testing.T) {
 		}
 		defer th.App.PermanentDeleteUser(&user)
 
-		if _, err = th.App.AddUserToTeam(th.BasicTeam.Id, ruser.Id, ""); err == nil || err.Where != "JoinUserToTeam" {
+		if _, err = th.App.AddUserToTeam(th.BasicTeam.Id, ruser.ClientId, ""); err == nil || err.Where != "JoinUserToTeam" {
 			t.Log(err)
 			t.Fatal("Should not add restricted user")
 		}
@@ -131,7 +131,7 @@ func TestAddUserToTeam(t *testing.T) {
 		}
 		defer th.App.PermanentDeleteUser(&user)
 
-		if _, err := th.App.AddUserToTeam(th.BasicTeam.Id, ruser.Id, ""); err == nil || err.Where != "JoinUserToTeam" {
+		if _, err := th.App.AddUserToTeam(th.BasicTeam.Id, ruser.ClientId, ""); err == nil || err.Where != "JoinUserToTeam" {
 			t.Log(err)
 			t.Fatal("Should not add authservice user")
 		}
@@ -148,7 +148,7 @@ func TestAddUserToTeam(t *testing.T) {
 		ruser, _ := th.App.CreateUser(&user)
 		defer th.App.PermanentDeleteUser(&user)
 
-		if _, err := th.App.AddUserToTeam(th.BasicTeam.Id, ruser.Id, ""); err == nil || err.Where != "JoinUserToTeam" {
+		if _, err := th.App.AddUserToTeam(th.BasicTeam.Id, ruser.ClientId, ""); err == nil || err.Where != "JoinUserToTeam" {
 			t.Log(err)
 			t.Fatal("Should not add restricted user")
 		}
@@ -195,7 +195,7 @@ func TestAddUserToTeamByToken(t *testing.T) {
 	ruser, _ := th.App.CreateUser(&user)
 
 	t.Run("invalid token", func(t *testing.T) {
-		if _, err := th.App.AddUserToTeamByToken(ruser.Id, "123"); err == nil {
+		if _, err := th.App.AddUserToTeamByToken(ruser.ClientId, "123"); err == nil {
 			t.Fatal("Should fail on unexisting token")
 		}
 	})
@@ -207,7 +207,7 @@ func TestAddUserToTeamByToken(t *testing.T) {
 		)
 		<-th.App.Srv.Store.Token().Save(token)
 		defer th.App.DeleteToken(token)
-		if _, err := th.App.AddUserToTeamByToken(ruser.Id, token.Token); err == nil {
+		if _, err := th.App.AddUserToTeamByToken(ruser.ClientId, token.Token); err == nil {
 			t.Fatal("Should fail on bad token type")
 		}
 	})
@@ -220,7 +220,7 @@ func TestAddUserToTeamByToken(t *testing.T) {
 		token.CreateAt = model.GetMillis() - TEAM_INVITATION_EXPIRY_TIME - 1
 		<-th.App.Srv.Store.Token().Save(token)
 		defer th.App.DeleteToken(token)
-		if _, err := th.App.AddUserToTeamByToken(ruser.Id, token.Token); err == nil {
+		if _, err := th.App.AddUserToTeamByToken(ruser.ClientId, token.Token); err == nil {
 			t.Fatal("Should fail on expired token")
 		}
 	})
@@ -232,7 +232,7 @@ func TestAddUserToTeamByToken(t *testing.T) {
 		)
 		<-th.App.Srv.Store.Token().Save(token)
 		defer th.App.DeleteToken(token)
-		if _, err := th.App.AddUserToTeamByToken(ruser.Id, token.Token); err == nil {
+		if _, err := th.App.AddUserToTeamByToken(ruser.ClientId, token.Token); err == nil {
 			t.Fatal("Should fail on bad team id")
 		}
 	})
@@ -255,7 +255,7 @@ func TestAddUserToTeamByToken(t *testing.T) {
 			model.MapToJson(map[string]string{"teamId": th.BasicTeam.Id}),
 		)
 		<-th.App.Srv.Store.Token().Save(token)
-		if _, err := th.App.AddUserToTeamByToken(ruser.Id, token.Token); err != nil {
+		if _, err := th.App.AddUserToTeamByToken(ruser.ClientId, token.Token); err != nil {
 			t.Log(err)
 			t.Fatal("Should add user to the team")
 		}
@@ -281,7 +281,7 @@ func TestAddUserToTeamByToken(t *testing.T) {
 		)
 		<-th.App.Srv.Store.Token().Save(token)
 
-		if _, err := th.App.AddUserToTeamByToken(ruser.Id, token.Token); err == nil || err.Where != "JoinUserToTeam" {
+		if _, err := th.App.AddUserToTeamByToken(ruser.ClientId, token.Token); err == nil || err.Where != "JoinUserToTeam" {
 			t.Log(err)
 			t.Fatal("Should not add restricted user")
 		}
@@ -648,7 +648,7 @@ func TestJoinUserToTeam(t *testing.T) {
 		defer th.App.PermanentDeleteUser(&user)
 
 		th.App.joinUserToTeam(team, ruser)
-		th.App.LeaveTeam(team, ruser, ruser.Id)
+		th.App.LeaveTeam(team, ruser, ruser.ClientId)
 		if _, alreadyAdded, err := th.App.joinUserToTeam(team, ruser); alreadyAdded || err != nil {
 			t.Fatal("Should return already added equal to false and no error")
 		}
@@ -721,11 +721,11 @@ func TestGetTeamMembers(t *testing.T) {
 		require.NotNil(t, ruser)
 		defer th.App.PermanentDeleteUser(&user)
 
-		_, err = th.App.AddUserToTeam(th.BasicTeam.Id, ruser.Id, "")
+		_, err = th.App.AddUserToTeam(th.BasicTeam.Id, ruser.ClientId, "")
 		require.Nil(t, err)
 
 		// Store the user ids for comparison later
-		userIDs = append(userIDs, ruser.Id)
+		userIDs = append(userIDs, ruser.ClientId)
 	}
 	// Sort them because the result of GetTeamMembers() is also sorted
 	sort.Sort(userIDs)

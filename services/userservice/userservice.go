@@ -31,6 +31,50 @@ func GetUser(clientId string) ApiResponse {
 	return result
 }
 
+func GetInferSystemInstallDate() ApiResponse {
+	url, err := lookupService("workstation-user")
+	if err != nil {
+		log.Fatalf("Error. %s", err)
+		return NewErrorApiResponse(500, err.Error())
+	}
+	client := &http.Client{}
+	resp, err := client.Get(url + "/api/userim/inferSystemInstallDate")
+	if err != nil {
+		log.Fatalf("Error. %s", err)
+		return NewErrorApiResponse(500, err.Error())
+	}
+	defer resp.Body.Close()
+
+	result := ApiResponse{}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		log.Fatalf("Error. %s", err)
+		return NewErrorApiResponse(500, err.Error())
+	}
+	return result
+}
+
+func GetSystemAdminCount() ApiResponse {
+	url, err := lookupService("workstation-user")
+	if err != nil {
+		log.Fatalf("Error. %s", err)
+		return NewErrorApiResponse(500, err.Error())
+	}
+	client := &http.Client{}
+	resp, err := client.Get(url + "/api/userim/adminCount")
+	if err != nil {
+		log.Fatalf("Error. %s", err)
+		return NewErrorApiResponse(500, err.Error())
+	}
+	defer resp.Body.Close()
+
+	result := ApiResponse{}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		log.Fatalf("Error. %s", err)
+		return NewErrorApiResponse(500, err.Error())
+	}
+	return result
+}
+
 func SaveUser(user *model.User) error {
 	result := ApiResponse{}
 	url, err := lookupService("workstation-user")
@@ -58,7 +102,7 @@ func SaveUser(user *model.User) error {
 	return nil
 }
 
-func updateUser(user *model.User) error {
+func UpdateUser(user *model.User) error {
 	result := ApiResponse{}
 	url, err := lookupService("workstation-user")
 	if err != nil {

@@ -56,12 +56,12 @@ func (me *msgProvider) DoCommand(a *App, args *model.CommandArgs, message string
 		userProfile = result.Data.(*model.User)
 	}
 
-	if userProfile.Id == args.UserId {
+	if userProfile.ClientId == args.UserId {
 		return &model.CommandResponse{Text: args.T("api.command_msg.missing.app_error"), ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL}
 	}
 
 	// Find the channel based on this user
-	channelName := model.GetDMNameFromIds(args.UserId, userProfile.Id)
+	channelName := model.GetDMNameFromIds(args.UserId, userProfile.ClientId)
 
 	targetChannelId := ""
 	if channel := <-a.Srv.Store.Channel().GetByName(args.TeamId, channelName, true); channel.Err != nil {
@@ -70,7 +70,7 @@ func (me *msgProvider) DoCommand(a *App, args *model.CommandArgs, message string
 				return &model.CommandResponse{Text: args.T("api.command_msg.permission.app_error"), ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL}
 			}
 
-			if directChannel, err := a.GetOrCreateDirectChannel(args.UserId, userProfile.Id); err != nil {
+			if directChannel, err := a.GetOrCreateDirectChannel(args.UserId, userProfile.ClientId); err != nil {
 				mlog.Error(err.Error())
 				return &model.CommandResponse{Text: args.T("api.command_msg.dm_fail.app_error"), ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL}
 			} else {

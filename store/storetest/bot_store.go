@@ -16,7 +16,7 @@ import (
 func makeBotWithUser(ss store.Store, bot *model.Bot) (*model.Bot, *model.User) {
 	user := store.Must(ss.User().Save(model.UserFromBot(bot))).(*model.User)
 
-	bot.UserId = user.Id
+	bot.UserId = user.ClientId
 	bot = store.Must(ss.Bot().Save(bot)).(*model.Bot)
 
 	return bot, user
@@ -176,11 +176,11 @@ func testBotStoreGetAll(t *testing.T, ss store.Store) {
 	if err := (<-ss.User().Update(&deletedUser, true)).Err; err != nil {
 		t.Fatal("couldn't delete user", err)
 	}
-	defer func() { store.Must(ss.User().PermanentDelete(deletedUser.Id)) }()
+	defer func() { store.Must(ss.User().PermanentDelete(deletedUser.ClientId)) }()
 	ob5, _ := makeBotWithUser(ss, &model.Bot{
 		Username:    "ob5",
 		Description: "Orphaned bot 5",
-		OwnerId:     deletedUser.Id,
+		OwnerId:     deletedUser.ClientId,
 	})
 	defer func() { store.Must(ss.Bot().PermanentDelete(b4.UserId)) }()
 	defer func() { store.Must(ss.User().PermanentDelete(b4.UserId)) }()
@@ -306,8 +306,8 @@ func testBotStoreSave(t *testing.T, ss store.Store) {
 		}
 
 		user := store.Must(ss.User().Save(model.UserFromBot(bot))).(*model.User)
-		defer func() { store.Must(ss.User().PermanentDelete(user.Id)) }()
-		bot.UserId = user.Id
+		defer func() { store.Must(ss.User().PermanentDelete(user.ClientId)) }()
+		bot.UserId = user.ClientId
 
 		result := <-ss.Bot().Save(bot)
 		require.Nil(t, result.Err)

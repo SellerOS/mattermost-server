@@ -86,7 +86,7 @@ func (job *EmailBatchingJob) Start() {
 
 func (job *EmailBatchingJob) Add(user *model.User, post *model.Post, team *model.Team) bool {
 	notification := &batchedNotification{
-		userId:   user.Id,
+		userId:   user.ClientId,
 		post:     post,
 		teamName: team.Name,
 	}

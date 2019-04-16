@@ -131,7 +131,7 @@ func TestSetDefaultProfileImage(t *testing.T) {
 	err = th.App.SetDefaultProfileImage(user)
 	require.Nil(t, err)
 
-	user = getUserFromDB(th.App, user.Id, t)
+	user = getUserFromDB(th.App, user.ClientId, t)
 	assert.Equal(t, int64(0), user.LastPictureUpdate)
 }
 
@@ -168,7 +168,7 @@ func TestUpdateUserActive(t *testing.T) {
 	th.App.UpdateConfig(func(cfg *model.Config) {
 		*cfg.TeamSettings.EnableUserDeactivation = true
 	})
-	err := th.App.UpdateUserActive(user.Id, false)
+	err := th.App.UpdateUserActive(user.ClientId, false)
 	assert.Nil(t, err)
 }
 
@@ -242,9 +242,9 @@ func TestUpdateOAuthUserAttrs(t *testing.T) {
 			gitlabUser := getGitlabUserPayload(gitlabUserObj, t)
 			data := bytes.NewReader(gitlabUser)
 
-			user = getUserFromDB(th.App, user.Id, t)
+			user = getUserFromDB(th.App, user.ClientId, t)
 			th.App.UpdateOAuthUserAttrs(data, user, gitlabProvider, "gitlab")
-			user = getUserFromDB(th.App, user.Id, t)
+			user = getUserFromDB(th.App, user.ClientId, t)
 
 			if user.Username != gitlabUserObj.Username {
 				t.Fatal("user's username is not updated")
@@ -257,9 +257,9 @@ func TestUpdateOAuthUserAttrs(t *testing.T) {
 			gitlabUser := getGitlabUserPayload(gitlabUserObj, t)
 			data := bytes.NewReader(gitlabUser)
 
-			user = getUserFromDB(th.App, user.Id, t)
+			user = getUserFromDB(th.App, user.ClientId, t)
 			th.App.UpdateOAuthUserAttrs(data, user, gitlabProvider, "gitlab")
-			user = getUserFromDB(th.App, user.Id, t)
+			user = getUserFromDB(th.App, user.ClientId, t)
 
 			if user.Username == gitlabUserObj.Username {
 				t.Fatal("user's username is updated though there already exists another user with the same username")
@@ -273,9 +273,9 @@ func TestUpdateOAuthUserAttrs(t *testing.T) {
 			gitlabUser := getGitlabUserPayload(gitlabUserObj, t)
 			data := bytes.NewReader(gitlabUser)
 
-			user = getUserFromDB(th.App, user.Id, t)
+			user = getUserFromDB(th.App, user.ClientId, t)
 			th.App.UpdateOAuthUserAttrs(data, user, gitlabProvider, "gitlab")
-			user = getUserFromDB(th.App, user.Id, t)
+			user = getUserFromDB(th.App, user.ClientId, t)
 
 			if user.Email != gitlabUserObj.Email {
 				t.Fatal("user's email is not updated")
@@ -292,9 +292,9 @@ func TestUpdateOAuthUserAttrs(t *testing.T) {
 			gitlabUser := getGitlabUserPayload(gitlabUserObj, t)
 			data := bytes.NewReader(gitlabUser)
 
-			user = getUserFromDB(th.App, user.Id, t)
+			user = getUserFromDB(th.App, user.ClientId, t)
 			th.App.UpdateOAuthUserAttrs(data, user, gitlabProvider, "gitlab")
-			user = getUserFromDB(th.App, user.Id, t)
+			user = getUserFromDB(th.App, user.ClientId, t)
 
 			if user.Email == gitlabUserObj.Email {
 				t.Fatal("user's email is updated though there already exists another user with the same email")
@@ -307,9 +307,9 @@ func TestUpdateOAuthUserAttrs(t *testing.T) {
 		gitlabUser := getGitlabUserPayload(gitlabUserObj, t)
 		data := bytes.NewReader(gitlabUser)
 
-		user = getUserFromDB(th.App, user.Id, t)
+		user = getUserFromDB(th.App, user.ClientId, t)
 		th.App.UpdateOAuthUserAttrs(data, user, gitlabProvider, "gitlab")
-		user = getUserFromDB(th.App, user.Id, t)
+		user = getUserFromDB(th.App, user.ClientId, t)
 
 		if user.FirstName != "Updated" {
 			t.Fatal("user's first name is not updated")
@@ -321,9 +321,9 @@ func TestUpdateOAuthUserAttrs(t *testing.T) {
 		gitlabUser := getGitlabUserPayload(gitlabUserObj, t)
 		data := bytes.NewReader(gitlabUser)
 
-		user = getUserFromDB(th.App, user.Id, t)
+		user = getUserFromDB(th.App, user.ClientId, t)
 		th.App.UpdateOAuthUserAttrs(data, user, gitlabProvider, "gitlab")
-		user = getUserFromDB(th.App, user.Id, t)
+		user = getUserFromDB(th.App, user.ClientId, t)
 
 		if user.LastName != "Lastname" {
 			t.Fatal("user's last name is not updated")
@@ -458,7 +458,7 @@ func TestGetUsersByStatus(t *testing.T) {
 		th.AddUserToChannel(user, channel)
 
 		th.App.SaveAndBroadcastStatus(&model.Status{
-			UserId: user.Id,
+			UserId: user.ClientId,
 			Status: status,
 			Manual: true,
 		})

@@ -16,7 +16,6 @@ import (
 	"github.com/mattermost/mattermost-server/model"
 	"github.com/mattermost/mattermost-server/store"
 	"github.com/mattermost/mattermost-server/utils"
-	"github.com/mattermost/mattermost-server/services/userservice"
 )
 
 const (
@@ -37,7 +36,7 @@ type SqlUserStore struct {
 	SqlStore
 	metrics einterfaces.MetricsInterface
 
-	// usersQuery is a starting point for all queries that return one or more Users.
+	// usersQuery is a starting point for all queries that return one or more UserIms.
 	usersQuery sq.SelectBuilder
 }
 
@@ -70,7 +69,7 @@ func NewSqlUserStore(sqlStore SqlStore, metrics einterfaces.MetricsInterface) st
 
 	us.usersQuery = sq.
 		Select("u.*", "b.UserId IS NOT NULL AS IsBot").
-		From("Users u").
+		From("UserIms u").
 		LeftJoin("Bots b ON ( b.UserId = u.ClientId )")
 
 	if us.DriverName() == model.DATABASE_DRIVER_POSTGRES {
@@ -78,7 +77,7 @@ func NewSqlUserStore(sqlStore SqlStore, metrics einterfaces.MetricsInterface) st
 	}
 
 	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(model.User{}, "Users").SetKeys(false, "Id")
+		table := db.AddTableWithName(model.User{}, "UserIms").SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(26)
 		table.ColMap("Username").SetMaxSize(64).SetUnique(true)
 		table.ColMap("Password").SetMaxSize(128)
@@ -102,23 +101,23 @@ func NewSqlUserStore(sqlStore SqlStore, metrics einterfaces.MetricsInterface) st
 }
 
 func (us SqlUserStore) CreateIndexesIfNotExists() {
-	us.CreateIndexIfNotExists("idx_users_email", "Users", "Email")
-	us.CreateIndexIfNotExists("idx_users_update_at", "Users", "UpdateAt")
-	us.CreateIndexIfNotExists("idx_users_create_at", "Users", "CreateAt")
-	us.CreateIndexIfNotExists("idx_users_delete_at", "Users", "DeleteAt")
+	us.CreateIndexIfNotExists("idx_users_email", "UserIms", "Email")
+	us.CreateIndexIfNotExists("idx_users_update_at", "UserIms", "UpdateAt")
+	us.CreateIndexIfNotExists("idx_users_create_at", "UserIms", "CreateAt")
+	us.CreateIndexIfNotExists("idx_users_delete_at", "UserIms", "DeleteAt")
 
 	if us.DriverName() == model.DATABASE_DRIVER_POSTGRES {
-		us.CreateIndexIfNotExists("idx_users_email_lower_textpattern", "Users", "lower(Email) text_pattern_ops")
-		us.CreateIndexIfNotExists("idx_users_username_lower_textpattern", "Users", "lower(Username) text_pattern_ops")
-		us.CreateIndexIfNotExists("idx_users_nickname_lower_textpattern", "Users", "lower(Nickname) text_pattern_ops")
-		us.CreateIndexIfNotExists("idx_users_firstname_lower_textpattern", "Users", "lower(FirstName) text_pattern_ops")
-		us.CreateIndexIfNotExists("idx_users_lastname_lower_textpattern", "Users", "lower(LastName) text_pattern_ops")
+		us.CreateIndexIfNotExists("idx_users_email_lower_textpattern", "UserIms", "lower(Email) text_pattern_ops")
+		us.CreateIndexIfNotExists("idx_users_username_lower_textpattern", "UserIms", "lower(Username) text_pattern_ops")
+		us.CreateIndexIfNotExists("idx_users_nickname_lower_textpattern", "UserIms", "lower(Nickname) text_pattern_ops")
+		us.CreateIndexIfNotExists("idx_users_firstname_lower_textpattern", "UserIms", "lower(FirstName) text_pattern_ops")
+		us.CreateIndexIfNotExists("idx_users_lastname_lower_textpattern", "UserIms", "lower(LastName) text_pattern_ops")
 	}
 
-	us.CreateFullTextIndexIfNotExists("idx_users_all_txt", "Users", strings.Join(USER_SEARCH_TYPE_ALL, ", "))
-	us.CreateFullTextIndexIfNotExists("idx_users_all_no_full_name_txt", "Users", strings.Join(USER_SEARCH_TYPE_ALL_NO_FULL_NAME, ", "))
-	us.CreateFullTextIndexIfNotExists("idx_users_names_txt", "Users", strings.Join(USER_SEARCH_TYPE_NAMES, ", "))
-	us.CreateFullTextIndexIfNotExists("idx_users_names_no_full_name_txt", "Users", strings.Join(USER_SEARCH_TYPE_NAMES_NO_FULL_NAME, ", "))
+	us.CreateFullTextIndexIfNotExists("idx_users_all_txt", "UserIms", strings.Join(USER_SEARCH_TYPE_ALL, ", "))
+	us.CreateFullTextIndexIfNotExists("idx_users_all_no_full_name_txt", "UserIms", strings.Join(USER_SEARCH_TYPE_ALL_NO_FULL_NAME, ", "))
+	us.CreateFullTextIndexIfNotExists("idx_users_names_txt", "UserIms", strings.Join(USER_SEARCH_TYPE_NAMES, ", "))
+	us.CreateFullTextIndexIfNotExists("idx_users_names_no_full_name_txt", "UserIms", strings.Join(USER_SEARCH_TYPE_NAMES_NO_FULL_NAME, ", "))
 }
 
 func (us SqlUserStore) Save(user *model.User) store.StoreChannel {
@@ -133,7 +132,7 @@ func (us SqlUserStore) Save(user *model.User) store.StoreChannel {
 			return
 		}
 
-		if err := userservice.SaveUser(user); err != nil {
+		if err := us.GetMaster().Insert(user); err != nil {
 			if IsUniqueConstraintError(err, []string{"Email", "users_email_key", "idx_users_email_unique"}) {
 				result.Err = model.NewAppError("SqlUserStore.Save", "store.sql_user.save.email_exists.app_error", nil, "user_id="+user.ClientId+", "+err.Error(), http.StatusBadRequest)
 			} else if IsUniqueConstraintError(err, []string{"Username", "users_username_key", "idx_users_username_unique"}) {
@@ -218,8 +217,7 @@ func (us SqlUserStore) Update(user *model.User, trustedUpdateData bool) store.St
 func (us SqlUserStore) UpdateLastPictureUpdate(userId string) store.StoreChannel {
 	return store.Do(func(result *store.StoreResult) {
 		curTime := model.GetMillis()
-
-		if _, err := us.GetMaster().Exec("UPDATE Users SET LastPictureUpdate = :Time, UpdateAt = :Time WHERE Id = :UserId", map[string]interface{}{"Time": curTime, "UserId": userId}); err != nil {
+		if _, err := us.GetMaster().Exec("UPDATE UserIms SET LastPictureUpdate = :Time, UpdateAt = :Time WHERE ClientId = :UserId", map[string]interface{}{"Time": curTime, "UserId": userId}); err != nil {
 			result.Err = model.NewAppError("SqlUserStore.UpdateLastPictureUpdate", "store.sql_user.update_last_picture_update.app_error", nil, "user_id="+userId, http.StatusInternalServerError)
 		} else {
 			result.Data = userId
@@ -229,7 +227,7 @@ func (us SqlUserStore) UpdateLastPictureUpdate(userId string) store.StoreChannel
 
 func (us SqlUserStore) ResetLastPictureUpdate(userId string) store.StoreChannel {
 	return store.Do(func(result *store.StoreResult) {
-		if _, err := us.GetMaster().Exec("UPDATE Users SET LastPictureUpdate = :Time, UpdateAt = :Time WHERE Id = :UserId", map[string]interface{}{"Time": 0, "UserId": userId}); err != nil {
+		if _, err := us.GetMaster().Exec("UPDATE UserIms SET LastPictureUpdate = :Time, UpdateAt = :Time WHERE ClientId = :UserId", map[string]interface{}{"Time": 0, "UserId": userId}); err != nil {
 			result.Err = model.NewAppError("SqlUserStore.ResetLastPictureUpdate", "store.sql_user.update_last_picture_update.app_error", nil, "user_id="+userId, http.StatusInternalServerError)
 		} else {
 			result.Data = userId
@@ -240,8 +238,7 @@ func (us SqlUserStore) ResetLastPictureUpdate(userId string) store.StoreChannel 
 func (us SqlUserStore) UpdateUpdateAt(userId string) store.StoreChannel {
 	return store.Do(func(result *store.StoreResult) {
 		curTime := model.GetMillis()
-
-		if _, err := us.GetMaster().Exec("UPDATE Users SET UpdateAt = :Time WHERE Id = :UserId", map[string]interface{}{"Time": curTime, "UserId": userId}); err != nil {
+		if _, err := us.GetMaster().Exec("UPDATE UserIms SET UpdateAt = :Time WHERE ClientId = :UserId", map[string]interface{}{"Time": curTime, "UserId": userId}); err != nil {
 			result.Err = model.NewAppError("SqlUserStore.UpdateUpdateAt", "store.sql_user.update_update.app_error", nil, "user_id="+userId, http.StatusInternalServerError)
 			return
 		}
@@ -253,8 +250,7 @@ func (us SqlUserStore) UpdateUpdateAt(userId string) store.StoreChannel {
 func (us SqlUserStore) UpdatePassword(userId, hashedPassword string) store.StoreChannel {
 	return store.Do(func(result *store.StoreResult) {
 		updateAt := model.GetMillis()
-
-		if _, err := us.GetMaster().Exec("UPDATE Users SET Password = :Password, LastPasswordUpdate = :LastPasswordUpdate, UpdateAt = :UpdateAt, AuthData = NULL, AuthService = '', FailedAttempts = 0 WHERE Id = :UserId", map[string]interface{}{"Password": hashedPassword, "LastPasswordUpdate": updateAt, "UpdateAt": updateAt, "UserId": userId}); err != nil {
+		if _, err := us.GetMaster().Exec("UPDATE UserIms SET Password = :Password, LastPasswordUpdate = :LastPasswordUpdate, UpdateAt = :UpdateAt, AuthData = NULL, AuthService = '', FailedAttempts = 0 WHERE ClientId = :UserId", map[string]interface{}{"Password": hashedPassword, "LastPasswordUpdate": updateAt, "UpdateAt": updateAt, "UserId": userId}); err != nil {
 			result.Err = model.NewAppError("SqlUserStore.UpdatePassword", "store.sql_user.update_password.app_error", nil, "id="+userId+", "+err.Error(), http.StatusInternalServerError)
 		} else {
 			result.Data = userId
@@ -264,7 +260,7 @@ func (us SqlUserStore) UpdatePassword(userId, hashedPassword string) store.Store
 
 func (us SqlUserStore) UpdateFailedPasswordAttempts(userId string, attempts int) store.StoreChannel {
 	return store.Do(func(result *store.StoreResult) {
-		if _, err := us.GetMaster().Exec("UPDATE Users SET FailedAttempts = :FailedAttempts WHERE Id = :UserId", map[string]interface{}{"FailedAttempts": attempts, "UserId": userId}); err != nil {
+		if _, err := us.GetMaster().Exec("UPDATE UserIms SET FailedAttempts = :FailedAttempts WHERE ClientId = :UserId", map[string]interface{}{"FailedAttempts": attempts, "UserId": userId}); err != nil {
 			result.Err = model.NewAppError("SqlUserStore.UpdateFailedPasswordAttempts", "store.sql_user.update_failed_pwd_attempts.app_error", nil, "user_id="+userId, http.StatusInternalServerError)
 		} else {
 			result.Data = userId
@@ -280,7 +276,7 @@ func (us SqlUserStore) UpdateAuthData(userId string, service string, authData *s
 
 		query := `
 			UPDATE
-			     Users
+			     UserIms
 			SET
 			     Password = '',
 			     LastPasswordUpdate = :LastPasswordUpdate,
@@ -297,7 +293,7 @@ func (us SqlUserStore) UpdateAuthData(userId string, service string, authData *s
 			query += ", MfaActive = false, MfaSecret = ''"
 		}
 
-		query += " WHERE Id = :UserId"
+		query += " WHERE ClientId = :UserId"
 
 		if _, err := us.GetMaster().Exec(query, map[string]interface{}{"LastPasswordUpdate": updateAt, "UpdateAt": updateAt, "UserId": userId, "AuthService": service, "AuthData": authData, "Email": email}); err != nil {
 			if IsUniqueConstraintError(err, []string{"Email", "users_email_key", "idx_users_email_unique", "AuthData", "users_authdata_key"}) {
@@ -315,7 +311,7 @@ func (us SqlUserStore) UpdateMfaSecret(userId, secret string) store.StoreChannel
 	return store.Do(func(result *store.StoreResult) {
 		updateAt := model.GetMillis()
 
-		if _, err := us.GetMaster().Exec("UPDATE Users SET MfaSecret = :Secret, UpdateAt = :UpdateAt WHERE Id = :UserId", map[string]interface{}{"Secret": secret, "UpdateAt": updateAt, "UserId": userId}); err != nil {
+		if _, err := us.GetMaster().Exec("UPDATE UserIms SET MfaSecret = :Secret, UpdateAt = :UpdateAt WHERE ClientId = :UserId", map[string]interface{}{"Secret": secret, "UpdateAt": updateAt, "UserId": userId}); err != nil {
 			result.Err = model.NewAppError("SqlUserStore.UpdateMfaSecret", "store.sql_user.update_mfa_secret.app_error", nil, "id="+userId+", "+err.Error(), http.StatusInternalServerError)
 		} else {
 			result.Data = userId
@@ -327,7 +323,7 @@ func (us SqlUserStore) UpdateMfaActive(userId string, active bool) store.StoreCh
 	return store.Do(func(result *store.StoreResult) {
 		updateAt := model.GetMillis()
 
-		if _, err := us.GetMaster().Exec("UPDATE Users SET MfaActive = :Active, UpdateAt = :UpdateAt WHERE Id = :UserId", map[string]interface{}{"Active": active, "UpdateAt": updateAt, "UserId": userId}); err != nil {
+		if _, err := us.GetMaster().Exec("UPDATE UserIms SET MfaActive = :Active, UpdateAt = :UpdateAt WHERE ClientId = :UserId", map[string]interface{}{"Active": active, "UpdateAt": updateAt, "UserId": userId}); err != nil {
 			result.Err = model.NewAppError("SqlUserStore.UpdateMfaActive", "store.sql_user.update_mfa_active.app_error", nil, "id="+userId+", "+err.Error(), http.StatusInternalServerError)
 		} else {
 			result.Data = userId
@@ -350,7 +346,7 @@ func (us SqlUserStore) Get(id string) store.StoreChannel {
 			result.Err = model.NewAppError("SqlUserStore.Get", store.MISSING_ACCOUNT_ERROR, nil, "user_id="+id, http.StatusNotFound)
 			return
 		} else if err != nil {
-			result.Err = model.NewAppError("SqlUserStore.Get", "store.sql_user.get.app_error", nil, "user_id="+id+", "+err.Error(), http.StatusInternalServerError)
+			result.Err = model.NewAppError("SqlUserStore.Get", "store.sql_user.get.app_error", nil, "ClientId="+id+", "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -402,7 +398,7 @@ func (us SqlUserStore) GetAllAfter(limit int, afterId string) store.StoreChannel
 
 func (s SqlUserStore) GetEtagForAllProfiles() store.StoreChannel {
 	return store.Do(func(result *store.StoreResult) {
-		updateAt, err := s.GetReplica().SelectInt("SELECT UpdateAt FROM Users ORDER BY UpdateAt DESC LIMIT 1")
+		updateAt, err := s.GetReplica().SelectInt("SELECT UpdateAt FROM UserIms ORDER BY UpdateAt DESC LIMIT 1")
 		if err != nil {
 			result.Data = fmt.Sprintf("%v.%v", model.CurrentVersion, model.GetMillis())
 		} else {
@@ -459,7 +455,7 @@ func applyRoleFilter(query sq.SelectBuilder, role string, isPostgreSQL bool) sq.
 
 func (s SqlUserStore) GetEtagForProfiles(teamId string) store.StoreChannel {
 	return store.Do(func(result *store.StoreResult) {
-		updateAt, err := s.GetReplica().SelectInt("SELECT UpdateAt FROM Users, TeamMembers WHERE TeamMembers.TeamId = :TeamId AND Users.Id = TeamMembers.UserId ORDER BY UpdateAt DESC LIMIT 1", map[string]interface{}{"TeamId": teamId})
+		updateAt, err := s.GetReplica().SelectInt("SELECT UpdateAt FROM UserIms, TeamMembers WHERE TeamMembers.TeamId = :TeamId AND UserIms.ClientId = TeamMembers.UserId ORDER BY UpdateAt DESC LIMIT 1", map[string]interface{}{"TeamId": teamId})
 		if err != nil {
 			result.Data = fmt.Sprintf("%v.%v", model.CurrentVersion, model.GetMillis())
 		} else {
@@ -717,8 +713,8 @@ func (us SqlUserStore) GetProfilesByUsernames(usernames []string, teamId string)
 
 		query = query.
 			Where(map[string]interface{}{
-				"Username": usernames,
-			}).
+			"Username": usernames,
+		}).
 			OrderBy("u.Username ASC")
 
 		queryString, args, err := query.ToSql()
@@ -754,13 +750,13 @@ func (us SqlUserStore) GetRecentlyActiveUsersForTeam(teamId string, offset, limi
 
 		queryString, args, err := query.ToSql()
 		if err != nil {
-			result.Err = model.NewAppError("SqlUserStore.GetRecentlyActiveUsers", "store.sql_user.app_error", nil, err.Error(), http.StatusInternalServerError)
+			result.Err = model.NewAppError("SqlUserStore.GetRecentlyActiveUser", "store.sql_user.app_error", nil, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		var users []*UserWithLastActivityAt
 		if _, err := us.GetReplica().Select(&users, queryString, args...); err != nil {
-			result.Err = model.NewAppError("SqlUserStore.GetRecentlyActiveUsers", "store.sql_user.get_recently_active_users.app_error", nil, err.Error(), http.StatusInternalServerError)
+			result.Err = model.NewAppError("SqlUserStore.GetRecentlyActiveUser", "store.sql_user.get_recently_active_users.app_error", nil, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -839,8 +835,8 @@ func (us SqlUserStore) GetProfileByIds(userIds []string, allowFromCache bool) st
 
 		query := us.usersQuery.
 			Where(map[string]interface{}{
-				"u.ClientId": remainingUserIds,
-			}).
+			"u.ClientId": remainingUserIds,
+		}).
 			OrderBy("u.Username ASC")
 
 		queryString, args, err := query.ToSql()
@@ -859,7 +855,7 @@ func (us SqlUserStore) GetProfileByIds(userIds []string, allowFromCache bool) st
 
 			cpy := &model.User{}
 			*cpy = *u
-			profileByIdsCache.AddWithExpiresInSecs(cpy.Id, cpy, PROFILE_BY_IDS_CACHE_SEC)
+			profileByIdsCache.AddWithExpiresInSecs(cpy.ClientId, cpy, PROFILE_BY_IDS_CACHE_SEC)
 		}
 
 		result.Data = users
@@ -935,10 +931,10 @@ func (us SqlUserStore) GetByAuth(authData *string, authService string) store.Sto
 
 		user := model.User{}
 		if err := us.GetReplica().SelectOne(&user, queryString, args...); err == sql.ErrNoRows {
-			result.Err = model.NewAppError("SqlUserStore.GetByAuth", store.MISSING_AUTH_ACCOUNT_ERROR, nil, "authData="+*authData+", authService="+authService+", "+err.Error(), http.StatusInternalServerError)
+			result.Err = model.NewAppError("SqlUserStore.GetByAuth", store.MISSING_AUTH_ACCOUNT_ERROR, nil, "authData=" + *authData+", authService="+authService+", "+err.Error(), http.StatusInternalServerError)
 			return
 		} else if err != nil {
-			result.Err = model.NewAppError("SqlUserStore.GetByAuth", "store.sql_user.get_by_auth.other.app_error", nil, "authData="+*authData+", authService="+authService+", "+err.Error(), http.StatusInternalServerError)
+			result.Err = model.NewAppError("SqlUserStore.GetByAuth", "store.sql_user.get_by_auth.other.app_error", nil, "authData=" + *authData+", authService="+authService+", "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -1032,7 +1028,7 @@ func (us SqlUserStore) GetForLogin(loginId string, allowSignInWithUsername, allo
 func (us SqlUserStore) VerifyEmail(userId, email string) store.StoreChannel {
 	return store.Do(func(result *store.StoreResult) {
 		curTime := model.GetMillis()
-		if _, err := us.GetMaster().Exec("UPDATE Users SET Email = :email, EmailVerified = true, UpdateAt = :Time WHERE Id = :UserId", map[string]interface{}{"email": email, "Time": curTime, "UserId": userId}); err != nil {
+		if _, err := us.GetMaster().Exec("UPDATE UserIms SET Email = :email, EmailVerified = true, UpdateAt = :Time WHERE ClientId = :UserId", map[string]interface{}{"email": email, "Time": curTime, "UserId": userId}); err != nil {
 			result.Err = model.NewAppError("SqlUserStore.VerifyEmail", "store.sql_user.verify_email.app_error", nil, "userId="+userId+", "+err.Error(), http.StatusInternalServerError)
 		}
 
@@ -1042,7 +1038,7 @@ func (us SqlUserStore) VerifyEmail(userId, email string) store.StoreChannel {
 
 func (us SqlUserStore) PermanentDelete(userId string) store.StoreChannel {
 	return store.Do(func(result *store.StoreResult) {
-		if _, err := us.GetMaster().Exec("DELETE FROM Users WHERE Id = :UserId", map[string]interface{}{"UserId": userId}); err != nil {
+		if _, err := us.GetMaster().Exec("DELETE FROM UserIms WHERE ClientId = :UserId", map[string]interface{}{"UserId": userId}); err != nil {
 			result.Err = model.NewAppError("SqlUserStore.PermanentDelete", "store.sql_user.permanent_delete.app_error", nil, "userId="+userId+", "+err.Error(), http.StatusInternalServerError)
 		}
 	})
@@ -1050,18 +1046,18 @@ func (us SqlUserStore) PermanentDelete(userId string) store.StoreChannel {
 
 func (us SqlUserStore) Count(options model.UserCountOptions) store.StoreChannel {
 	return store.Do(func(result *store.StoreResult) {
-		query := sq.Select("COUNT(Users.Id)").From("Users")
+		query := sq.Select("COUNT(UserIms.Id)").From("UserIms")
 
 		if !options.IncludeDeleted {
-			query = query.Where("Users.DeleteAt = 0")
+			query = query.Where("UserIms.DeleteAt = 0")
 		}
 
 		if options.IncludeBotAccounts {
 			if options.ExcludeRegularUsers {
-				query = query.Join("Bots ON Users.Id = Bots.UserId")
+				query = query.Join("Bots ON UserIms.ClientId = Bots.UserId")
 			}
 		} else {
-			query = query.LeftJoin("Bots ON Users.Id = Bots.UserId").Where("Bots.UserId IS NULL")
+			query = query.LeftJoin("Bots ON UserIms.ClientId = Bots.UserId").Where("Bots.UserId IS NULL")
 			if options.ExcludeRegularUsers {
 				// Currenty this doesn't make sense because it will always return 0
 				result.Err = model.NewAppError("SqlUserStore.Count", "UserCountOptions don't make sense", nil, "", http.StatusInternalServerError)
@@ -1070,7 +1066,7 @@ func (us SqlUserStore) Count(options model.UserCountOptions) store.StoreChannel 
 		}
 
 		if options.TeamId != "" {
-			query = query.LeftJoin("TeamMembers ON Users.Id = TeamMembers.UserId").Where("TeamMembers.TeamId = ? AND TeamMembers.DeleteAt = 0", options.TeamId)
+			query = query.LeftJoin("TeamMembers ON UserIms.ClientId = TeamMembers.UserId").Where("TeamMembers.TeamId = ? AND TeamMembers.DeleteAt = 0", options.TeamId)
 		}
 
 		if us.DriverName() == model.DATABASE_DRIVER_POSTGRES {
@@ -1099,7 +1095,7 @@ func (us SqlUserStore) AnalyticsActiveCount(timePeriod int64) store.StoreChannel
 
 		v, err := us.GetReplica().SelectInt(query, map[string]interface{}{"Time": time})
 		if err != nil {
-			result.Err = model.NewAppError("SqlUserStore.AnalyticsDailyActiveUsers", "store.sql_user.analytics_daily_active_users.app_error", nil, err.Error(), http.StatusInternalServerError)
+			result.Err = model.NewAppError("SqlUserStore.AnalyticsDailyActiveUserIms", "store.sql_user.analytics_daily_active_users.app_error", nil, err.Error(), http.StatusInternalServerError)
 		} else {
 			result.Data = v
 		}
@@ -1319,7 +1315,7 @@ func (us SqlUserStore) performSearch(query sq.SelectBuilder, term string, option
 
 func (us SqlUserStore) AnalyticsGetInactiveUsersCount() store.StoreChannel {
 	return store.Do(func(result *store.StoreResult) {
-		if count, err := us.GetReplica().SelectInt("SELECT COUNT(Id) FROM Users WHERE DeleteAt > 0"); err != nil {
+		if count, err := us.GetReplica().SelectInt("SELECT COUNT(Id) FROM UserIms WHERE DeleteAt > 0"); err != nil {
 			result.Err = model.NewAppError("SqlUserStore.AnalyticsGetInactiveUsersCount", "store.sql_user.analytics_get_inactive_users_count.app_error", nil, err.Error(), http.StatusInternalServerError)
 		} else {
 			result.Data = count
@@ -1329,7 +1325,7 @@ func (us SqlUserStore) AnalyticsGetInactiveUsersCount() store.StoreChannel {
 
 func (us SqlUserStore) AnalyticsGetSystemAdminCount() store.StoreChannel {
 	return store.Do(func(result *store.StoreResult) {
-		if count, err := us.GetReplica().SelectInt("SELECT count(*) FROM Users WHERE Roles LIKE :Roles and DeleteAt = 0", map[string]interface{}{"Roles": "%system_admin%"}); err != nil {
+		if count, err := us.GetReplica().SelectInt("SELECT count(*) FROM UserIms WHERE Roles LIKE :Roles and DeleteAt = 0", map[string]interface{}{"Roles": "%system_admin%"}); err != nil {
 			result.Err = model.NewAppError("SqlUserStore.AnalyticsGetSystemAdminCount", "store.sql_user.analytics_get_system_admin_count.app_error", nil, err.Error(), http.StatusInternalServerError)
 		} else {
 			result.Data = count
@@ -1373,7 +1369,7 @@ func (us SqlUserStore) GetEtagForProfilesNotInTeam(teamId string) store.StoreCha
 			SELECT 
 				CONCAT(MAX(UpdateAt), '.', COUNT(Id)) as etag
 			FROM 
-				Users as u
+				UserIms as u
 			LEFT JOIN TeamMembers tm 
 				ON tm.UserId = u.ClientId 
 				AND tm.TeamId = :TeamId 
@@ -1406,7 +1402,7 @@ func (us SqlUserStore) ClearAllCustomRoleAssignments() store.StoreChannel {
 			defer finalizeTransaction(transaction)
 
 			var users []*model.User
-			if _, err := transaction.Select(&users, "SELECT * from Users WHERE Id > :Id ORDER BY Id LIMIT 1000", map[string]interface{}{"Id": lastUserId}); err != nil {
+			if _, err := transaction.Select(&users, "SELECT * from UserIms WHERE ClientId > :Id ORDER BY Id LIMIT 1000", map[string]interface{}{"Id": lastUserId}); err != nil {
 				result.Err = model.NewAppError("SqlUserStore.ClearAllCustomRoleAssignments", "store.sql_user.clear_all_custom_role_assignments.select.app_error", nil, err.Error(), http.StatusInternalServerError)
 				return
 			}
@@ -1431,7 +1427,7 @@ func (us SqlUserStore) ClearAllCustomRoleAssignments() store.StoreChannel {
 
 				newRolesString := strings.Join(newRoles, " ")
 				if newRolesString != user.Roles {
-					if _, err := transaction.Exec("UPDATE Users SET Roles = :Roles WHERE Id = :Id", map[string]interface{}{"Roles": newRolesString, "Id": user.ClientId}); err != nil {
+					if _, err := transaction.Exec("UPDATE UserIms SET Roles = :Roles WHERE ClientId = :Id", map[string]interface{}{"Roles": newRolesString, "Id": user.ClientId}); err != nil {
 						result.Err = model.NewAppError("SqlUserStore.ClearAllCustomRoleAssignments", "store.sql_user.clear_all_custom_role_assignments.update.app_error", nil, err.Error(), http.StatusInternalServerError)
 						return
 					}
@@ -1448,7 +1444,7 @@ func (us SqlUserStore) ClearAllCustomRoleAssignments() store.StoreChannel {
 
 func (us SqlUserStore) InferSystemInstallDate() store.StoreChannel {
 	return store.Do(func(result *store.StoreResult) {
-		createAt, err := us.GetReplica().SelectInt("SELECT CreateAt FROM Users WHERE CreateAt IS NOT NULL ORDER BY CreateAt ASC LIMIT 1")
+		createAt, err := us.GetReplica().SelectInt("SELECT CreateAt FROM UserIms WHERE CreateAt IS NOT NULL ORDER BY CreateAt ASC LIMIT 1")
 		if err != nil {
 			result.Err = model.NewAppError("SqlUserStore.GetSystemInstallDate", "store.sql_user.get_system_install_date.app_error", nil, err.Error(), http.StatusInternalServerError)
 			return

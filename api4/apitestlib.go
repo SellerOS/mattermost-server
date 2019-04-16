@@ -182,11 +182,11 @@ func (me *TestHelper) InitBasic() *TestHelper {
 	me.waitForConnectivity()
 
 	me.SystemAdminUser = me.CreateUser()
-	me.App.UpdateUserRoles(me.SystemAdminUser.Id, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_ADMIN_ROLE_ID, false)
+	me.App.UpdateUserRoles(me.SystemAdminUser.ClientId, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_ADMIN_ROLE_ID, false)
 	me.LoginSystemAdmin()
 
 	me.TeamAdminUser = me.CreateUser()
-	me.App.UpdateUserRoles(me.TeamAdminUser.Id, model.SYSTEM_USER_ROLE_ID, false)
+	me.App.UpdateUserRoles(me.TeamAdminUser.ClientId, model.SYSTEM_USER_ROLE_ID, false)
 	me.LoginTeamAdmin()
 
 	me.BasicTeam = me.CreateTeam()
@@ -207,7 +207,7 @@ func (me *TestHelper) InitBasic() *TestHelper {
 	me.App.AddUserToChannel(me.BasicUser2, me.BasicPrivateChannel)
 	me.App.AddUserToChannel(me.BasicUser, me.BasicDeletedChannel)
 	me.App.AddUserToChannel(me.BasicUser2, me.BasicDeletedChannel)
-	me.App.UpdateUserRoles(me.BasicUser.Id, model.SYSTEM_USER_ROLE_ID, false)
+	me.App.UpdateUserRoles(me.BasicUser.ClientId, model.SYSTEM_USER_ROLE_ID, false)
 	me.Client.DeleteChannel(me.BasicDeletedChannel.Id)
 	me.LoginBasic()
 
@@ -283,7 +283,7 @@ func (me *TestHelper) CreateUserWithClient(client *model.Client4) *model.User {
 	}
 
 	ruser.Password = "Password1"
-	store.Must(me.App.Srv.Store.User().VerifyEmail(ruser.Id, ruser.Email))
+	store.Must(me.App.Srv.Store.User().VerifyEmail(ruser.ClientId, ruser.Email))
 	utils.EnableDebugLogForTest()
 	return ruser
 }
@@ -383,7 +383,7 @@ func (me *TestHelper) CreateMessagePostWithClient(client *model.Client4, channel
 
 func (me *TestHelper) CreateMessagePostNoClient(channel *model.Channel, message string, createAtTime int64) *model.Post {
 	post := store.Must(me.App.Srv.Store.Post().Save(&model.Post{
-		UserId:    me.BasicUser.Id,
+		UserId:    me.BasicUser.ClientId,
 		ChannelId: channel.Id,
 		Message:   message,
 		CreateAt:  createAtTime,
@@ -396,7 +396,7 @@ func (me *TestHelper) CreateDmChannel(user *model.User) *model.Channel {
 	utils.DisableDebugLogForTest()
 	var err *model.AppError
 	var channel *model.Channel
-	if channel, err = me.App.GetOrCreateDirectChannel(me.BasicUser.Id, user.Id); err != nil {
+	if channel, err = me.App.GetOrCreateDirectChannel(me.BasicUser.ClientId, user.ClientId); err != nil {
 		mlog.Error(err.Error())
 
 		time.Sleep(time.Second)
@@ -713,7 +713,7 @@ func (me *TestHelper) cleanupTestFile(info *model.FileInfo) error {
 func (me *TestHelper) MakeUserChannelAdmin(user *model.User, channel *model.Channel) {
 	utils.DisableDebugLogForTest()
 
-	if cmr := <-me.App.Srv.Store.Channel().GetMember(channel.Id, user.Id); cmr.Err == nil {
+	if cmr := <-me.App.Srv.Store.Channel().GetMember(channel.Id, user.ClientId); cmr.Err == nil {
 		cm := cmr.Data.(*model.ChannelMember)
 		cm.SchemeAdmin = true
 		if sr := <-me.App.Srv.Store.Channel().UpdateMember(cm); sr.Err != nil {
@@ -731,7 +731,7 @@ func (me *TestHelper) MakeUserChannelAdmin(user *model.User, channel *model.Chan
 func (me *TestHelper) UpdateUserToTeamAdmin(user *model.User, team *model.Team) {
 	utils.DisableDebugLogForTest()
 
-	if tmr := <-me.App.Srv.Store.Team().GetMember(team.Id, user.Id); tmr.Err == nil {
+	if tmr := <-me.App.Srv.Store.Team().GetMember(team.Id, user.ClientId); tmr.Err == nil {
 		tm := tmr.Data.(*model.TeamMember)
 		tm.SchemeAdmin = true
 		if sr := <-me.App.Srv.Store.Team().UpdateMember(tm); sr.Err != nil {
@@ -752,7 +752,7 @@ func (me *TestHelper) UpdateUserToTeamAdmin(user *model.User, team *model.Team) 
 func (me *TestHelper) UpdateUserToNonTeamAdmin(user *model.User, team *model.Team) {
 	utils.DisableDebugLogForTest()
 
-	if tmr := <-me.App.Srv.Store.Team().GetMember(team.Id, user.Id); tmr.Err == nil {
+	if tmr := <-me.App.Srv.Store.Team().GetMember(team.Id, user.ClientId); tmr.Err == nil {
 		tm := tmr.Data.(*model.TeamMember)
 		tm.SchemeAdmin = false
 		if sr := <-me.App.Srv.Store.Team().UpdateMember(tm); sr.Err != nil {

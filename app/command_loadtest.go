@@ -179,7 +179,7 @@ func (me *LoadTestProvider) SetupCommand(a *App, args *model.CommandArgs, messag
 		} else {
 			mlog.Info("Testing environment created")
 			for i := 0; i < len(environment.Teams); i++ {
-				mlog.Info("Team Created: " + environment.Teams[i].Name)
+				mlog.Info("Team CreateAt: " + environment.Teams[i].Name)
 				mlog.Info("\t User to login: " + environment.Environments[i].Users[0].Email + ", " + USER_PASSWORD)
 			}
 		}
@@ -203,7 +203,7 @@ func (me *LoadTestProvider) SetupCommand(a *App, args *model.CommandArgs, messag
 			doFuzz)
 	}
 
-	return &model.CommandResponse{Text: "Created environment", ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL}
+	return &model.CommandResponse{Text: "CreateAt environment", ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL}
 }
 
 func (me *LoadTestProvider) UsersCommand(a *App, args *model.CommandArgs, message string) *model.CommandResponse {

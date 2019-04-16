@@ -52,15 +52,15 @@ func (a *App) sendPushNotificationSync(post *model.Post, user *model.User, chann
 	explicitMention, channelWideMention bool, replyToThreadType string) *model.AppError {
 	cfg := a.Config()
 
-	sessions, err := a.getMobileAppSessions(user.Id)
+	sessions, err := a.getMobileAppSessions(user.ClientId)
 	if err != nil {
 		return err
 	}
 
 	msg := model.PushNotification{}
-	if badge := <-a.Srv.Store.User().GetUnreadCount(user.Id); badge.Err != nil {
+	if badge := <-a.Srv.Store.User().GetUnreadCount(user.ClientId); badge.Err != nil {
 		msg.Badge = 1
-		mlog.Error(fmt.Sprint("We could not get the unread message count for the user", user.Id, badge.Err), mlog.String("user_id", user.Id))
+		mlog.Error(fmt.Sprint("We could not get the unread message count for the user", user.ClientId, badge.Err), mlog.String("user_id", user.ClientId))
 	} else {
 		msg.Badge = int(badge.Data.(int64))
 	}
@@ -105,7 +105,7 @@ func (a *App) sendPushNotificationSync(post *model.Post, user *model.User, chann
 		tmpMessage := *model.PushNotificationFromJson(strings.NewReader(msg.ToJson()))
 		tmpMessage.SetDeviceIdAndPlatform(session.DeviceId)
 
-		mlog.Debug(fmt.Sprintf("Sending push notification to device %v for user %v with msg of '%v'", tmpMessage.DeviceId, user.Id, msg.Message), mlog.String("user_id", user.Id))
+		mlog.Debug(fmt.Sprintf("Sending push notification to device %v for user %v with msg of '%v'", tmpMessage.DeviceId, user.ClientId, msg.Message), mlog.String("user_id", user.ClientId))
 
 		a.sendToPushProxy(tmpMessage, session)
 
@@ -123,16 +123,16 @@ func (a *App) sendPushNotification(notification *postNotification, user *model.U
 	post := notification.post
 
 	var nameFormat string
-	if result := <-a.Srv.Store.Preference().Get(user.Id, model.PREFERENCE_CATEGORY_DISPLAY_SETTINGS, model.PREFERENCE_NAME_NAME_FORMAT); result.Err != nil {
+	if result := <-a.Srv.Store.Preference().Get(user.ClientId, model.PREFERENCE_CATEGORY_DISPLAY_SETTINGS, model.PREFERENCE_NAME_NAME_FORMAT); result.Err != nil {
 		nameFormat = *a.Config().TeamSettings.TeammateNameDisplay
 	} else {
 		nameFormat = result.Data.(model.Preference).Value
 	}
 
-	channelName := notification.GetChannelName(nameFormat, user.Id)
+	channelName := notification.GetChannelName(nameFormat, user.ClientId)
 	senderName := notification.GetSenderName(nameFormat, *cfg.ServiceSettings.EnablePostUsernameOverride)
 
-	c := a.Srv.PushNotificationsHub.GetGoChannelFromUserId(user.Id)
+	c := a.Srv.PushNotificationsHub.GetGoChannelFromUserId(user.ClientId)
 	c <- PushNotification{
 		notificationType:   NOTIFICATION_TYPE_MESSAGE,
 		post:               post,
@@ -344,7 +344,7 @@ func DoesNotifyPropsAllowPushNotification(user *model.User, channelNotifyProps m
 	}
 
 	if (userNotify == model.USER_NOTIFY_ALL || channelNotify == model.CHANNEL_NOTIFY_ALL) &&
-		(post.UserId != user.Id || post.Props["from_webhook"] == "true") {
+		(post.UserId != user.ClientId || post.Props["from_webhook"] == "true") {
 		return true
 	}
 

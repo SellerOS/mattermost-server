@@ -39,7 +39,7 @@ func Example() {
 	}
 
 	api := &plugintest.API{}
-	api.On("GetUser", user.Id).Return(user, nil)
+	api.On("GetUser", user.ClientId).Return(user, nil)
 	defer api.AssertExpectations(t)
 
 	p := &HelloUserPlugin{}
@@ -47,7 +47,7 @@ func Example() {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/", nil)
-	r.Header.Add("Mattermost-User-Id", user.Id)
+	r.Header.Add("Mattermost-User-Id", user.ClientId)
 	p.ServeHTTP(&plugin.Context{}, w, r)
 	body, err := ioutil.ReadAll(w.Result().Body)
 	require.NoError(t, err)

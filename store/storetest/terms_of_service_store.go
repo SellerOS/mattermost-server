@@ -24,7 +24,7 @@ func testSaveTermsOfService(t *testing.T, ss store.Store) {
 	u1.Nickname = model.NewId()
 	store.Must(ss.User().Save(&u1))
 
-	termsOfService := &model.TermsOfService{Text: "terms of service", UserId: u1.Id}
+	termsOfService := &model.TermsOfService{Text: "terms of service", UserId: u1.ClientId}
 	r1 := <-ss.TermsOfService().Save(termsOfService)
 
 	if r1.Err != nil {
@@ -48,7 +48,7 @@ func testGetLatestTermsOfService(t *testing.T, ss store.Store) {
 	u1.Nickname = model.NewId()
 	store.Must(ss.User().Save(&u1))
 
-	termsOfService := &model.TermsOfService{Text: "terms of service", UserId: u1.Id}
+	termsOfService := &model.TermsOfService{Text: "terms of service", UserId: u1.ClientId}
 	store.Must(ss.TermsOfService().Save(termsOfService))
 
 	r1 := <-ss.TermsOfService().GetLatest(true)
@@ -68,7 +68,7 @@ func testGetTermsOfService(t *testing.T, ss store.Store) {
 	u1.Nickname = model.NewId()
 	store.Must(ss.User().Save(&u1))
 
-	termsOfService := &model.TermsOfService{Text: "terms of service", UserId: u1.Id}
+	termsOfService := &model.TermsOfService{Text: "terms of service", UserId: u1.ClientId}
 	store.Must(ss.TermsOfService().Save(termsOfService))
 
 	r1 := <-ss.TermsOfService().Get("an_invalid_id", true)

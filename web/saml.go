@@ -114,11 +114,11 @@ func completeSaml(c *Context, w http.ResponseWriter, r *http.Request) {
 				})
 			}
 		case model.OAUTH_ACTION_EMAIL_TO_SSO:
-			if err := c.App.RevokeAllSessions(user.Id); err != nil {
+			if err := c.App.RevokeAllSessions(user.ClientId); err != nil {
 				c.Err = err
 				return
 			}
-			c.LogAuditWithUserId(user.Id, "Revoked all sessions for user")
+			c.LogAuditWithUserId(user.ClientId, "Revoked all sessions for user")
 			c.App.Srv.Go(func() {
 				if err := c.App.SendSignInChangeEmail(user.Email, strings.Title(model.USER_AUTH_SERVICE_SAML)+" SSO", user.Locale, c.App.GetSiteURL()); err != nil {
 					mlog.Error(err.Error())

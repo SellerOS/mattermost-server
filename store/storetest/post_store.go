@@ -1886,7 +1886,7 @@ func testPostStoreGetParentsForExportAfter(t *testing.T, ss store.Store) {
 
 	p1 := &model.Post{}
 	p1.ChannelId = c1.Id
-	p1.UserId = u1.Id
+	p1.UserId = u1.ClientId
 	p1.Message = "zz" + model.NewId() + "AAAAAAAAAAA"
 	p1.CreateAt = 1000
 	p1 = (<-ss.Post().Save(p1)).Data.(*model.Post)
@@ -1931,14 +1931,14 @@ func testPostStoreGetRepliesForExport(t *testing.T, ss store.Store) {
 
 	p1 := &model.Post{}
 	p1.ChannelId = c1.Id
-	p1.UserId = u1.Id
+	p1.UserId = u1.ClientId
 	p1.Message = "zz" + model.NewId() + "AAAAAAAAAAA"
 	p1.CreateAt = 1000
 	p1 = (<-ss.Post().Save(p1)).Data.(*model.Post)
 
 	p2 := &model.Post{}
 	p2.ChannelId = c1.Id
-	p2.UserId = u1.Id
+	p2.UserId = u1.ClientId
 	p2.Message = "zz" + model.NewId() + "AAAAAAAAAAA"
 	p2.CreateAt = 1001
 	p2.ParentId = p1.Id

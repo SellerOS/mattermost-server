@@ -62,7 +62,7 @@ func TestCreateUser(t *testing.T) {
 	_, resp = th.Client.CreateUser(ruser)
 	CheckBadRequestStatus(t, resp)
 
-	ruser.Id = ""
+	ruser.ClientId = ""
 	ruser.Username = GenerateTestUsername()
 	ruser.Password = "passwd1"
 	_, resp = th.Client.CreateUser(ruser)
@@ -130,7 +130,7 @@ func TestCreateUserWithToken(t *testing.T) {
 			t.Fatal("The token must be deleted after be used")
 		}
 
-		if teams, err := th.App.GetTeamsForUser(ruser.Id); err != nil || len(teams) == 0 {
+		if teams, err := th.App.GetTeamsForUser(ruser.ClientId); err != nil || len(teams) == 0 {
 			t.Fatal("The user must have teams")
 		} else if teams[0].Id != th.BasicTeam.Id {
 			t.Fatal("The user joined team must be the team provided.")
@@ -344,7 +344,7 @@ func TestGetMe(t *testing.T) {
 	ruser, resp := th.Client.GetMe("")
 	CheckNoError(t, resp)
 
-	if ruser.Id != th.BasicUser.Id {
+	if ruser.ClientId != th.BasicUser.Id {
 		t.Fatal("wrong user")
 	}
 
@@ -362,7 +362,7 @@ func TestGetUser(t *testing.T) {
 
 	th.App.UpdateUser(user, false)
 
-	ruser, resp := th.Client.GetUser(user.Id, "")
+	ruser, resp := th.Client.GetUser(user.ClientId, "")
 	CheckNoError(t, resp)
 	CheckUserSanitization(t, ruser)
 
@@ -374,7 +374,7 @@ func TestGetUser(t *testing.T) {
 	assert.Equal(t, ruser.Props["testpropkey"], "testpropvalue")
 	require.False(t, ruser.IsBot)
 
-	ruser, resp = th.Client.GetUser(user.Id, resp.Etag)
+	ruser, resp = th.Client.GetUser(user.ClientId, resp.Etag)
 	CheckEtag(t, ruser, resp)
 
 	_, resp = th.Client.GetUser("junk", "")
@@ -387,7 +387,7 @@ func TestGetUser(t *testing.T) {
 	th.App.UpdateConfig(func(cfg *model.Config) { *cfg.PrivacySettings.ShowEmailAddress = false })
 	th.App.UpdateConfig(func(cfg *model.Config) { *cfg.PrivacySettings.ShowFullName = false })
 
-	ruser, resp = th.Client.GetUser(user.Id, "")
+	ruser, resp = th.Client.GetUser(user.ClientId, "")
 	CheckNoError(t, resp)
 
 	if ruser.Email != "" {
@@ -401,11 +401,11 @@ func TestGetUser(t *testing.T) {
 	}
 
 	th.Client.Logout()
-	_, resp = th.Client.GetUser(user.Id, "")
+	_, resp = th.Client.GetUser(user.ClientId, "")
 	CheckUnauthorizedStatus(t, resp)
 
 	// System admins should ignore privacy settings
-	ruser, _ = th.SystemAdminClient.GetUser(user.Id, resp.Etag)
+	ruser, _ = th.SystemAdminClient.GetUser(user.ClientId, resp.Etag)
 	if ruser.Email == "" {
 		t.Fatal("email should not be blank")
 	}
@@ -793,7 +793,7 @@ func TestSearchUsers(t *testing.T) {
 
 func findUserInList(id string, users []*model.User) bool {
 	for _, user := range users {
-		if user.Id == id {
+		if user.ClientId == id {
 			return true
 		}
 	}
@@ -932,13 +932,13 @@ func TestGetProfileImage(t *testing.T) {
 	defer th.TearDown()
 	user := th.BasicUser
 
-	data, resp := th.Client.GetProfileImage(user.Id, "")
+	data, resp := th.Client.GetProfileImage(user.ClientId, "")
 	CheckNoError(t, resp)
 	if len(data) == 0 {
 		t.Fatal("Should not be empty")
 	}
 
-	_, resp = th.Client.GetProfileImage(user.Id, resp.Etag)
+	_, resp = th.Client.GetProfileImage(user.ClientId, resp.Etag)
 	if resp.StatusCode == http.StatusNotModified {
 		t.Fatal("Shouldn't have hit etag")
 	}
@@ -950,13 +950,13 @@ func TestGetProfileImage(t *testing.T) {
 	CheckNotFoundStatus(t, resp)
 
 	th.Client.Logout()
-	_, resp = th.Client.GetProfileImage(user.Id, "")
+	_, resp = th.Client.GetProfileImage(user.ClientId, "")
 	CheckUnauthorizedStatus(t, resp)
 
-	_, resp = th.SystemAdminClient.GetProfileImage(user.Id, "")
+	_, resp = th.SystemAdminClient.GetProfileImage(user.ClientId, "")
 	CheckNoError(t, resp)
 
-	info := &model.FileInfo{Path: "/users/" + user.Id + "/profile.png"}
+	info := &model.FileInfo{Path: "/users/" + user.ClientId + "/profile.png"}
 	if err := th.cleanupTestFile(info); err != nil {
 		t.Fatal(err)
 	}
@@ -1077,15 +1077,15 @@ func TestUpdateUser(t *testing.T) {
 	CheckNoError(t, resp)
 	CheckUserSanitization(t, ruser)
 
-	ruser.Id = "junk"
+	ruser.ClientId = "junk"
 	_, resp = th.Client.UpdateUser(ruser)
 	CheckBadRequestStatus(t, resp)
 
-	ruser.Id = model.NewId()
+	ruser.ClientId = model.NewId()
 	_, resp = th.Client.UpdateUser(ruser)
 	CheckForbiddenStatus(t, resp)
 
-	if r, err := th.Client.DoApiPut("/users/"+ruser.Id, "garbage"); err == nil {
+	if r, err := th.Client.DoApiPut("/users/"+ruser.ClientId, "garbage"); err == nil {
 		t.Fatal("should have errored")
 	} else {
 		if r.StatusCode != http.StatusBadRequest {
@@ -1099,7 +1099,7 @@ func TestUpdateUser(t *testing.T) {
 	session.IsOAuth = true
 	th.App.AddSessionToCache(session)
 
-	ruser.Id = user.Id
+	ruser.ClientId = user.ClientId
 	ruser.Email = th.GenerateTestEmail()
 	_, resp = th.Client.UpdateUser(ruser)
 	CheckForbiddenStatus(t, resp)
@@ -1136,7 +1136,7 @@ func TestPatchUser(t *testing.T) {
 	patch.Timezone["automaticTimezone"] = "America/New_York"
 	patch.Timezone["manualTimezone"] = ""
 
-	ruser, resp := th.Client.PatchUser(user.Id, patch)
+	ruser, resp := th.Client.PatchUser(user.ClientId, patch)
 	CheckNoError(t, resp)
 	CheckUserSanitization(t, ruser)
 
@@ -1175,7 +1175,7 @@ func TestPatchUser(t *testing.T) {
 	assert.Error(t, err, "Password should not match")
 
 	currentPassword := user.Password
-	user, err = th.App.GetUser(ruser.Id)
+	user, err = th.App.GetUser(ruser.ClientId)
 	if err != nil {
 		t.Fatal("User Get shouldn't error")
 	}
@@ -1188,11 +1188,11 @@ func TestPatchUser(t *testing.T) {
 	patch = &model.UserPatch{}
 	patch.Email = model.NewString(th.GenerateTestEmail())
 
-	_, resp = th.Client.PatchUser(user.Id, patch)
+	_, resp = th.Client.PatchUser(user.ClientId, patch)
 	CheckBadRequestStatus(t, resp)
 
 	patch.Password = model.NewString(currentPassword)
-	ruser, resp = th.Client.PatchUser(user.Id, patch)
+	ruser, resp = th.Client.PatchUser(user.ClientId, patch)
 	CheckNoError(t, resp)
 
 	if ruser.Email != *patch.Email {
@@ -1200,7 +1200,7 @@ func TestPatchUser(t *testing.T) {
 	}
 
 	patch.Username = model.NewString(th.BasicUser2.Username)
-	_, resp = th.Client.PatchUser(user.Id, patch)
+	_, resp = th.Client.PatchUser(user.ClientId, patch)
 	CheckBadRequestStatus(t, resp)
 
 	patch.Username = nil
@@ -1208,11 +1208,11 @@ func TestPatchUser(t *testing.T) {
 	_, resp = th.Client.PatchUser("junk", patch)
 	CheckBadRequestStatus(t, resp)
 
-	ruser.Id = model.NewId()
+	ruser.ClientId = model.NewId()
 	_, resp = th.Client.PatchUser(model.NewId(), patch)
 	CheckForbiddenStatus(t, resp)
 
-	if r, err := th.Client.DoApiPut("/users/"+user.Id+"/patch", "garbage"); err == nil {
+	if r, err := th.Client.DoApiPut("/users/"+user.ClientId+"/patch", "garbage"); err == nil {
 		t.Fatal("should have errored")
 	} else {
 		if r.StatusCode != http.StatusBadRequest {
@@ -1227,18 +1227,18 @@ func TestPatchUser(t *testing.T) {
 	th.App.AddSessionToCache(session)
 
 	patch.Email = model.NewString(th.GenerateTestEmail())
-	_, resp = th.Client.PatchUser(user.Id, patch)
+	_, resp = th.Client.PatchUser(user.ClientId, patch)
 	CheckForbiddenStatus(t, resp)
 
 	th.Client.Logout()
-	_, resp = th.Client.PatchUser(user.Id, patch)
+	_, resp = th.Client.PatchUser(user.ClientId, patch)
 	CheckUnauthorizedStatus(t, resp)
 
 	th.LoginBasic()
-	_, resp = th.Client.PatchUser(user.Id, patch)
+	_, resp = th.Client.PatchUser(user.ClientId, patch)
 	CheckForbiddenStatus(t, resp)
 
-	_, resp = th.SystemAdminClient.PatchUser(user.Id, patch)
+	_, resp = th.SystemAdminClient.PatchUser(user.ClientId, patch)
 	CheckNoError(t, resp)
 }
 
@@ -1251,7 +1251,7 @@ func TestUpdateUserAuth(t *testing.T) {
 	user := th.CreateUser()
 
 	th.LinkUserToTeam(user, team)
-	store.Must(th.App.Srv.Store.User().VerifyEmail(user.Id, user.Email))
+	store.Must(th.App.Srv.Store.User().VerifyEmail(user.ClientId, user.Email))
 
 	userAuth := &model.UserAuth{}
 	userAuth.AuthData = user.AuthData
@@ -1259,14 +1259,14 @@ func TestUpdateUserAuth(t *testing.T) {
 	userAuth.Password = user.Password
 
 	// Regular user can not use endpoint
-	if _, err := th.SystemAdminClient.UpdateUserAuth(user.Id, userAuth); err == nil {
+	if _, err := th.SystemAdminClient.UpdateUserAuth(user.ClientId, userAuth); err == nil {
 		t.Fatal("Shouldn't have permissions. Only Admins")
 	}
 
 	userAuth.AuthData = model.NewString("test@test.com")
 	userAuth.AuthService = model.USER_AUTH_SERVICE_SAML
 	userAuth.Password = "newpassword"
-	ruser, resp := th.SystemAdminClient.UpdateUserAuth(user.Id, userAuth)
+	ruser, resp := th.SystemAdminClient.UpdateUserAuth(user.ClientId, userAuth)
 	CheckNoError(t, resp)
 
 	// AuthData and AuthService are set, password is set to empty
@@ -1284,7 +1284,7 @@ func TestUpdateUserAuth(t *testing.T) {
 	userAuth.AuthData = user.AuthData
 	userAuth.AuthService = ""
 	userAuth.Password = "1"
-	if _, err := th.SystemAdminClient.UpdateUserAuth(user.Id, userAuth); err == nil {
+	if _, err := th.SystemAdminClient.UpdateUserAuth(user.ClientId, userAuth); err == nil {
 		t.Fatal("Should have errored - user password not valid")
 	}
 
@@ -1298,7 +1298,7 @@ func TestUpdateUserAuth(t *testing.T) {
 	userAuth.AuthData = user.AuthData
 	userAuth.AuthService = user.AuthService
 	userAuth.Password = user.Password
-	if _, err := th.SystemAdminClient.UpdateUserAuth(user.Id, userAuth); err == nil {
+	if _, err := th.SystemAdminClient.UpdateUserAuth(user.ClientId, userAuth); err == nil {
 		t.Fatal("Should have errored")
 	}
 }
@@ -1316,17 +1316,17 @@ func TestDeleteUser(t *testing.T) {
 
 	th.Client.Logout()
 
-	_, resp = th.Client.DeleteUser(user.Id)
+	_, resp = th.Client.DeleteUser(user.ClientId)
 	CheckUnauthorizedStatus(t, resp)
 
 	th.Client.Login(testUser.Email, testUser.Password)
 
-	user.Id = model.NewId()
-	_, resp = th.Client.DeleteUser(user.Id)
+	user.ClientId = model.NewId()
+	_, resp = th.Client.DeleteUser(user.ClientId)
 	CheckNotFoundStatus(t, resp)
 
-	user.Id = "junk"
-	_, resp = th.Client.DeleteUser(user.Id)
+	user.ClientId = "junk"
+	_, resp = th.Client.DeleteUser(user.ClientId)
 	CheckBadRequestStatus(t, resp)
 
 	_, resp = th.Client.DeleteUser(testUser.Id)
@@ -1407,7 +1407,7 @@ func TestUpdateUserActive(t *testing.T) {
 		user := th.BasicUser
 
 		th.App.UpdateConfig(func(cfg *model.Config) { *cfg.TeamSettings.EnableUserDeactivation = true })
-		pass, resp := th.Client.UpdateUserActive(user.Id, false)
+		pass, resp := th.Client.UpdateUserActive(user.ClientId, false)
 		CheckNoError(t, resp)
 
 		if !pass {
@@ -1415,7 +1415,7 @@ func TestUpdateUserActive(t *testing.T) {
 		}
 
 		th.App.UpdateConfig(func(cfg *model.Config) { *cfg.TeamSettings.EnableUserDeactivation = false })
-		pass, resp = th.Client.UpdateUserActive(user.Id, false)
+		pass, resp = th.Client.UpdateUserActive(user.ClientId, false)
 		CheckUnauthorizedStatus(t, resp)
 
 		if pass {
@@ -1423,7 +1423,7 @@ func TestUpdateUserActive(t *testing.T) {
 		}
 
 		th.App.UpdateConfig(func(cfg *model.Config) { *cfg.TeamSettings.EnableUserDeactivation = true })
-		pass, resp = th.Client.UpdateUserActive(user.Id, false)
+		pass, resp = th.Client.UpdateUserActive(user.ClientId, false)
 		CheckUnauthorizedStatus(t, resp)
 
 		if pass {
@@ -1432,7 +1432,7 @@ func TestUpdateUserActive(t *testing.T) {
 
 		th.LoginBasic2()
 
-		_, resp = th.Client.UpdateUserActive(user.Id, true)
+		_, resp = th.Client.UpdateUserActive(user.ClientId, true)
 		CheckForbiddenStatus(t, resp)
 
 		_, resp = th.Client.UpdateUserActive(GenerateTestId(), true)
@@ -1443,20 +1443,20 @@ func TestUpdateUserActive(t *testing.T) {
 
 		th.Client.Logout()
 
-		_, resp = th.Client.UpdateUserActive(user.Id, true)
+		_, resp = th.Client.UpdateUserActive(user.ClientId, true)
 		CheckUnauthorizedStatus(t, resp)
 
-		_, resp = th.SystemAdminClient.UpdateUserActive(user.Id, true)
+		_, resp = th.SystemAdminClient.UpdateUserActive(user.ClientId, true)
 		CheckNoError(t, resp)
 
-		_, resp = th.SystemAdminClient.UpdateUserActive(user.Id, false)
+		_, resp = th.SystemAdminClient.UpdateUserActive(user.ClientId, false)
 		CheckNoError(t, resp)
 
 		authData := model.NewId()
-		result := <-th.App.Srv.Store.User().UpdateAuthData(user.Id, "random", &authData, "", true)
+		result := <-th.App.Srv.Store.User().UpdateAuthData(user.ClientId, "random", &authData, "", true)
 		require.Nil(t, result.Err)
 
-		_, resp = th.SystemAdminClient.UpdateUserActive(user.Id, false)
+		_, resp = th.SystemAdminClient.UpdateUserActive(user.ClientId, false)
 		CheckNoError(t, resp)
 	})
 
@@ -1492,7 +1492,7 @@ func TestUpdateUserActive(t *testing.T) {
 
 		// Verify that both admins and regular users see the email when privacy settings allow same.
 		th.App.UpdateConfig(func(cfg *model.Config) { *cfg.PrivacySettings.ShowEmailAddress = true })
-		_, resp := th.SystemAdminClient.UpdateUserActive(user.Id, false)
+		_, resp := th.SystemAdminClient.UpdateUserActive(user.ClientId, false)
 		CheckNoError(t, resp)
 
 		assertWebsocketEventUserUpdatedWithEmail(t, webSocketClient, user.Email)
@@ -1500,7 +1500,7 @@ func TestUpdateUserActive(t *testing.T) {
 
 		// Verify that only admins see the email when privacy settings hide emails.
 		th.App.UpdateConfig(func(cfg *model.Config) { *cfg.PrivacySettings.ShowEmailAddress = false })
-		_, resp = th.SystemAdminClient.UpdateUserActive(user.Id, true)
+		_, resp = th.SystemAdminClient.UpdateUserActive(user.ClientId, true)
 		CheckNoError(t, resp)
 
 		assertWebsocketEventUserUpdatedWithEmail(t, webSocketClient, "")
@@ -1622,7 +1622,7 @@ func TestGetUsersWithoutTeam(t *testing.T) {
 	})
 	CheckNoError(t, resp)
 	th.LinkUserToTeam(user, th.BasicTeam)
-	defer th.App.Srv.Store.User().PermanentDelete(user.Id)
+	defer th.App.Srv.Store.User().PermanentDelete(user.ClientId)
 
 	user2, resp := th.Client.CreateUser(&model.User{
 		Username: "a000000001" + model.NewId(),
@@ -1639,7 +1639,7 @@ func TestGetUsersWithoutTeam(t *testing.T) {
 	found2 := false
 
 	for _, u := range rusers {
-		if u.Id == user.Id {
+		if u.Id == user.ClientId {
 			found1 = true
 		} else if u.Id == user2.Id {
 			found2 = true
@@ -2129,7 +2129,7 @@ func TestResetPassword(t *testing.T) {
 	_, resp = th.Client.ResetPassword(recoveryToken.Token, "newpwd")
 	CheckBadRequestStatus(t, resp)
 	authData := model.NewId()
-	if result := <-th.App.Srv.Store.User().UpdateAuthData(user.Id, "random", &authData, "", true); result.Err != nil {
+	if result := <-th.App.Srv.Store.User().UpdateAuthData(user.ClientId, "random", &authData, "", true); result.Err != nil {
 		t.Fatal(result.Err)
 	}
 	_, resp = th.Client.SendPasswordResetEmail(user.Email)
@@ -2144,9 +2144,9 @@ func TestGetSessions(t *testing.T) {
 
 	th.Client.Login(user.Email, user.Password)
 
-	sessions, resp := th.Client.GetSessions(user.Id, "")
+	sessions, resp := th.Client.GetSessions(user.ClientId, "")
 	for _, session := range sessions {
-		if session.UserId != user.Id {
+		if session.UserId != user.ClientId {
 			t.Fatal("user id does not match session user id")
 		}
 	}
@@ -2165,7 +2165,7 @@ func TestGetSessions(t *testing.T) {
 	_, resp = th.Client.GetSessions(th.BasicUser2.Id, "")
 	CheckUnauthorizedStatus(t, resp)
 
-	_, resp = th.SystemAdminClient.GetSessions(user.Id, "")
+	_, resp = th.SystemAdminClient.GetSessions(user.ClientId, "")
 	CheckNoError(t, resp)
 
 	_, resp = th.SystemAdminClient.GetSessions(th.BasicUser2.Id, "")
@@ -2181,18 +2181,18 @@ func TestRevokeSessions(t *testing.T) {
 
 	user := th.BasicUser
 	th.Client.Login(user.Email, user.Password)
-	sessions, _ := th.Client.GetSessions(user.Id, "")
+	sessions, _ := th.Client.GetSessions(user.ClientId, "")
 	if len(sessions) == 0 {
 		t.Fatal("sessions should exist")
 	}
 	for _, session := range sessions {
-		if session.UserId != user.Id {
+		if session.UserId != user.ClientId {
 			t.Fatal("user id does not match session user id")
 		}
 	}
 	session := sessions[0]
 
-	_, resp := th.Client.RevokeSession(user.Id, model.NewId())
+	_, resp := th.Client.RevokeSession(user.ClientId, model.NewId())
 	CheckBadRequestStatus(t, resp)
 
 	_, resp = th.Client.RevokeSession(th.BasicUser2.Id, model.NewId())
@@ -2201,7 +2201,7 @@ func TestRevokeSessions(t *testing.T) {
 	_, resp = th.Client.RevokeSession("junk", model.NewId())
 	CheckBadRequestStatus(t, resp)
 
-	status, resp := th.Client.RevokeSession(user.Id, session.Id)
+	status, resp := th.Client.RevokeSession(user.ClientId, session.Id)
 	if !status {
 		t.Fatal("user session revoke unsuccessful")
 	}
@@ -2212,14 +2212,14 @@ func TestRevokeSessions(t *testing.T) {
 	sessions, _ = th.App.GetSessions(th.SystemAdminUser.Id)
 	session = sessions[0]
 
-	_, resp = th.Client.RevokeSession(user.Id, session.Id)
+	_, resp = th.Client.RevokeSession(user.ClientId, session.Id)
 	CheckBadRequestStatus(t, resp)
 
 	th.Client.Logout()
-	_, resp = th.Client.RevokeSession(user.Id, model.NewId())
+	_, resp = th.Client.RevokeSession(user.ClientId, model.NewId())
 	CheckUnauthorizedStatus(t, resp)
 
-	_, resp = th.SystemAdminClient.RevokeSession(user.Id, model.NewId())
+	_, resp = th.SystemAdminClient.RevokeSession(user.ClientId, model.NewId())
 	CheckBadRequestStatus(t, resp)
 
 	sessions, _ = th.SystemAdminClient.GetSessions(th.SystemAdminUser.Id, "")
@@ -2247,35 +2247,35 @@ func TestRevokeAllSessions(t *testing.T) {
 	_, resp := th.Client.RevokeAllSessions(th.BasicUser2.Id)
 	CheckForbiddenStatus(t, resp)
 
-	_, resp = th.Client.RevokeAllSessions("junk" + user.Id)
+	_, resp = th.Client.RevokeAllSessions("junk" + user.ClientId)
 	CheckBadRequestStatus(t, resp)
 
-	status, resp := th.Client.RevokeAllSessions(user.Id)
+	status, resp := th.Client.RevokeAllSessions(user.ClientId)
 	if !status {
 		t.Fatal("user all sessions revoke unsuccessful")
 	}
 	CheckNoError(t, resp)
 
 	th.Client.Logout()
-	_, resp = th.Client.RevokeAllSessions(user.Id)
+	_, resp = th.Client.RevokeAllSessions(user.ClientId)
 	CheckUnauthorizedStatus(t, resp)
 
 	th.Client.Login(user.Email, user.Password)
 
-	sessions, _ := th.Client.GetSessions(user.Id, "")
+	sessions, _ := th.Client.GetSessions(user.ClientId, "")
 	if len(sessions) < 1 {
 		t.Fatal("session should exist")
 	}
 
-	_, resp = th.Client.RevokeAllSessions(user.Id)
+	_, resp = th.Client.RevokeAllSessions(user.ClientId)
 	CheckNoError(t, resp)
 
-	sessions, _ = th.SystemAdminClient.GetSessions(user.Id, "")
+	sessions, _ = th.SystemAdminClient.GetSessions(user.ClientId, "")
 	if len(sessions) != 0 {
 		t.Fatal("no sessions should exist for user")
 	}
 
-	_, resp = th.Client.RevokeAllSessions(user.Id)
+	_, resp = th.Client.RevokeAllSessions(user.ClientId)
 	CheckUnauthorizedStatus(t, resp)
 }
 
@@ -2313,9 +2313,9 @@ func TestGetUserAudits(t *testing.T) {
 	defer th.TearDown()
 	user := th.BasicUser
 
-	audits, resp := th.Client.GetUserAudits(user.Id, 0, 100, "")
+	audits, resp := th.Client.GetUserAudits(user.ClientId, 0, 100, "")
 	for _, audit := range audits {
-		if audit.UserId != user.Id {
+		if audit.UserId != user.ClientId {
 			t.Fatal("user id does not match audit user id")
 		}
 	}
@@ -2325,10 +2325,10 @@ func TestGetUserAudits(t *testing.T) {
 	CheckForbiddenStatus(t, resp)
 
 	th.Client.Logout()
-	_, resp = th.Client.GetUserAudits(user.Id, 0, 100, "")
+	_, resp = th.Client.GetUserAudits(user.ClientId, 0, 100, "")
 	CheckUnauthorizedStatus(t, resp)
 
-	_, resp = th.SystemAdminClient.GetUserAudits(user.Id, 0, 100, "")
+	_, resp = th.SystemAdminClient.GetUserAudits(user.ClientId, 0, 100, "")
 	CheckNoError(t, resp)
 }
 
@@ -2341,7 +2341,7 @@ func TestVerifyUserEmail(t *testing.T) {
 
 	ruser, _ := th.Client.CreateUser(&user)
 
-	token, err := th.App.CreateVerifyEmailToken(ruser.Id, email)
+	token, err := th.App.CreateVerifyEmailToken(ruser.ClientId, email)
 	if err != nil {
 		t.Fatal("Unable to create email verify token")
 	}
@@ -2389,7 +2389,7 @@ func TestSetProfileImage(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ok, resp := th.Client.SetProfileImage(user.Id, data)
+	ok, resp := th.Client.SetProfileImage(user.ClientId, data)
 	if !ok {
 		t.Fatal(resp.Error)
 	}
@@ -2404,7 +2404,7 @@ func TestSetProfileImage(t *testing.T) {
 	// status code returns either forbidden or unauthorized
 	// note: forbidden is set as default at Client4.SetProfileImage when request is terminated early by server
 	th.Client.Logout()
-	_, resp = th.Client.SetProfileImage(user.Id, data)
+	_, resp = th.Client.SetProfileImage(user.ClientId, data)
 	if resp.StatusCode == http.StatusForbidden {
 		CheckForbiddenStatus(t, resp)
 	} else if resp.StatusCode == http.StatusUnauthorized {
@@ -2413,17 +2413,17 @@ func TestSetProfileImage(t *testing.T) {
 		t.Fatal("Should have failed either forbidden or unauthorized")
 	}
 
-	buser, err := th.App.GetUser(user.Id)
+	buser, err := th.App.GetUser(user.ClientId)
 	require.Nil(t, err)
 
-	_, resp = th.SystemAdminClient.SetProfileImage(user.Id, data)
+	_, resp = th.SystemAdminClient.SetProfileImage(user.ClientId, data)
 	CheckNoError(t, resp)
 
-	ruser, err := th.App.GetUser(user.Id)
+	ruser, err := th.App.GetUser(user.ClientId)
 	require.Nil(t, err)
 	assert.True(t, buser.LastPictureUpdate < ruser.LastPictureUpdate, "Picture should have updated for user")
 
-	info := &model.FileInfo{Path: "users/" + user.Id + "/profile.png"}
+	info := &model.FileInfo{Path: "users/" + user.ClientId + "/profile.png"}
 	if err := th.cleanupTestFile(info); err != nil {
 		t.Fatal(err)
 	}
@@ -2434,7 +2434,7 @@ func TestSetDefaultProfileImage(t *testing.T) {
 	defer th.TearDown()
 	user := th.BasicUser
 
-	ok, resp := th.Client.SetDefaultProfileImage(user.Id)
+	ok, resp := th.Client.SetDefaultProfileImage(user.ClientId)
 	if !ok {
 		t.Fatal(resp.Error)
 	}
@@ -2449,7 +2449,7 @@ func TestSetDefaultProfileImage(t *testing.T) {
 	// status code returns either forbidden or unauthorized
 	// note: forbidden is set as default at Client4.SetDefaultProfileImage when request is terminated early by server
 	th.Client.Logout()
-	_, resp = th.Client.SetDefaultProfileImage(user.Id)
+	_, resp = th.Client.SetDefaultProfileImage(user.ClientId)
 	if resp.StatusCode == http.StatusForbidden {
 		CheckForbiddenStatus(t, resp)
 	} else if resp.StatusCode == http.StatusUnauthorized {
@@ -2458,14 +2458,14 @@ func TestSetDefaultProfileImage(t *testing.T) {
 		t.Fatal("Should have failed either forbidden or unauthorized")
 	}
 
-	_, resp = th.SystemAdminClient.SetDefaultProfileImage(user.Id)
+	_, resp = th.SystemAdminClient.SetDefaultProfileImage(user.ClientId)
 	CheckNoError(t, resp)
 
-	ruser, err := th.App.GetUser(user.Id)
+	ruser, err := th.App.GetUser(user.ClientId)
 	require.Nil(t, err)
 	assert.Equal(t, int64(0), ruser.LastPictureUpdate, "Picture should have resetted to default")
 
-	info := &model.FileInfo{Path: "users/" + user.Id + "/profile.png"}
+	info := &model.FileInfo{Path: "users/" + user.ClientId + "/profile.png"}
 	if err := th.cleanupTestFile(info); err != nil {
 		t.Fatal(err)
 	}
@@ -2489,7 +2489,7 @@ func TestLogin(t *testing.T) {
 	t.Run("valid login", func(t *testing.T) {
 		user, resp := th.Client.Login(th.BasicUser.Email, th.BasicUser.Password)
 		CheckNoError(t, resp)
-		assert.Equal(t, user.Id, th.BasicUser.Id)
+		assert.Equal(t, user.ClientId, th.BasicUser.Id)
 	})
 
 	t.Run("bot login rejected", func(t *testing.T) {
@@ -2546,7 +2546,7 @@ func TestCBALogin(t *testing.T) {
 			user, resp := th.Client.Login(th.BasicUser.Email, "")
 			CheckNoError(t, resp)
 			require.NotNil(t, user)
-			require.Equal(t, th.BasicUser.Id, user.Id)
+			require.Equal(t, th.BasicUser.Id, user.ClientId)
 		})
 
 		t.Run("bot login rejected", func(t *testing.T) {
@@ -2588,7 +2588,7 @@ func TestCBALogin(t *testing.T) {
 			user, resp := th.Client.Login(th.BasicUser.Email, th.BasicUser.Password)
 			CheckNoError(t, resp)
 			require.NotNil(t, user)
-			require.Equal(t, th.BasicUser.Id, user.Id)
+			require.Equal(t, th.BasicUser.Id, user.ClientId)
 		})
 
 		t.Run("bot login rejected", func(t *testing.T) {
@@ -2749,7 +2749,7 @@ func assertToken(t *testing.T, th *TestHelper, token *model.UserAccessToken, exp
 	ruser, resp := th.Client.GetMe("")
 	CheckNoError(t, resp)
 
-	assert.Equal(t, expectedUserId, ruser.Id, "returned wrong user")
+	assert.Equal(t, expectedUserId, ruser.ClientId, "returned wrong user")
 }
 
 func assertInvalidToken(t *testing.T, th *TestHelper, token *model.UserAccessToken) {
@@ -3696,7 +3696,7 @@ func TestGetUsersByStatus(t *testing.T) {
 		th.AddUserToChannel(user, channel)
 
 		th.App.SaveAndBroadcastStatus(&model.Status{
-			UserId: user.Id,
+			UserId: user.ClientId,
 			Status: status,
 			Manual: true,
 		})

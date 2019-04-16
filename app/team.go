@@ -429,7 +429,7 @@ func (a *App) AddUserToTeamByInviteId(inviteId string, userId string) (*model.Te
 func (a *App) joinUserToTeam(team *model.Team, user *model.User) (*model.TeamMember, bool, *model.AppError) {
 	tm := &model.TeamMember{
 		TeamId:     team.Id,
-		UserId:     user.Id,
+		UserId:     user.ClientId,
 		SchemeUser: true,
 	}
 
@@ -437,7 +437,7 @@ func (a *App) joinUserToTeam(team *model.Team, user *model.User) (*model.TeamMem
 		tm.SchemeAdmin = true
 	}
 
-	etmr := <-a.Srv.Store.Team().GetMember(team.Id, user.Id)
+	etmr := <-a.Srv.Store.Team().GetMember(team.Id, user.ClientId)
 	if etmr.Err != nil {
 		// Membership appears to be missing. Lets try to add.
 		tmr := <-a.Srv.Store.Team().SaveMember(tm, *a.Config().TeamSettings.MaxUsersPerTeam)
@@ -499,7 +499,7 @@ func (a *App) JoinUserToTeam(team *model.Team, user *model.User, userRequestorId
 		})
 	}
 
-	if uua := <-a.Srv.Store.User().UpdateUpdateAt(user.Id); uua.Err != nil {
+	if uua := <-a.Srv.Store.User().UpdateUpdateAt(user.ClientId); uua.Err != nil {
 		return uua.Err
 	}
 
@@ -507,15 +507,15 @@ func (a *App) JoinUserToTeam(team *model.Team, user *model.User, userRequestorId
 
 	// Soft error if there is an issue joining the default channels
 	if err := a.JoinDefaultChannels(team.Id, user, shouldBeAdmin, userRequestorId); err != nil {
-		mlog.Error(fmt.Sprintf("Encountered an issue joining default channels err=%v", err), mlog.String("user_id", user.Id), mlog.String("team_id", team.Id))
+		mlog.Error(fmt.Sprintf("Encountered an issue joining default channels err=%v", err), mlog.String("user_id", user.ClientId), mlog.String("team_id", team.Id))
 	}
 
-	a.ClearSessionCacheForUser(user.Id)
-	a.InvalidateCacheForUser(user.Id)
+	a.ClearSessionCacheForUser(user.ClientId)
+	a.InvalidateCacheForUser(user.ClientId)
 
-	message := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_ADDED_TO_TEAM, "", "", user.Id, nil)
+	message := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_ADDED_TO_TEAM, "", "", user.ClientId, nil)
 	message.Add("team_id", team.Id)
-	message.Add("user_id", user.Id)
+	message.Add("user_id", user.ClientId)
 	a.Publish(message)
 
 	return nil
@@ -758,14 +758,14 @@ func (a *App) RemoveUserFromTeam(teamId string, userId string, requestorId strin
 }
 
 func (a *App) LeaveTeam(team *model.Team, user *model.User, requestorId string) *model.AppError {
-	teamMember, err := a.GetTeamMember(team.Id, user.Id)
+	teamMember, err := a.GetTeamMember(team.Id, user.ClientId)
 	if err != nil {
 		return model.NewAppError("LeaveTeam", "api.team.remove_user_from_team.missing.app_error", nil, err.Error(), http.StatusBadRequest)
 	}
 
 	var channelList *model.ChannelList
 
-	if result := <-a.Srv.Store.Channel().GetChannels(team.Id, user.Id, true); result.Err != nil {
+	if result := <-a.Srv.Store.Channel().GetChannels(team.Id, user.ClientId, true); result.Err != nil {
 		if result.Err.Id == "store.sql_channel.get_channels.not_found.app_error" {
 			channelList = &model.ChannelList{}
 		} else {
@@ -778,7 +778,7 @@ func (a *App) LeaveTeam(team *model.Team, user *model.User, requestorId string) 
 	for _, channel := range *channelList {
 		if !channel.IsGroupOrDirect() {
 			a.InvalidateCacheForChannelMembers(channel.Id)
-			if result := <-a.Srv.Store.Channel().RemoveMember(channel.Id, user.Id); result.Err != nil {
+			if result := <-a.Srv.Store.Channel().RemoveMember(channel.Id, user.ClientId); result.Err != nil {
 				return result.Err
 			}
 		}
@@ -791,7 +791,7 @@ func (a *App) LeaveTeam(team *model.Team, user *model.User, requestorId string) 
 	channel := result.Data.(*model.Channel)
 
 	if *a.Config().ServiceSettings.ExperimentalEnableDefaultChannelLeaveJoinMessages {
-		if requestorId == user.Id {
+		if requestorId == user.ClientId {
 			if err := a.postLeaveTeamMessage(user, channel); err != nil {
 				mlog.Error(fmt.Sprint("Failed to post join/leave message", err))
 			}
@@ -804,7 +804,7 @@ func (a *App) LeaveTeam(team *model.Team, user *model.User, requestorId string) 
 
 	// Send the websocket message before we actually do the remove so the user being removed gets it.
 	message := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_LEAVE_TEAM, team.Id, "", "", nil)
-	message.Add("user_id", user.Id)
+	message.Add("user_id", user.ClientId)
 	message.Add("team_id", team.Id)
 	a.Publish(message)
 
@@ -830,17 +830,17 @@ func (a *App) LeaveTeam(team *model.Team, user *model.User, requestorId string) 
 		})
 	}
 
-	if uua := <-a.Srv.Store.User().UpdateUpdateAt(user.Id); uua.Err != nil {
+	if uua := <-a.Srv.Store.User().UpdateUpdateAt(user.ClientId); uua.Err != nil {
 		return uua.Err
 	}
 
 	// delete the preferences that set the last channel used in the team and other team specific preferences
-	if result := <-a.Srv.Store.Preference().DeleteCategory(user.Id, team.Id); result.Err != nil {
+	if result := <-a.Srv.Store.Preference().DeleteCategory(user.ClientId, team.Id); result.Err != nil {
 		return result.Err
 	}
 
-	a.ClearSessionCacheForUser(user.Id)
-	a.InvalidateCacheForUser(user.Id)
+	a.ClearSessionCacheForUser(user.ClientId)
+	a.InvalidateCacheForUser(user.ClientId)
 
 	return nil
 }
@@ -850,7 +850,7 @@ func (a *App) postLeaveTeamMessage(user *model.User, channel *model.Channel) *mo
 		ChannelId: channel.Id,
 		Message:   fmt.Sprintf(utils.T("api.team.leave.left"), user.Username),
 		Type:      model.POST_LEAVE_TEAM,
-		UserId:    user.Id,
+		UserId:    user.ClientId,
 		Props: model.StringInterface{
 			"username": user.Username,
 		},
@@ -868,7 +868,7 @@ func (a *App) postRemoveFromTeamMessage(user *model.User, channel *model.Channel
 		ChannelId: channel.Id,
 		Message:   fmt.Sprintf(utils.T("api.team.remove_user_from_team.removed"), user.Username),
 		Type:      model.POST_REMOVE_FROM_TEAM,
-		UserId:    user.Id,
+		UserId:    user.ClientId,
 		Props: model.StringInterface{
 			"username": user.Username,
 		},
@@ -921,7 +921,7 @@ func (a *App) InviteNewUsersToTeam(emailList []string, teamId, senderId string) 
 	}
 
 	nameFormat := *a.Config().TeamSettings.TeammateNameDisplay
-	a.SendInviteEmails(team, user.GetDisplayName(nameFormat), user.Id, emailList, a.GetSiteURL())
+	a.SendInviteEmails(team, user.GetDisplayName(nameFormat), user.ClientId, emailList, a.GetSiteURL())
 
 	return nil
 }

@@ -70,7 +70,7 @@ func (m *Mfa) GenerateSecret(user *model.User) (string, []byte, *model.AppError)
 
 	img := code.PNG()
 
-	if result := <-m.Store.User().UpdateMfaSecret(user.Id, secret); result.Err != nil {
+	if result := <-m.Store.User().UpdateMfaSecret(user.ClientId, secret); result.Err != nil {
 		return "", nil, model.NewAppError("GenerateQrCode", "mfa.generate_qr_code.save_secret.app_error", nil, result.Err.Error(), http.StatusInternalServerError)
 	}
 
@@ -99,7 +99,7 @@ func (m *Mfa) Activate(user *model.User, token string) *model.AppError {
 		return model.NewAppError("Activate", "mfa.activate.bad_token.app_error", nil, "", http.StatusUnauthorized)
 	}
 
-	if result := <-m.Store.User().UpdateMfaActive(user.Id, true); result.Err != nil {
+	if result := <-m.Store.User().UpdateMfaActive(user.ClientId, true); result.Err != nil {
 		return model.NewAppError("Activate", "mfa.activate.save_active.app_error", nil, result.Err.Error(), http.StatusInternalServerError)
 	}
 

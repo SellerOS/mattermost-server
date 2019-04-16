@@ -14,7 +14,7 @@ func (a *App) CreateBot(bot *model.Bot) (*model.Bot, *model.AppError) {
 	if result.Err != nil {
 		return nil, result.Err
 	}
-	bot.UserId = result.Data.(*model.User).Id
+	bot.UserId = result.Data.(*model.User).ClientId
 
 	result = <-a.Srv.Store.Bot().Save(bot)
 	if result.Err != nil {
@@ -41,7 +41,7 @@ func (a *App) PatchBot(botUserId string, botPatch *model.BotPatch) (*model.Bot, 
 	user := result.Data.(*model.User)
 
 	patchedUser := model.UserFromBot(bot)
-	user.Id = patchedUser.Id
+	user.ClientId = patchedUser.ClientId
 	user.Username = patchedUser.Username
 	user.Email = patchedUser.Email
 	user.FirstName = patchedUser.FirstName

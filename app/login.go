@@ -123,7 +123,7 @@ func (a *App) DoLogin(w http.ResponseWriter, r *http.Request, user *model.User, 
 		}
 	}
 
-	session := &model.Session{UserId: user.Id, Roles: user.GetRawRoles(), DeviceId: deviceId, IsOAuth: false}
+	session := &model.Session{UserId: user.ClientId, Roles: user.GetRawRoles(), DeviceId: deviceId, IsOAuth: false}
 	session.GenerateCSRF()
 	maxAge := *a.Config().ServiceSettings.SessionLengthWebInDays * 60 * 60 * 24
 
@@ -131,7 +131,7 @@ func (a *App) DoLogin(w http.ResponseWriter, r *http.Request, user *model.User, 
 		session.SetExpireInDays(*a.Config().ServiceSettings.SessionLengthMobileInDays)
 
 		// A special case where we logout of all other sessions with the same Id
-		if err := a.RevokeSessionsForDeviceId(user.Id, deviceId, ""); err != nil {
+		if err := a.RevokeSessionsForDeviceId(user.ClientId, deviceId, ""); err != nil {
 			err.StatusCode = http.StatusInternalServerError
 			return nil, err
 		}
@@ -178,7 +178,7 @@ func (a *App) DoLogin(w http.ResponseWriter, r *http.Request, user *model.User, 
 
 	userCookie := &http.Cookie{
 		Name:    model.SESSION_COOKIE_USER,
-		Value:   user.Id,
+		Value:   user.ClientId,
 		Path:    "/",
 		MaxAge:  maxAge,
 		Expires: expiresAt,

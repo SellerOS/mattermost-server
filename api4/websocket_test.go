@@ -205,7 +205,7 @@ func TestCreateDirectChannelWithSocket(t *testing.T) {
 
 	for _, user := range users {
 		time.Sleep(100 * time.Millisecond)
-		if _, resp := Client.CreateDirectChannel(th.BasicUser.Id, user.Id); resp.Error != nil {
+		if _, resp := Client.CreateDirectChannel(th.BasicUser.Id, user.ClientId); resp.Error != nil {
 			t.Fatal("failed to create DM channel")
 		}
 	}
@@ -304,7 +304,7 @@ func TestWebSocketStatuses(t *testing.T) {
 	user := model.User{Email: strings.ToLower(model.NewId()) + "success+test@simulator.amazonses.com", Nickname: "Corey Hulen", Password: "passwd1"}
 	ruser := Client.Must(Client.CreateUser(&user)).(*model.User)
 	th.LinkUserToTeam(ruser, rteam)
-	store.Must(th.App.Srv.Store.User().VerifyEmail(ruser.Id, ruser.Email))
+	store.Must(th.App.Srv.Store.User().VerifyEmail(ruser.ClientId, ruser.Email))
 
 	user2 := model.User{Email: strings.ToLower(model.NewId()) + "success+test@simulator.amazonses.com", Nickname: "Corey Hulen", Password: "passwd1"}
 	ruser2 := Client.Must(Client.CreateUser(&user2)).(*model.User)

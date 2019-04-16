@@ -138,10 +138,10 @@ func (a *App) SendNotifications(post *model.Post, team *model.Team, channel *mod
 		// find which users in the channel are set up to always receive mobile notifications
 		for _, profile := range profileMap {
 			if (profile.NotifyProps[model.PUSH_NOTIFY_PROP] == model.USER_NOTIFY_ALL ||
-				channelMemberNotifyPropsMap[profile.Id][model.PUSH_NOTIFY_PROP] == model.CHANNEL_NOTIFY_ALL) &&
-				(post.UserId != profile.Id || post.Props["from_webhook"] == "true") &&
+				channelMemberNotifyPropsMap[profile.ClientId][model.PUSH_NOTIFY_PROP] == model.CHANNEL_NOTIFY_ALL) &&
+				(post.UserId != profile.ClientId || post.Props["from_webhook"] == "true") &&
 				!post.IsSystemMessage() {
-				allActivityPushUserIds = append(allActivityPushUserIds, profile.Id)
+				allActivityPushUserIds = append(allActivityPushUserIds, profile.ClientId)
 			}
 		}
 	}
@@ -368,7 +368,7 @@ func (a *App) sendOutOfChannelMentions(sender *model.User, post *model.Post, use
 
 	var userIds []string
 	for _, user := range users {
-		userIds = append(userIds, user.Id)
+		userIds = append(userIds, user.ClientId)
 	}
 
 	T := utils.GetUserTranslations(sender.Locale)
@@ -597,11 +597,11 @@ func (a *App) GetMentionKeywordsInChannel(profiles map[string]*model.User, lookF
 
 		// If turned on, add the user's case sensitive first name
 		if profile.NotifyProps[model.FIRST_NAME_NOTIFY_PROP] == "true" {
-			keywords[profile.FirstName] = append(keywords[profile.FirstName], profile.Id)
+			keywords[profile.FirstName] = append(keywords[profile.FirstName], profile.ClientId)
 		}
 
 		ignoreChannelMentions := false
-		if ignoreChannelMentionsNotifyProp, ok := channelMemberNotifyPropsMap[profile.Id][model.IGNORE_CHANNEL_MENTIONS_NOTIFY_PROP]; ok {
+		if ignoreChannelMentionsNotifyProp, ok := channelMemberNotifyPropsMap[profile.ClientId][model.IGNORE_CHANNEL_MENTIONS_NOTIFY_PROP]; ok {
 			if ignoreChannelMentionsNotifyProp == model.IGNORE_CHANNEL_MENTIONS_ON {
 				ignoreChannelMentions = true
 			}
@@ -610,12 +610,12 @@ func (a *App) GetMentionKeywordsInChannel(profiles map[string]*model.User, lookF
 		// Add @channel and @all to keywords if user has them turned on
 		if lookForSpecialMentions {
 			if int64(len(profiles)) <= *a.Config().TeamSettings.MaxNotificationsPerChannel && profile.NotifyProps[model.CHANNEL_MENTIONS_NOTIFY_PROP] == "true" && !ignoreChannelMentions {
-				keywords["@channel"] = append(keywords["@channel"], profile.Id)
-				keywords["@all"] = append(keywords["@all"], profile.Id)
+				keywords["@channel"] = append(keywords["@channel"], profile.ClientId)
+				keywords["@all"] = append(keywords["@all"], profile.ClientId)
 
-				status := GetStatusFromCache(profile.Id)
+				status := GetStatusFromCache(profile.ClientId)
 				if status != nil && status.Status == model.STATUS_ONLINE {
-					keywords["@here"] = append(keywords["@here"], profile.Id)
+					keywords["@here"] = append(keywords["@here"], profile.ClientId)
 				}
 			}
 		}
@@ -642,7 +642,7 @@ func (n *postNotification) GetChannelName(userNameFormat string, excludeId strin
 	case model.CHANNEL_GROUP:
 		names := []string{}
 		for _, user := range n.profileMap {
-			if user.Id != excludeId {
+			if user.ClientId != excludeId {
 				names = append(names, user.GetDisplayName(userNameFormat))
 			}
 		}

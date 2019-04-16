@@ -70,9 +70,9 @@ func TestGetUsersStatusesByIds(t *testing.T) {
 	defer th.TearDown()
 	Client := th.Client
 
-	usersIds := []string{th.BasicUser.Id, th.BasicUser2.Id}
+	user.ClientIds := []string{th.BasicUser.Id, th.BasicUser2.Id}
 
-	usersStatuses, resp := Client.GetUsersStatusesByIds(usersIds)
+	usersStatuses, resp := Client.GetUsersStatusesByIds(user.ClientIds)
 	CheckNoError(t, resp)
 	for _, userStatus := range usersStatuses {
 		if userStatus.Status != "offline" {
@@ -82,7 +82,7 @@ func TestGetUsersStatusesByIds(t *testing.T) {
 
 	th.App.SetStatusOnline(th.BasicUser.Id, true)
 	th.App.SetStatusOnline(th.BasicUser2.Id, true)
-	usersStatuses, resp = Client.GetUsersStatusesByIds(usersIds)
+	usersStatuses, resp = Client.GetUsersStatusesByIds(user.ClientIds)
 	CheckNoError(t, resp)
 	for _, userStatus := range usersStatuses {
 		if userStatus.Status != "online" {
@@ -92,7 +92,7 @@ func TestGetUsersStatusesByIds(t *testing.T) {
 
 	th.App.SetStatusAwayIfNeeded(th.BasicUser.Id, true)
 	th.App.SetStatusAwayIfNeeded(th.BasicUser2.Id, true)
-	usersStatuses, resp = Client.GetUsersStatusesByIds(usersIds)
+	usersStatuses, resp = Client.GetUsersStatusesByIds(user.ClientIds)
 	CheckNoError(t, resp)
 	for _, userStatus := range usersStatuses {
 		if userStatus.Status != "away" {
@@ -102,7 +102,7 @@ func TestGetUsersStatusesByIds(t *testing.T) {
 
 	th.App.SetStatusDoNotDisturb(th.BasicUser.Id)
 	th.App.SetStatusDoNotDisturb(th.BasicUser2.Id)
-	usersStatuses, resp = Client.GetUsersStatusesByIds(usersIds)
+	usersStatuses, resp = Client.GetUsersStatusesByIds(user.ClientIds)
 	CheckNoError(t, resp)
 	for _, userStatus := range usersStatuses {
 		if userStatus.Status != "dnd" {
@@ -112,7 +112,7 @@ func TestGetUsersStatusesByIds(t *testing.T) {
 
 	Client.Logout()
 
-	_, resp = Client.GetUsersStatusesByIds(usersIds)
+	_, resp = Client.GetUsersStatusesByIds(user.ClientIds)
 	CheckUnauthorizedStatus(t, resp)
 }
 

@@ -235,7 +235,7 @@ func (a *App) SlackAddPosts(teamId string, channel *model.Channel, posts []Slack
 				continue
 			}
 			newPost := model.Post{
-				UserId:    users[sPost.User].Id,
+				UserId:    users[sPost.User].ClientId,
 				ChannelId: channel.Id,
 				Message:   sPost.Text,
 				CreateAt:  SlackConvertTimeStamp(sPost.TimeStamp),
@@ -267,7 +267,7 @@ func (a *App) SlackAddPosts(teamId string, channel *model.Channel, posts []Slack
 				continue
 			}
 			newPost := model.Post{
-				UserId:    users[sPost.Comment.User].Id,
+				UserId:    users[sPost.Comment.User].ClientId,
 				ChannelId: channel.Id,
 				Message:   sPost.Comment.Comment,
 				CreateAt:  SlackConvertTimeStamp(sPost.TimeStamp),
@@ -290,7 +290,7 @@ func (a *App) SlackAddPosts(teamId string, channel *model.Channel, posts []Slack
 			}
 
 			post := &model.Post{
-				UserId:    botUser.Id,
+				UserId:    botUser.ClientId,
 				ChannelId: channel.Id,
 				CreateAt:  SlackConvertTimeStamp(sPost.TimeStamp),
 				Message:   sPost.Text,
@@ -316,7 +316,7 @@ func (a *App) SlackAddPosts(teamId string, channel *model.Channel, posts []Slack
 			}
 
 			newPost := model.Post{
-				UserId:    users[sPost.User].Id,
+				UserId:    users[sPost.User].ClientId,
 				ChannelId: channel.Id,
 				Message:   sPost.Text,
 				CreateAt:  SlackConvertTimeStamp(sPost.TimeStamp),
@@ -336,7 +336,7 @@ func (a *App) SlackAddPosts(teamId string, channel *model.Channel, posts []Slack
 				continue
 			}
 			newPost := model.Post{
-				UserId:    users[sPost.User].Id,
+				UserId:    users[sPost.User].ClientId,
 				ChannelId: channel.Id,
 				Message:   "*" + sPost.Text + "*",
 				CreateAt:  SlackConvertTimeStamp(sPost.TimeStamp),
@@ -352,7 +352,7 @@ func (a *App) SlackAddPosts(teamId string, channel *model.Channel, posts []Slack
 				continue
 			}
 			newPost := model.Post{
-				UserId:    users[sPost.User].Id,
+				UserId:    users[sPost.User].ClientId,
 				ChannelId: channel.Id,
 				Message:   sPost.Text,
 				CreateAt:  SlackConvertTimeStamp(sPost.TimeStamp),
@@ -369,7 +369,7 @@ func (a *App) SlackAddPosts(teamId string, channel *model.Channel, posts []Slack
 				continue
 			}
 			newPost := model.Post{
-				UserId:    users[sPost.User].Id,
+				UserId:    users[sPost.User].ClientId,
 				ChannelId: channel.Id,
 				Message:   sPost.Text,
 				CreateAt:  SlackConvertTimeStamp(sPost.TimeStamp),
@@ -386,7 +386,7 @@ func (a *App) SlackAddPosts(teamId string, channel *model.Channel, posts []Slack
 				continue
 			}
 			newPost := model.Post{
-				UserId:    users[sPost.User].Id,
+				UserId:    users[sPost.User].ClientId,
 				ChannelId: channel.Id,
 				Message:   sPost.Text,
 				CreateAt:  SlackConvertTimeStamp(sPost.TimeStamp),
@@ -519,7 +519,7 @@ func (a *App) SlackAddChannels(teamId string, slackchannels []SlackChannel, post
 func SlackConvertUserMentions(users []SlackUser, posts map[string][]SlackPost) map[string][]SlackPost {
 	var regexes = make(map[string]*regexp.Regexp, len(users))
 	for _, user := range users {
-		r, err := regexp.Compile("<@" + user.Id + `(\|` + user.Username + ")?>")
+		r, err := regexp.Compile("<@" + user.Id+ `(\|` + user.Username + ")?>")
 		if err != nil {
 			mlog.Warn(fmt.Sprintf("Slack Import: Unable to compile the @mention, matching regular expression for the Slack user %v (id=%v).", user.Id, user.Username), mlog.String("user_id", user.Id))
 			continue
@@ -746,7 +746,7 @@ func (a *App) OldImportUser(team *model.Team, user *model.User) *model.User {
 	}
 	ruser := result.Data.(*model.User)
 
-	if cresult := <-a.Srv.Store.User().VerifyEmail(ruser.Id, ruser.Email); cresult.Err != nil {
+	if cresult := <-a.Srv.Store.User().VerifyEmail(ruser.ClientId, ruser.Email); cresult.Err != nil {
 		mlog.Error(fmt.Sprintf("Failed to set email verified err=%v", cresult.Err))
 	}
 

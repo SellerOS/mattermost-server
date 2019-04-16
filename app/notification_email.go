@@ -22,7 +22,7 @@ func (a *App) sendNotificationEmail(notification *postNotification, user *model.
 	post := notification.post
 
 	if channel.IsGroupOrDirect() {
-		result := <-a.Srv.Store.Team().GetTeamsByUserId(user.Id)
+		result := <-a.Srv.Store.Team().GetTeamsByUserId(user.ClientId)
 		if result.Err != nil {
 			return result.Err
 		}
@@ -48,7 +48,7 @@ func (a *App) sendNotificationEmail(notification *postNotification, user *model.
 
 	if *a.Config().EmailSettings.EnableEmailBatching {
 		var sendBatched bool
-		if result := <-a.Srv.Store.Preference().Get(user.Id, model.PREFERENCE_CATEGORY_NOTIFICATIONS, model.PREFERENCE_NAME_EMAIL_INTERVAL); result.Err != nil {
+		if result := <-a.Srv.Store.Preference().Get(user.ClientId, model.PREFERENCE_CATEGORY_NOTIFICATIONS, model.PREFERENCE_NAME_EMAIL_INTERVAL); result.Err != nil {
 			// if the call fails, assume that the interval has not been explicitly set and batch the notifications
 			sendBatched = true
 		} else {
@@ -68,14 +68,14 @@ func (a *App) sendNotificationEmail(notification *postNotification, user *model.
 	translateFunc := utils.GetUserTranslations(user.Locale)
 
 	var useMilitaryTime bool
-	if result := <-a.Srv.Store.Preference().Get(user.Id, model.PREFERENCE_CATEGORY_DISPLAY_SETTINGS, model.PREFERENCE_NAME_USE_MILITARY_TIME); result.Err != nil {
+	if result := <-a.Srv.Store.Preference().Get(user.ClientId, model.PREFERENCE_CATEGORY_DISPLAY_SETTINGS, model.PREFERENCE_NAME_USE_MILITARY_TIME); result.Err != nil {
 		useMilitaryTime = true
 	} else {
 		useMilitaryTime = result.Data.(model.Preference).Value == "true"
 	}
 
 	var nameFormat string
-	if result := <-a.Srv.Store.Preference().Get(user.Id, model.PREFERENCE_CATEGORY_DISPLAY_SETTINGS, model.PREFERENCE_NAME_NAME_FORMAT); result.Err != nil {
+	if result := <-a.Srv.Store.Preference().Get(user.ClientId, model.PREFERENCE_CATEGORY_DISPLAY_SETTINGS, model.PREFERENCE_NAME_NAME_FORMAT); result.Err != nil {
 		nameFormat = *a.Config().TeamSettings.TeammateNameDisplay
 	} else {
 		nameFormat = result.Data.(model.Preference).Value

@@ -131,7 +131,7 @@ func (me *InviteProvider) DoCommand(a *App, args *model.CommandArgs, message str
 	}
 
 	// Check if user is already in the channel
-	_, err = a.GetChannelMember(channelToJoin.Id, userProfile.Id)
+	_, err = a.GetChannelMember(channelToJoin.Id, userProfile.ClientId)
 	if err == nil {
 		return &model.CommandResponse{
 			Text: args.T("api.command_invite.user_already_in_channel.app_error", map[string]interface{}{
@@ -141,7 +141,7 @@ func (me *InviteProvider) DoCommand(a *App, args *model.CommandArgs, message str
 		}
 	}
 
-	if _, err := a.AddChannelMember(userProfile.Id, channelToJoin, args.Session.UserId, "", !args.Session.IsMobileApp()); err != nil {
+	if _, err := a.AddChannelMember(userProfile.ClientId, channelToJoin, args.Session.UserId, "", !args.Session.IsMobileApp()); err != nil {
 		return &model.CommandResponse{
 			Text:         args.T("api.command_invite.fail.app_error"),
 			ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL,

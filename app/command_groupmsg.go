@@ -51,10 +51,10 @@ func (me *groupmsgProvider) DoCommand(a *App, args *model.CommandArgs, message s
 			invalidUsernames = append(invalidUsernames, username)
 		} else {
 			targetUser := result.Data.(*model.User)
-			_, exists := targetUsers[targetUser.Id]
-			if !exists && targetUser.Id != args.UserId {
-				targetUsers[targetUser.Id] = targetUser
-				targetUsersSlice = append(targetUsersSlice, targetUser.Id)
+			_, exists := targetUsers[targetUser.ClientId]
+			if !exists && targetUser.ClientId != args.UserId {
+				targetUsers[targetUser.ClientId] = targetUser
+				targetUsersSlice = append(targetUsersSlice, targetUser.ClientId)
 			}
 		}
 	}

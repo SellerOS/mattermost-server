@@ -165,7 +165,7 @@ func createIncomingWebhookCmdF(command *cobra.Command, args []string) error {
 		ChannelLocked: channelLocked,
 	}
 
-	createdIncoming, errIncomingWebhook := app.CreateIncomingWebhookForChannel(user.Id, channel, incomingWebhook)
+	createdIncoming, errIncomingWebhook := app.CreateIncomingWebhookForChannel(user.ClientId, channel, incomingWebhook)
 	if errIncomingWebhook != nil {
 		return errIncomingWebhook
 	}
@@ -280,7 +280,7 @@ func createOutgoingWebhookCmdF(command *cobra.Command, args []string) error {
 	iconURL, _ := command.Flags().GetString("icon")
 
 	outgoingWebhook := &model.OutgoingWebhook{
-		CreatorId:    user.Id,
+		CreatorId:    user.ClientId,
 		Username:     user.Username,
 		TeamId:       team.Id,
 		TriggerWords: triggerWords,

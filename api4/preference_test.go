@@ -140,22 +140,22 @@ func TestGetPreferenceByCategoryAndName(t *testing.T) {
 
 	preferences := model.Preferences{
 		{
-			UserId:   user.Id,
+			UserId:   user.ClientId,
 			Category: model.PREFERENCE_CATEGORY_DIRECT_CHANNEL_SHOW,
 			Name:     name,
 			Value:    value,
 		},
 		{
-			UserId:   user.Id,
+			UserId:   user.ClientId,
 			Category: model.PREFERENCE_CATEGORY_DIRECT_CHANNEL_SHOW,
 			Name:     model.NewId(),
 			Value:    model.NewId(),
 		},
 	}
 
-	Client.UpdatePreferences(user.Id, &preferences)
+	Client.UpdatePreferences(user.ClientId, &preferences)
 
-	pref, resp := Client.GetPreferenceByCategoryAndName(user.Id, model.PREFERENCE_CATEGORY_DIRECT_CHANNEL_SHOW, name)
+	pref, resp := Client.GetPreferenceByCategoryAndName(user.ClientId, model.PREFERENCE_CATEGORY_DIRECT_CHANNEL_SHOW, name)
 	CheckNoError(t, resp)
 
 	if (pref.UserId != preferences[0].UserId) && (pref.Category != preferences[0].Category) && (pref.Name != preferences[0].Name) {
@@ -163,22 +163,22 @@ func TestGetPreferenceByCategoryAndName(t *testing.T) {
 	}
 
 	preferences[0].Value = model.NewId()
-	Client.UpdatePreferences(user.Id, &preferences)
+	Client.UpdatePreferences(user.ClientId, &preferences)
 
-	_, resp = Client.GetPreferenceByCategoryAndName(user.Id, "junk", preferences[0].Name)
+	_, resp = Client.GetPreferenceByCategoryAndName(user.ClientId, "junk", preferences[0].Name)
 	CheckBadRequestStatus(t, resp)
 
-	_, resp = Client.GetPreferenceByCategoryAndName(user.Id, preferences[0].Category, "junk")
+	_, resp = Client.GetPreferenceByCategoryAndName(user.ClientId, preferences[0].Category, "junk")
 	CheckBadRequestStatus(t, resp)
 
 	_, resp = Client.GetPreferenceByCategoryAndName(th.BasicUser2.Id, preferences[0].Category, "junk")
 	CheckForbiddenStatus(t, resp)
 
-	_, resp = Client.GetPreferenceByCategoryAndName(user.Id, preferences[0].Category, preferences[0].Name)
+	_, resp = Client.GetPreferenceByCategoryAndName(user.ClientId, preferences[0].Category, preferences[0].Name)
 	CheckNoError(t, resp)
 
 	Client.Logout()
-	_, resp = Client.GetPreferenceByCategoryAndName(user.Id, preferences[0].Category, preferences[0].Name)
+	_, resp = Client.GetPreferenceByCategoryAndName(user.ClientId, preferences[0].Category, preferences[0].Name)
 	CheckUnauthorizedStatus(t, resp)
 
 }

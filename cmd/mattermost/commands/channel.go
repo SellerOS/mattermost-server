@@ -259,7 +259,7 @@ func removeUserFromChannel(a *app.App, channel *model.Channel, user *model.User,
 		CommandPrintErrorln("Can't find user '" + userArg + "'")
 		return
 	}
-	if err := a.RemoveUserFromChannel(user.Id, "", channel); err != nil {
+	if err := a.RemoveUserFromChannel(user.ClientId, "", channel); err != nil {
 		CommandPrintErrorln("Unable to remove '" + userArg + "' from " + channel.Name + ". Error: " + err.Error())
 	}
 }

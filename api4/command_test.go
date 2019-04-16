@@ -78,7 +78,7 @@ func TestUpdateCommand(t *testing.T) {
 	th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableCommands = true })
 
 	cmd1 := &model.Command{
-		CreatorId: user.Id,
+		CreatorId: user.ClientId,
 		TeamId:    team.Id,
 		URL:       "http://nowhere.com",
 		Method:    model.COMMAND_METHOD_POST,
@@ -164,7 +164,7 @@ func TestDeleteCommand(t *testing.T) {
 	th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableCommands = true })
 
 	cmd1 := &model.Command{
-		CreatorId: user.Id,
+		CreatorId: user.ClientId,
 		TeamId:    team.Id,
 		URL:       "http://nowhere.com",
 		Method:    model.COMMAND_METHOD_POST,
@@ -196,7 +196,7 @@ func TestDeleteCommand(t *testing.T) {
 	CheckNotFoundStatus(t, resp)
 
 	cmd2 := &model.Command{
-		CreatorId: user.Id,
+		CreatorId: user.ClientId,
 		TeamId:    team.Id,
 		URL:       "http://nowhere.com",
 		Method:    model.COMMAND_METHOD_POST,

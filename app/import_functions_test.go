@@ -972,7 +972,7 @@ func TestImportImportUser(t *testing.T) {
 		t.Fatalf("Failed to get user from database.")
 	}
 
-	teamMember, err := th.App.GetTeamMember(team.Id, user.Id)
+	teamMember, err := th.App.GetTeamMember(team.Id, user.ClientId)
 	require.Nil(t, err, "Failed to get team member from database.")
 	require.Equal(t, "team_user", teamMember.Roles)
 
@@ -1000,7 +1000,7 @@ func TestImportImportUser(t *testing.T) {
 	require.Equal(t, channelMemberCount+1, cmc, "Number of channel members not as expected")
 
 	// Check channel member properties.
-	channelMember, err := th.App.GetChannelMember(channel.Id, user.Id)
+	channelMember, err := th.App.GetChannelMember(channel.Id, user.ClientId)
 	require.Nil(t, err, "Failed to get channel member from database.")
 	assert.Equal(t, "channel_user", channelMember.Roles)
 	assert.Equal(t, "default", channelMember.NotifyProps[model.DESKTOP_NOTIFY_PROP])
@@ -1031,19 +1031,19 @@ func TestImportImportUser(t *testing.T) {
 	assert.Nil(t, err)
 
 	// Check both member properties.
-	teamMember, err = th.App.GetTeamMember(team.Id, user.Id)
+	teamMember, err = th.App.GetTeamMember(team.Id, user.ClientId)
 	require.Nil(t, err, "Failed to get team member from database.")
 	require.Equal(t, "team_user team_admin", teamMember.Roles)
 
-	channelMember, err = th.App.GetChannelMember(channel.Id, user.Id)
+	channelMember, err = th.App.GetChannelMember(channel.Id, user.ClientId)
 	require.Nil(t, err, "Failed to get channel member Desktop from database.")
 	assert.Equal(t, "channel_user channel_admin", channelMember.Roles)
 	assert.Equal(t, model.USER_NOTIFY_MENTION, channelMember.NotifyProps[model.DESKTOP_NOTIFY_PROP])
 	assert.Equal(t, model.USER_NOTIFY_MENTION, channelMember.NotifyProps[model.PUSH_NOTIFY_PROP])
 	assert.Equal(t, model.USER_NOTIFY_MENTION, channelMember.NotifyProps[model.MARK_UNREAD_NOTIFY_PROP])
 
-	checkPreference(t, th.App, user.Id, model.PREFERENCE_CATEGORY_FAVORITE_CHANNEL, channel.Id, "true")
-	checkPreference(t, th.App, user.Id, model.PREFERENCE_CATEGORY_THEME, team.Id, *(*data.Teams)[0].Theme)
+	checkPreference(t, th.App, user.ClientId, model.PREFERENCE_CATEGORY_FAVORITE_CHANNEL, channel.Id, "true")
+	checkPreference(t, th.App, user.ClientId, model.PREFERENCE_CATEGORY_THEME, team.Id, *(*data.Teams)[0].Theme)
 
 	// No more new member objects.
 	tmc, err = th.App.GetTeamMembers(team.Id, 0, 1000)
@@ -1079,16 +1079,16 @@ func TestImportImportUser(t *testing.T) {
 		t.Fatalf("Failed to get user from database.")
 	}
 
-	checkPreference(t, th.App, user.Id, model.PREFERENCE_CATEGORY_THEME, "", *data.Theme)
-	checkPreference(t, th.App, user.Id, model.PREFERENCE_CATEGORY_DISPLAY_SETTINGS, model.PREFERENCE_NAME_USE_MILITARY_TIME, *data.UseMilitaryTime)
-	checkPreference(t, th.App, user.Id, model.PREFERENCE_CATEGORY_DISPLAY_SETTINGS, model.PREFERENCE_NAME_COLLAPSE_SETTING, *data.CollapsePreviews)
-	checkPreference(t, th.App, user.Id, model.PREFERENCE_CATEGORY_DISPLAY_SETTINGS, model.PREFERENCE_NAME_MESSAGE_DISPLAY, *data.MessageDisplay)
-	checkPreference(t, th.App, user.Id, model.PREFERENCE_CATEGORY_DISPLAY_SETTINGS, model.PREFERENCE_NAME_CHANNEL_DISPLAY_MODE, *data.ChannelDisplayMode)
-	checkPreference(t, th.App, user.Id, model.PREFERENCE_CATEGORY_TUTORIAL_STEPS, user.Id, *data.TutorialStep)
-	checkPreference(t, th.App, user.Id, model.PREFERENCE_CATEGORY_ADVANCED_SETTINGS, "feature_enabled_markdown_preview", *data.UseMarkdownPreview)
-	checkPreference(t, th.App, user.Id, model.PREFERENCE_CATEGORY_ADVANCED_SETTINGS, "formatting", *data.UseFormatting)
-	checkPreference(t, th.App, user.Id, model.PREFERENCE_CATEGORY_SIDEBAR_SETTINGS, "show_unread_section", *data.ShowUnreadSection)
-	checkPreference(t, th.App, user.Id, model.PREFERENCE_CATEGORY_NOTIFICATIONS, model.PREFERENCE_NAME_EMAIL_INTERVAL, "30")
+	checkPreference(t, th.App, user.ClientId, model.PREFERENCE_CATEGORY_THEME, "", *data.Theme)
+	checkPreference(t, th.App, user.ClientId, model.PREFERENCE_CATEGORY_DISPLAY_SETTINGS, model.PREFERENCE_NAME_USE_MILITARY_TIME, *data.UseMilitaryTime)
+	checkPreference(t, th.App, user.ClientId, model.PREFERENCE_CATEGORY_DISPLAY_SETTINGS, model.PREFERENCE_NAME_COLLAPSE_SETTING, *data.CollapsePreviews)
+	checkPreference(t, th.App, user.ClientId, model.PREFERENCE_CATEGORY_DISPLAY_SETTINGS, model.PREFERENCE_NAME_MESSAGE_DISPLAY, *data.MessageDisplay)
+	checkPreference(t, th.App, user.ClientId, model.PREFERENCE_CATEGORY_DISPLAY_SETTINGS, model.PREFERENCE_NAME_CHANNEL_DISPLAY_MODE, *data.ChannelDisplayMode)
+	checkPreference(t, th.App, user.ClientId, model.PREFERENCE_CATEGORY_TUTORIAL_STEPS, user.ClientId, *data.TutorialStep)
+	checkPreference(t, th.App, user.ClientId, model.PREFERENCE_CATEGORY_ADVANCED_SETTINGS, "feature_enabled_markdown_preview", *data.UseMarkdownPreview)
+	checkPreference(t, th.App, user.ClientId, model.PREFERENCE_CATEGORY_ADVANCED_SETTINGS, "formatting", *data.UseFormatting)
+	checkPreference(t, th.App, user.ClientId, model.PREFERENCE_CATEGORY_SIDEBAR_SETTINGS, "show_unread_section", *data.ShowUnreadSection)
+	checkPreference(t, th.App, user.ClientId, model.PREFERENCE_CATEGORY_NOTIFICATIONS, model.PREFERENCE_NAME_EMAIL_INTERVAL, "30")
 
 	// Change those preferences.
 	data = UserImportData{
@@ -1106,13 +1106,13 @@ func TestImportImportUser(t *testing.T) {
 	assert.Nil(t, err)
 
 	// Check their values again.
-	checkPreference(t, th.App, user.Id, model.PREFERENCE_CATEGORY_THEME, "", *data.Theme)
-	checkPreference(t, th.App, user.Id, model.PREFERENCE_CATEGORY_DISPLAY_SETTINGS, model.PREFERENCE_NAME_USE_MILITARY_TIME, *data.UseMilitaryTime)
-	checkPreference(t, th.App, user.Id, model.PREFERENCE_CATEGORY_DISPLAY_SETTINGS, model.PREFERENCE_NAME_COLLAPSE_SETTING, *data.CollapsePreviews)
-	checkPreference(t, th.App, user.Id, model.PREFERENCE_CATEGORY_DISPLAY_SETTINGS, model.PREFERENCE_NAME_MESSAGE_DISPLAY, *data.MessageDisplay)
-	checkPreference(t, th.App, user.Id, model.PREFERENCE_CATEGORY_DISPLAY_SETTINGS, model.PREFERENCE_NAME_CHANNEL_DISPLAY_MODE, *data.ChannelDisplayMode)
-	checkPreference(t, th.App, user.Id, model.PREFERENCE_CATEGORY_TUTORIAL_STEPS, user.Id, *data.TutorialStep)
-	checkPreference(t, th.App, user.Id, model.PREFERENCE_CATEGORY_NOTIFICATIONS, model.PREFERENCE_NAME_EMAIL_INTERVAL, "3600")
+	checkPreference(t, th.App, user.ClientId, model.PREFERENCE_CATEGORY_THEME, "", *data.Theme)
+	checkPreference(t, th.App, user.ClientId, model.PREFERENCE_CATEGORY_DISPLAY_SETTINGS, model.PREFERENCE_NAME_USE_MILITARY_TIME, *data.UseMilitaryTime)
+	checkPreference(t, th.App, user.ClientId, model.PREFERENCE_CATEGORY_DISPLAY_SETTINGS, model.PREFERENCE_NAME_COLLAPSE_SETTING, *data.CollapsePreviews)
+	checkPreference(t, th.App, user.ClientId, model.PREFERENCE_CATEGORY_DISPLAY_SETTINGS, model.PREFERENCE_NAME_MESSAGE_DISPLAY, *data.MessageDisplay)
+	checkPreference(t, th.App, user.ClientId, model.PREFERENCE_CATEGORY_DISPLAY_SETTINGS, model.PREFERENCE_NAME_CHANNEL_DISPLAY_MODE, *data.ChannelDisplayMode)
+	checkPreference(t, th.App, user.ClientId, model.PREFERENCE_CATEGORY_TUTORIAL_STEPS, user.ClientId, *data.TutorialStep)
+	checkPreference(t, th.App, user.ClientId, model.PREFERENCE_CATEGORY_NOTIFICATIONS, model.PREFERENCE_NAME_EMAIL_INTERVAL, "3600")
 
 	// Set Notify Without mention keys
 	data.NotifyProps = &UserNotifyPropsImportData{
@@ -1357,7 +1357,7 @@ func TestImportImportUser(t *testing.T) {
 		t.Fatalf("Failed to get user from database.")
 	}
 
-	teamMember, err = th.App.GetTeamMember(team.Id, user.Id)
+	teamMember, err = th.App.GetTeamMember(team.Id, user.ClientId)
 	if err != nil {
 		t.Fatalf("Failed to get the team member")
 	}
@@ -1365,7 +1365,7 @@ func TestImportImportUser(t *testing.T) {
 	assert.True(t, teamMember.SchemeUser)
 	assert.Equal(t, "", teamMember.ExplicitRoles)
 
-	channelMember, err = th.App.GetChannelMember(channel.Id, user.Id)
+	channelMember, err = th.App.GetChannelMember(channel.Id, user.ClientId)
 	if err != nil {
 		t.Fatalf("Failed to get the channel member")
 	}
@@ -1401,7 +1401,7 @@ func TestImportImportUser(t *testing.T) {
 		t.Fatalf("Failed to get user from database.")
 	}
 
-	teamMember, err = th.App.GetTeamMember(team.Id, user.Id)
+	teamMember, err = th.App.GetTeamMember(team.Id, user.ClientId)
 	if err != nil {
 		t.Fatalf("Failed to get the team member")
 	}
@@ -1409,7 +1409,7 @@ func TestImportImportUser(t *testing.T) {
 	assert.True(t, teamMember.SchemeUser)
 	assert.Equal(t, "", teamMember.ExplicitRoles)
 
-	channelMember, err = th.App.GetChannelMember(channel.Id, user.Id)
+	channelMember, err = th.App.GetChannelMember(channel.Id, user.ClientId)
 	if err != nil {
 		t.Fatalf("Failed to get the channel member")
 	}
@@ -1596,7 +1596,7 @@ func TestImportImportPost(t *testing.T) {
 			t.Fatal("Unexpected number of posts found.")
 		}
 		post := posts[0]
-		if post.Message != *data.Message || post.CreateAt != *data.CreateAt || post.UserId != user.Id {
+		if post.Message != *data.Message || post.CreateAt != *data.CreateAt || post.UserId != user.ClientId {
 			t.Fatal("Post properties not as expected")
 		}
 	}
@@ -1622,7 +1622,7 @@ func TestImportImportPost(t *testing.T) {
 			t.Fatal("Unexpected number of posts found.")
 		}
 		post := posts[0]
-		if post.Message != *data.Message || post.CreateAt != *data.CreateAt || post.UserId != user.Id {
+		if post.Message != *data.Message || post.CreateAt != *data.CreateAt || post.UserId != user.ClientId {
 			t.Fatal("Post properties not as expected")
 		}
 	}
@@ -1673,7 +1673,7 @@ func TestImportImportPost(t *testing.T) {
 			t.Fatal("Unexpected number of posts found.")
 		}
 		post := posts[0]
-		if post.Message != *data.Message || post.CreateAt != *data.CreateAt || post.UserId != user.Id {
+		if post.Message != *data.Message || post.CreateAt != *data.CreateAt || post.UserId != user.ClientId {
 			t.Fatal("Post properties not as expected")
 		}
 		if post.Hashtags != "#hashtagmashupcity" {
@@ -1718,11 +1718,11 @@ func TestImportImportPost(t *testing.T) {
 			t.Fatal("Unexpected number of posts found.")
 		}
 		post := posts[0]
-		if post.Message != *data.Message || post.CreateAt != *data.CreateAt || post.UserId != user.Id {
+		if post.Message != *data.Message || post.CreateAt != *data.CreateAt || post.UserId != user.ClientId {
 			t.Fatal("Post properties not as expected")
 		}
 
-		checkPreference(t, th.App, user.Id, model.PREFERENCE_CATEGORY_FLAGGED_POST, post.Id, "true")
+		checkPreference(t, th.App, user.ClientId, model.PREFERENCE_CATEGORY_FLAGGED_POST, post.Id, "true")
 		checkPreference(t, th.App, user2.Id, model.PREFERENCE_CATEGORY_FLAGGED_POST, post.Id, "true")
 	}
 
@@ -1755,7 +1755,7 @@ func TestImportImportPost(t *testing.T) {
 			t.Fatal("Unexpected number of posts found.")
 		}
 		post := posts[0]
-		if post.Message != *data.Message || post.CreateAt != *data.CreateAt || post.UserId != user.Id || !post.HasReactions {
+		if post.Message != *data.Message || post.CreateAt != *data.CreateAt || post.UserId != user.ClientId || !post.HasReactions {
 			t.Fatal("Post properties not as expected")
 		}
 
@@ -1795,7 +1795,7 @@ func TestImportImportPost(t *testing.T) {
 			t.Fatal("Unexpected number of posts found.")
 		}
 		post := posts[0]
-		if post.Message != *data.Message || post.CreateAt != *data.CreateAt || post.UserId != user.Id {
+		if post.Message != *data.Message || post.CreateAt != *data.CreateAt || post.UserId != user.ClientId {
 			t.Fatal("Post properties not as expected")
 		}
 

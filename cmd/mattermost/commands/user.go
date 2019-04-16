@@ -345,18 +345,18 @@ func userCreateCmdF(command *cobra.Command, args []string) error {
 	}
 
 	if systemAdmin {
-		if _, err := a.UpdateUserRoles(ruser.Id, "system_user system_admin", false); err != nil {
+		if _, err := a.UpdateUserRoles(ruser.ClientId, "system_user system_admin", false); err != nil {
 			return errors.New("Unable to make user system admin. Error: " + err.Error())
 		}
 	} else {
 		// This else case exists to prevent the first user created from being
 		// created as a system admin unless explicity specified.
-		if _, err := a.UpdateUserRoles(ruser.Id, "system_user", false); err != nil {
+		if _, err := a.UpdateUserRoles(ruser.ClientId, "system_user", false); err != nil {
 			return errors.New("If this is the first user: Unable to prevent user from being system admin. Error: " + err.Error())
 		}
 	}
 
-	CommandPrettyPrintln("id: " + ruser.Id)
+	CommandPrettyPrintln("id: " + ruser.ClientId)
 	CommandPrettyPrintln("username: " + ruser.Username)
 	CommandPrettyPrintln("nickname: " + ruser.Nickname)
 	CommandPrettyPrintln("position: " + ruser.Position)
@@ -429,7 +429,7 @@ func resetUserPasswordCmdF(command *cobra.Command, args []string) error {
 	}
 	password := args[1]
 
-	if result := <-a.Srv.Store.User().UpdatePassword(user.Id, model.HashPassword(password, user.Salt)); result.Err != nil {
+	if result := <-a.Srv.Store.User().UpdatePassword(user.ClientId, model.HashPassword(password, user.Salt)); result.Err != nil {
 		return result.Err
 	}
 
@@ -489,7 +489,7 @@ func resetUserMfaCmdF(command *cobra.Command, args []string) error {
 			return errors.New("Unable to find user '" + args[i] + "'")
 		}
 
-		if err := a.DeactivateMfa(user.Id); err != nil {
+		if err := a.DeactivateMfa(user.ClientId); err != nil {
 			return err
 		}
 	}
@@ -693,7 +693,7 @@ func verifyUserCmdF(command *cobra.Command, args []string) error {
 			CommandPrintErrorln("Unable to find user '" + args[i] + "'")
 			continue
 		}
-		if cresult := <-a.Srv.Store.User().VerifyEmail(user.Id, user.Email); cresult.Err != nil {
+		if cresult := <-a.Srv.Store.User().VerifyEmail(user.ClientId, user.Email); cresult.Err != nil {
 			CommandPrintErrorln("Unable to verify '" + args[i] + "' email. Error: " + cresult.Err.Error())
 		}
 	}
@@ -723,7 +723,7 @@ func searchUserCmdF(command *cobra.Command, args []string) error {
 			continue
 		}
 
-		CommandPrettyPrintln("id: " + user.Id)
+		CommandPrettyPrintln("id: " + user.ClientId)
 		CommandPrettyPrintln("username: " + user.Username)
 		CommandPrettyPrintln("nickname: " + user.Nickname)
 		CommandPrettyPrintln("position: " + user.Position)

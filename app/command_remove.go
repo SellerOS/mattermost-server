@@ -123,7 +123,7 @@ func doCommand(a *App, args *model.CommandArgs, message string) *model.CommandRe
 		}
 	}
 
-	_, err = a.GetChannelMember(args.ChannelId, userProfile.Id)
+	_, err = a.GetChannelMember(args.ChannelId, userProfile.ClientId)
 	if err != nil {
 		nameFormat := *a.Config().TeamSettings.TeammateNameDisplay
 		return &model.CommandResponse{
@@ -134,7 +134,7 @@ func doCommand(a *App, args *model.CommandArgs, message string) *model.CommandRe
 		}
 	}
 
-	if err = a.RemoveUserFromChannel(userProfile.Id, args.UserId, channel); err != nil {
+	if err = a.RemoveUserFromChannel(userProfile.ClientId, args.UserId, channel); err != nil {
 		return &model.CommandResponse{
 			Text: args.T(err.Id, map[string]interface{}{
 				"Channel": model.DEFAULT_CHANNEL,

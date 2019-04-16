@@ -94,7 +94,7 @@ func (a *App) SwitchEmailToLdap(email, password, code, ldapLoginId, ldapPassword
 		return "", err
 	}
 
-	if err := a.RevokeAllSessions(user.Id); err != nil {
+	if err := a.RevokeAllSessions(user.ClientId); err != nil {
 		return "", err
 	}
 
@@ -103,7 +103,7 @@ func (a *App) SwitchEmailToLdap(email, password, code, ldapLoginId, ldapPassword
 		return "", model.NewAppError("SwitchEmailToLdap", "api.user.email_to_ldap.not_available.app_error", nil, "", http.StatusNotImplemented)
 	}
 
-	if err := ldapInterface.SwitchToLdap(user.Id, ldapLoginId, ldapPassword); err != nil {
+	if err := ldapInterface.SwitchToLdap(user.ClientId, ldapLoginId, ldapPassword); err != nil {
 		return "", err
 	}
 
@@ -147,7 +147,7 @@ func (a *App) SwitchLdapToEmail(ldapPassword, code, email, newPassword string) (
 		return "", err
 	}
 
-	if err := a.RevokeAllSessions(user.Id); err != nil {
+	if err := a.RevokeAllSessions(user.ClientId); err != nil {
 		return "", err
 	}
 

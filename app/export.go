@@ -182,11 +182,11 @@ func (a *App) ExportAllUsers(writer io.Writer) *model.AppError {
 		}
 
 		for _, user := range users {
-			afterId = user.Id
+			afterId = user.ClientId
 
 			// Gathering here the exportable preferences to pass them on to ImportLineFromUser
 			exportedPrefs := make(map[string]*string)
-			allPrefs, err := a.GetPreferencesForUser(user.Id)
+			allPrefs, err := a.GetPreferencesForUser(user.ClientId)
 			if err != nil {
 				return err
 			}
@@ -227,7 +227,7 @@ func (a *App) ExportAllUsers(writer io.Writer) *model.AppError {
 			userLine.User.NotifyProps = a.buildUserNotifyProps(user.NotifyProps)
 
 			// Do the Team Memberships.
-			members, err := a.buildUserTeamAndChannelMemberships(user.Id)
+			members, err := a.buildUserTeamAndChannelMemberships(user.ClientId)
 			if err != nil {
 				return err
 			}

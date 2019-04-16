@@ -35,7 +35,7 @@ func CreateTestEnvironmentWithTeams(a *App, client *model.Client4, rangeTeams ut
 		if !err {
 			return TestEnvironment{}, false
 		}
-		client.LoginById(randomUser.Id, USER_PASSWORD)
+		client.LoginById(randomUser.ClientId, USER_PASSWORD)
 		teamEnvironment, err := CreateTestEnvironmentInTeam(a, client, team, rangeChannels, rangeUsers, rangePosts, fuzzy)
 		if !err {
 			return TestEnvironment{}, false
@@ -72,8 +72,8 @@ func CreateTestEnvironmentInTeam(a *App, client *model.Client4, team *model.Team
 	// Have every user join every channel
 	for _, user := range users {
 		for _, channel := range channels {
-			client.LoginById(user.Id, USER_PASSWORD)
-			client.AddChannelMember(channel.Id, user.Id)
+			client.LoginById(user.ClientId, USER_PASSWORD)
+			client.AddChannelMember(channel.Id, user.ClientId)
 		}
 	}
 
@@ -85,7 +85,7 @@ func CreateTestEnvironmentInTeam(a *App, client *model.Client4, team *model.Team
 	numImages := utils.RandIntFromRange(rangePosts) / 4
 	for j := 0; j < numPosts; j++ {
 		user := users[utils.RandIntFromRange(utils.Range{Begin: 0, End: len(users) - 1})]
-		client.LoginById(user.Id, USER_PASSWORD)
+		client.LoginById(user.ClientId, USER_PASSWORD)
 		for i, channel := range channels {
 			postCreator := NewAutoPostCreator(client, channel.Id)
 			postCreator.HasImage = i < numImages

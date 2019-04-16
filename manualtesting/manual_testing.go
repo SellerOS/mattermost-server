@@ -102,13 +102,13 @@ func manualTest(c *web.Context, w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		<-c.App.Srv.Store.User().VerifyEmail(user.Id, user.Email)
-		<-c.App.Srv.Store.Team().SaveMember(&model.TeamMember{TeamId: teamID, UserId: user.Id}, *c.App.Config().TeamSettings.MaxUsersPerTeam)
+		<-c.App.Srv.Store.User().VerifyEmail(user.ClientId, user.Email)
+		<-c.App.Srv.Store.Team().SaveMember(&model.TeamMember{TeamId: teamID, UserId: user.ClientId}, *c.App.Config().TeamSettings.MaxUsersPerTeam)
 
-		userID = user.Id
+		userID = user.ClientId
 
 		// Login as user to generate auth token
-		_, resp = client.LoginById(user.Id, app.USER_PASSWORD)
+		_, resp = client.LoginById(user.ClientId, app.USER_PASSWORD)
 		if resp.Error != nil {
 			c.Err = resp.Error
 			return

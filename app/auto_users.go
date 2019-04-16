@@ -48,8 +48,8 @@ func (a *App) CreateBasicUser(client *model.Client4) *model.AppError {
 		if resp.Error != nil {
 			return resp.Error
 		}
-		store.Must(a.Srv.Store.User().VerifyEmail(ruser.Id, ruser.Email))
-		store.Must(a.Srv.Store.Team().SaveMember(&model.TeamMember{TeamId: basicteam.Id, UserId: ruser.Id}, *a.Config().TeamSettings.MaxUsersPerTeam))
+		store.Must(a.Srv.Store.User().VerifyEmail(ruser.ClientId, ruser.Email))
+		store.Must(a.Srv.Store.Team().SaveMember(&model.TeamMember{TeamId: basicteam.Id, UserId: ruser.ClientId}, *a.Config().TeamSettings.MaxUsersPerTeam))
 	}
 	return nil
 }
@@ -76,14 +76,14 @@ func (cfg *AutoUserCreator) createRandomUser() (*model.User, bool) {
 		return nil, false
 	}
 
-	status := &model.Status{UserId: ruser.Id, Status: model.STATUS_ONLINE, Manual: false, LastActivityAt: model.GetMillis(), ActiveChannel: ""}
+	status := &model.Status{UserId: ruser.ClientId, Status: model.STATUS_ONLINE, Manual: false, LastActivityAt: model.GetMillis(), ActiveChannel: ""}
 	if result := <-cfg.app.Srv.Store.Status().SaveOrUpdate(status); result.Err != nil {
 		mlog.Error(result.Err.Error())
 		return nil, false
 	}
 
 	// We need to cheat to verify the user's email
-	store.Must(cfg.app.Srv.Store.User().VerifyEmail(ruser.Id, ruser.Email))
+	store.Must(cfg.app.Srv.Store.User().VerifyEmail(ruser.ClientId, ruser.Email))
 
 	return ruser, true
 }

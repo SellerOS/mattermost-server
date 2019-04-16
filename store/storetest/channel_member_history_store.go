@@ -40,7 +40,7 @@ func testLogJoinEvent(t *testing.T, ss store.Store) {
 	user = *store.Must(ss.User().Save(&user)).(*model.User)
 
 	// log a join event
-	result := <-ss.ChannelMemberHistory().LogJoinEvent(user.Id, channel.Id, model.GetMillis())
+	result := <-ss.ChannelMemberHistory().LogJoinEvent(user.ClientId, channel.Id, model.GetMillis())
 	assert.Nil(t, result.Err)
 }
 
@@ -63,10 +63,10 @@ func testLogLeaveEvent(t *testing.T, ss store.Store) {
 	user = *store.Must(ss.User().Save(&user)).(*model.User)
 
 	// log a join event, followed by a leave event
-	result := <-ss.ChannelMemberHistory().LogJoinEvent(user.Id, channel.Id, model.GetMillis())
+	result := <-ss.ChannelMemberHistory().LogJoinEvent(user.ClientId, channel.Id, model.GetMillis())
 	assert.Nil(t, result.Err)
 
-	result = <-ss.ChannelMemberHistory().LogLeaveEvent(user.Id, channel.Id, model.GetMillis())
+	result = <-ss.ChannelMemberHistory().LogLeaveEvent(user.ClientId, channel.Id, model.GetMillis())
 	assert.Nil(t, result.Err)
 }
 
@@ -93,13 +93,13 @@ func testGetUsersInChannelAtChannelMemberHistory(t *testing.T, ss store.Store) {
 	// us from looking in the ChannelMembers table for data that isn't found in the ChannelMemberHistory table
 	leaveTime := model.GetMillis() - 20000
 	joinTime := leaveTime - 10000
-	store.Must(ss.ChannelMemberHistory().LogJoinEvent(user.Id, channel.Id, joinTime))
-	store.Must(ss.ChannelMemberHistory().LogLeaveEvent(user.Id, channel.Id, leaveTime))
+	store.Must(ss.ChannelMemberHistory().LogJoinEvent(user.ClientId, channel.Id, joinTime))
+	store.Must(ss.ChannelMemberHistory().LogLeaveEvent(user.ClientId, channel.Id, leaveTime))
 
 	// log a join event
 	leaveTime = model.GetMillis()
 	joinTime = leaveTime - 10000
-	store.Must(ss.ChannelMemberHistory().LogJoinEvent(user.Id, channel.Id, joinTime))
+	store.Must(ss.ChannelMemberHistory().LogJoinEvent(user.ClientId, channel.Id, joinTime))
 
 	// case 1: user joins and leaves the channel before the export period begins
 	channelMembers := store.Must(ss.ChannelMemberHistory().GetUsersInChannelDuring(joinTime-500, joinTime-100, channel.Id)).([]*model.ChannelMemberHistoryResult)
@@ -109,7 +109,7 @@ func testGetUsersInChannelAtChannelMemberHistory(t *testing.T, ss store.Store) {
 	channelMembers = store.Must(ss.ChannelMemberHistory().GetUsersInChannelDuring(joinTime-100, joinTime+500, channel.Id)).([]*model.ChannelMemberHistoryResult)
 	assert.Len(t, channelMembers, 1)
 	assert.Equal(t, channel.Id, channelMembers[0].ChannelId)
-	assert.Equal(t, user.Id, channelMembers[0].UserId)
+	assert.Equal(t, user.ClientId, channelMembers[0].UserId)
 	assert.Equal(t, user.Email, channelMembers[0].UserEmail)
 	assert.Equal(t, user.Username, channelMembers[0].Username)
 	assert.Equal(t, joinTime, channelMembers[0].JoinTime)
@@ -119,20 +119,20 @@ func testGetUsersInChannelAtChannelMemberHistory(t *testing.T, ss store.Store) {
 	channelMembers = store.Must(ss.ChannelMemberHistory().GetUsersInChannelDuring(joinTime+100, joinTime+500, channel.Id)).([]*model.ChannelMemberHistoryResult)
 	assert.Len(t, channelMembers, 1)
 	assert.Equal(t, channel.Id, channelMembers[0].ChannelId)
-	assert.Equal(t, user.Id, channelMembers[0].UserId)
+	assert.Equal(t, user.ClientId, channelMembers[0].UserId)
 	assert.Equal(t, user.Email, channelMembers[0].UserEmail)
 	assert.Equal(t, user.Username, channelMembers[0].Username)
 	assert.Equal(t, joinTime, channelMembers[0].JoinTime)
 	assert.Nil(t, channelMembers[0].LeaveTime)
 
 	// add a leave time for the user
-	store.Must(ss.ChannelMemberHistory().LogLeaveEvent(user.Id, channel.Id, leaveTime))
+	store.Must(ss.ChannelMemberHistory().LogLeaveEvent(user.ClientId, channel.Id, leaveTime))
 
 	// case 4: user joins the channel before the export period begins, but has not yet left the channel when the export period ends
 	channelMembers = store.Must(ss.ChannelMemberHistory().GetUsersInChannelDuring(joinTime+100, leaveTime-100, channel.Id)).([]*model.ChannelMemberHistoryResult)
 	assert.Len(t, channelMembers, 1)
 	assert.Equal(t, channel.Id, channelMembers[0].ChannelId)
-	assert.Equal(t, user.Id, channelMembers[0].UserId)
+	assert.Equal(t, user.ClientId, channelMembers[0].UserId)
 	assert.Equal(t, user.Email, channelMembers[0].UserEmail)
 	assert.Equal(t, user.Username, channelMembers[0].Username)
 	assert.Equal(t, joinTime, channelMembers[0].JoinTime)
@@ -142,7 +142,7 @@ func testGetUsersInChannelAtChannelMemberHistory(t *testing.T, ss store.Store) {
 	channelMembers = store.Must(ss.ChannelMemberHistory().GetUsersInChannelDuring(joinTime-100, leaveTime+100, channel.Id)).([]*model.ChannelMemberHistoryResult)
 	assert.Len(t, channelMembers, 1)
 	assert.Equal(t, channel.Id, channelMembers[0].ChannelId)
-	assert.Equal(t, user.Id, channelMembers[0].UserId)
+	assert.Equal(t, user.ClientId, channelMembers[0].UserId)
 	assert.Equal(t, user.Email, channelMembers[0].UserEmail)
 	assert.Equal(t, user.Username, channelMembers[0].Username)
 	assert.Equal(t, joinTime, channelMembers[0].JoinTime)
@@ -187,7 +187,7 @@ func testGetUsersInChannelAtChannelMembers(t *testing.T, ss store.Store) {
 	leaveTime := joinTime + 5000
 	store.Must(ss.Channel().SaveMember(&model.ChannelMember{
 		ChannelId:   channel.Id,
-		UserId:      user.Id,
+		UserId:      user.ClientId,
 		NotifyProps: model.GetDefaultChannelNotifyProps(),
 	}))
 
@@ -198,7 +198,7 @@ func testGetUsersInChannelAtChannelMembers(t *testing.T, ss store.Store) {
 	channelMembers := store.Must(ss.ChannelMemberHistory().GetUsersInChannelDuring(joinTime-500, joinTime-100, channel.Id)).([]*model.ChannelMemberHistoryResult)
 	assert.Len(t, channelMembers, 1)
 	assert.Equal(t, channel.Id, channelMembers[0].ChannelId)
-	assert.Equal(t, user.Id, channelMembers[0].UserId)
+	assert.Equal(t, user.ClientId, channelMembers[0].UserId)
 	assert.Equal(t, user.Email, channelMembers[0].UserEmail)
 	assert.Equal(t, user.Username, channelMembers[0].Username)
 	assert.Equal(t, joinTime-500, channelMembers[0].JoinTime)
@@ -208,7 +208,7 @@ func testGetUsersInChannelAtChannelMembers(t *testing.T, ss store.Store) {
 	channelMembers = store.Must(ss.ChannelMemberHistory().GetUsersInChannelDuring(joinTime-100, joinTime+500, channel.Id)).([]*model.ChannelMemberHistoryResult)
 	assert.Len(t, channelMembers, 1)
 	assert.Equal(t, channel.Id, channelMembers[0].ChannelId)
-	assert.Equal(t, user.Id, channelMembers[0].UserId)
+	assert.Equal(t, user.ClientId, channelMembers[0].UserId)
 	assert.Equal(t, user.Email, channelMembers[0].UserEmail)
 	assert.Equal(t, user.Username, channelMembers[0].Username)
 	assert.Equal(t, joinTime-100, channelMembers[0].JoinTime)
@@ -218,7 +218,7 @@ func testGetUsersInChannelAtChannelMembers(t *testing.T, ss store.Store) {
 	channelMembers = store.Must(ss.ChannelMemberHistory().GetUsersInChannelDuring(joinTime+100, joinTime+500, channel.Id)).([]*model.ChannelMemberHistoryResult)
 	assert.Len(t, channelMembers, 1)
 	assert.Equal(t, channel.Id, channelMembers[0].ChannelId)
-	assert.Equal(t, user.Id, channelMembers[0].UserId)
+	assert.Equal(t, user.ClientId, channelMembers[0].UserId)
 	assert.Equal(t, user.Email, channelMembers[0].UserEmail)
 	assert.Equal(t, user.Username, channelMembers[0].Username)
 	assert.Equal(t, joinTime+100, channelMembers[0].JoinTime)
@@ -228,7 +228,7 @@ func testGetUsersInChannelAtChannelMembers(t *testing.T, ss store.Store) {
 	channelMembers = store.Must(ss.ChannelMemberHistory().GetUsersInChannelDuring(joinTime+100, leaveTime-100, channel.Id)).([]*model.ChannelMemberHistoryResult)
 	assert.Len(t, channelMembers, 1)
 	assert.Equal(t, channel.Id, channelMembers[0].ChannelId)
-	assert.Equal(t, user.Id, channelMembers[0].UserId)
+	assert.Equal(t, user.ClientId, channelMembers[0].UserId)
 	assert.Equal(t, user.Email, channelMembers[0].UserEmail)
 	assert.Equal(t, user.Username, channelMembers[0].Username)
 	assert.Equal(t, joinTime+100, channelMembers[0].JoinTime)
@@ -238,7 +238,7 @@ func testGetUsersInChannelAtChannelMembers(t *testing.T, ss store.Store) {
 	channelMembers = store.Must(ss.ChannelMemberHistory().GetUsersInChannelDuring(joinTime-100, leaveTime+100, channel.Id)).([]*model.ChannelMemberHistoryResult)
 	assert.Len(t, channelMembers, 1)
 	assert.Equal(t, channel.Id, channelMembers[0].ChannelId)
-	assert.Equal(t, user.Id, channelMembers[0].UserId)
+	assert.Equal(t, user.ClientId, channelMembers[0].UserId)
 	assert.Equal(t, user.Email, channelMembers[0].UserEmail)
 	assert.Equal(t, user.Username, channelMembers[0].Username)
 	assert.Equal(t, joinTime-100, channelMembers[0].JoinTime)
@@ -248,7 +248,7 @@ func testGetUsersInChannelAtChannelMembers(t *testing.T, ss store.Store) {
 	channelMembers = store.Must(ss.ChannelMemberHistory().GetUsersInChannelDuring(leaveTime+100, leaveTime+200, channel.Id)).([]*model.ChannelMemberHistoryResult)
 	assert.Len(t, channelMembers, 1)
 	assert.Equal(t, channel.Id, channelMembers[0].ChannelId)
-	assert.Equal(t, user.Id, channelMembers[0].UserId)
+	assert.Equal(t, user.ClientId, channelMembers[0].UserId)
 	assert.Equal(t, user.Email, channelMembers[0].UserEmail)
 	assert.Equal(t, user.Username, channelMembers[0].Username)
 	assert.Equal(t, leaveTime+100, channelMembers[0].JoinTime)
@@ -283,11 +283,11 @@ func testPermanentDeleteBatch(t *testing.T, ss store.Store) {
 	// user1 joins and leaves the channel
 	leaveTime := model.GetMillis()
 	joinTime := leaveTime - 10000
-	store.Must(ss.ChannelMemberHistory().LogJoinEvent(user.Id, channel.Id, joinTime))
-	store.Must(ss.ChannelMemberHistory().LogLeaveEvent(user.Id, channel.Id, leaveTime))
+	store.Must(ss.ChannelMemberHistory().LogJoinEvent(user.ClientId, channel.Id, joinTime))
+	store.Must(ss.ChannelMemberHistory().LogLeaveEvent(user.ClientId, channel.Id, leaveTime))
 
 	// user2 joins the channel but never leaves
-	store.Must(ss.ChannelMemberHistory().LogJoinEvent(user2.Id, channel.Id, joinTime))
+	store.Must(ss.ChannelMemberHistory().LogJoinEvent(user2.ClientId, channel.Id, joinTime))
 
 	// in between the join time and the leave time, both users were members of the channel
 	channelMembers := store.Must(ss.ChannelMemberHistory().GetUsersInChannelDuring(joinTime+10, leaveTime-10, channel.Id)).([]*model.ChannelMemberHistoryResult)
@@ -300,5 +300,5 @@ func testPermanentDeleteBatch(t *testing.T, ss store.Store) {
 	// after the delete, there should be one less member in the channel
 	channelMembers = store.Must(ss.ChannelMemberHistory().GetUsersInChannelDuring(joinTime+10, leaveTime-10, channel.Id)).([]*model.ChannelMemberHistoryResult)
 	assert.Len(t, channelMembers, 1)
-	assert.Equal(t, user2.Id, channelMembers[0].UserId)
+	assert.Equal(t, user2.ClientId, channelMembers[0].UserId)
 }

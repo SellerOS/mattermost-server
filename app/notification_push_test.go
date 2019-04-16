@@ -324,7 +324,7 @@ func TestDoesNotifyPropsAllowPushNotification(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			user := &model.User{Id: model.NewId(), Email: "unit@test.com", NotifyProps: make(map[string]string)}
 			user.NotifyProps[model.PUSH_NOTIFY_PROP] = tc.userNotifySetting
-			post := &model.Post{UserId: user.Id, ChannelId: model.NewId()}
+			post := &model.Post{UserId: user.ClientId, ChannelId: model.NewId()}
 			if tc.withSystemPost {
 				post.Type = model.POST_JOIN_CHANNEL
 			}

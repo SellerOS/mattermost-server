@@ -180,7 +180,7 @@ func TestCreateIncomingWebhook(t *testing.T) {
 
 	found := false
 	for _, webhook := range webhooks {
-		if webhook.Description == description && webhook.UserId == th.BasicUser.Id {
+		if webhook.Description == description && webhook.UserId == th.BasicUser.ClientId {
 			found = true
 		}
 	}
@@ -222,7 +222,7 @@ func TestModifyIncomingWebhook(t *testing.T) {
 		Description: description,
 	}
 
-	oldHook, err := th.App.CreateIncomingWebhookForChannel(th.BasicUser.Id, th.BasicChannel, incomingWebhook)
+	oldHook, err := th.App.CreateIncomingWebhookForChannel(th.BasicUser.ClientId, th.BasicChannel, incomingWebhook)
 	if err != nil {
 		t.Fatal("unable to create incoming webhooks")
 	}
@@ -278,7 +278,7 @@ func TestCreateOutgoingWebhook(t *testing.T) {
 
 	// team, user, display name, trigger words, callback urls are required
 	team := th.BasicTeam.Id
-	user := th.BasicUser.Id
+	user := th.BasicUser.ClientId
 	displayName := "totally radical webhook"
 	triggerWord1 := "build"
 	triggerWord2 := "defenestrate"
@@ -312,7 +312,7 @@ func TestCreateOutgoingWebhook(t *testing.T) {
 
 	found := false
 	for _, webhook := range webhooks {
-		if webhook.DisplayName == displayName && webhook.CreatorId == th.BasicUser.Id {
+		if webhook.DisplayName == displayName && webhook.CreatorId == th.BasicUser.ClientId {
 			found = true
 		}
 	}
@@ -345,7 +345,7 @@ func TestModifyOutgoingWebhook(t *testing.T) {
 	contentType := "myhookcontent1"
 
 	outgoingWebhook := &model.OutgoingWebhook{
-		CreatorId:    th.BasicUser.Id,
+		CreatorId:    th.BasicUser.ClientId,
 		Username:     th.BasicUser.Username,
 		TeamId:       th.BasicTeam.Id,
 		ChannelId:    th.BasicChannel.Id,

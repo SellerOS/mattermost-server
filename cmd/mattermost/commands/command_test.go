@@ -240,7 +240,7 @@ func TestModifyCommand(t *testing.T) {
 		Method:      "G",
 		TeamId:      team.Id,
 		Username:    user.Username,
-		CreatorId:   user.Id,
+		CreatorId:   user.ClientId,
 		URL:         url,
 		Trigger:     trigger,
 	}
@@ -382,7 +382,7 @@ func TestModifyCommand(t *testing.T) {
 		output, _ := th.RunCommandWithOutput(t, args...)
 		cmd, _ := th.App.GetCommand(command.Id)
 		assert.Contains(t, string(output), "PASS")
-		assert.Equal(t, cmd.CreatorId, testVal.Id)
+		assert.Equal(t, cmd.CreatorId, testVal.ClientId)
 	})
 
 	t.Run("creator not found", func(t *testing.T)  {

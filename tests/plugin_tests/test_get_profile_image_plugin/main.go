@@ -44,7 +44,7 @@ func isEmpty(object interface{}) bool {
 func (p *MyPlugin) MessageWillBePosted(c *plugin.Context, post *model.Post) (*model.Post, string) {
 
 	// check existing user first
-	data, err := p.API.GetProfileImage("{{.BasicUser.Id}}")
+	data, err := p.API.GetProfileImage("{{.BasicUser.ClientId}}")
 	if err != nil {
 		return nil, err.Error()
 	}

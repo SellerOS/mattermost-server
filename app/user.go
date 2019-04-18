@@ -130,10 +130,10 @@ func (a *App) CreateUserAsAdmin(user *model.User) (*model.User, *model.AppError)
 	if err != nil {
 		return nil, err
 	}
-
-	if err := a.SendWelcomeEmail(ruser.ClientId, ruser.Email, ruser.EmailVerified, ruser.Locale, a.GetSiteURL()); err != nil {
-		mlog.Error(err.Error())
-	}
+	//
+	//if err := a.SendWelcomeEmail(ruser.ClientId, ruser.Email, ruser.EmailVerified, ruser.Locale, a.GetSiteURL()); err != nil {
+	//	mlog.Error(err.Error())
+	//}
 
 	return ruser, nil
 }

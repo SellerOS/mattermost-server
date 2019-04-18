@@ -32,7 +32,7 @@ func TestCreateBot(t *testing.T) {
 		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
 
 		th.AddPermissionToRole(model.PERMISSION_CREATE_BOT.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		bot := &model.Bot{
 			Username:    GenerateTestUsername(),
@@ -46,7 +46,7 @@ func TestCreateBot(t *testing.T) {
 		require.Equal(t, bot.Username, createdBot.Username)
 		require.Equal(t, bot.DisplayName, createdBot.DisplayName)
 		require.Equal(t, bot.Description, createdBot.Description)
-		require.Equal(t, th.BasicUser.Id, createdBot.OwnerId)
+		require.Equal(t, th.BasicUser.ClientId, createdBot.OwnerId)
 	})
 
 	t.Run("create invalid bot", func(t *testing.T) {
@@ -54,7 +54,7 @@ func TestCreateBot(t *testing.T) {
 		defer th.TearDown()
 
 		th.AddPermissionToRole(model.PERMISSION_CREATE_BOT.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		_, resp := th.Client.CreateBot(&model.Bot{
 			Username:    "username",
@@ -99,7 +99,7 @@ func TestPatchBot(t *testing.T) {
 		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
 
 		th.AddPermissionToRole(model.PERMISSION_READ_OTHERS_BOTS.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		createdBot, resp := th.SystemAdminClient.CreateBot(&model.Bot{
 			Username:    GenerateTestUsername(),
@@ -119,7 +119,7 @@ func TestPatchBot(t *testing.T) {
 		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
 
 		th.AddPermissionToRole(model.PERMISSION_MANAGE_OTHERS_BOTS.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		createdBot, resp := th.SystemAdminClient.CreateBot(&model.Bot{
 			Username:    GenerateTestUsername(),
@@ -140,7 +140,7 @@ func TestPatchBot(t *testing.T) {
 		require.Equal(t, *botPatch.Username, patchedBot.Username)
 		require.Equal(t, *botPatch.DisplayName, patchedBot.DisplayName)
 		require.Equal(t, *botPatch.Description, patchedBot.Description)
-		require.Equal(t, th.SystemAdminUser.Id, patchedBot.OwnerId)
+		require.Equal(t, th.SystemAdminUser.ClientId, patchedBot.OwnerId)
 	})
 
 	t.Run("patch my bot without permission", func(t *testing.T) {
@@ -149,7 +149,7 @@ func TestPatchBot(t *testing.T) {
 		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
 
 		th.AddPermissionToRole(model.PERMISSION_CREATE_BOT.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		createdBot, resp := th.Client.CreateBot(&model.Bot{
 			Username:    GenerateTestUsername(),
@@ -176,7 +176,7 @@ func TestPatchBot(t *testing.T) {
 
 		th.AddPermissionToRole(model.PERMISSION_CREATE_BOT.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_READ_BOTS.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		createdBot, resp := th.Client.CreateBot(&model.Bot{
 			Username:    GenerateTestUsername(),
@@ -203,7 +203,7 @@ func TestPatchBot(t *testing.T) {
 
 		th.AddPermissionToRole(model.PERMISSION_CREATE_BOT.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_MANAGE_BOTS.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		createdBot, resp := th.Client.CreateBot(&model.Bot{
 			Username:    GenerateTestUsername(),
@@ -224,7 +224,7 @@ func TestPatchBot(t *testing.T) {
 		require.Equal(t, *botPatch.Username, patchedBot.Username)
 		require.Equal(t, *botPatch.DisplayName, patchedBot.DisplayName)
 		require.Equal(t, *botPatch.Description, patchedBot.Description)
-		require.Equal(t, th.BasicUser.Id, patchedBot.OwnerId)
+		require.Equal(t, th.BasicUser.ClientId, patchedBot.OwnerId)
 	})
 
 	t.Run("partial patch my bot with permission", func(t *testing.T) {
@@ -234,7 +234,7 @@ func TestPatchBot(t *testing.T) {
 
 		th.AddPermissionToRole(model.PERMISSION_CREATE_BOT.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_MANAGE_BOTS.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		bot := &model.Bot{
 			Username:    GenerateTestUsername(),
@@ -255,7 +255,7 @@ func TestPatchBot(t *testing.T) {
 		require.Equal(t, *botPatch.Username, patchedBot.Username)
 		require.Equal(t, bot.DisplayName, patchedBot.DisplayName)
 		require.Equal(t, bot.Description, patchedBot.Description)
-		require.Equal(t, th.BasicUser.Id, patchedBot.OwnerId)
+		require.Equal(t, th.BasicUser.ClientId, patchedBot.OwnerId)
 	})
 
 	t.Run("update bot, internally managed fields ignored", func(t *testing.T) {
@@ -265,7 +265,7 @@ func TestPatchBot(t *testing.T) {
 
 		th.AddPermissionToRole(model.PERMISSION_CREATE_BOT.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_MANAGE_BOTS.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		createdBot, resp := th.Client.CreateBot(&model.Bot{
 			Username:    GenerateTestUsername(),
@@ -275,7 +275,7 @@ func TestPatchBot(t *testing.T) {
 		CheckCreatedStatus(t, resp)
 		defer th.App.PermanentDeleteBot(createdBot.UserId)
 
-		r, err := th.Client.DoApiPut(th.Client.GetBotRoute(createdBot.UserId), `{"creator_id":"`+th.BasicUser2.Id+`"}`)
+		r, err := th.Client.DoApiPut(th.Client.GetBotRoute(createdBot.UserId), `{"creator_id":"`+th.BasicUser2.ClientId+`"}`)
 		require.Nil(t, err)
 		defer func() {
 			_, _ = ioutil.ReadAll(r.Body)
@@ -285,7 +285,7 @@ func TestPatchBot(t *testing.T) {
 		resp = model.BuildResponse(r)
 		CheckOKStatus(t, resp)
 
-		require.Equal(t, th.BasicUser.Id, patchedBot.OwnerId)
+		require.Equal(t, th.BasicUser.ClientId, patchedBot.OwnerId)
 	})
 }
 
@@ -319,7 +319,7 @@ func TestGetBot(t *testing.T) {
 	CheckOKStatus(t, resp)
 
 	th.AddPermissionToRole(model.PERMISSION_CREATE_BOT.Id, model.TEAM_USER_ROLE_ID)
-	th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+	th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 	myBot, resp := th.Client.CreateBot(&model.Bot{
 		Username:    GenerateTestUsername(),
 		DisplayName: "my bot",
@@ -334,7 +334,7 @@ func TestGetBot(t *testing.T) {
 
 		th.AddPermissionToRole(model.PERMISSION_READ_BOTS.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_READ_OTHERS_BOTS.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		_, resp := th.Client.GetBot(model.NewId(), "")
 		CheckNotFoundStatus(t, resp)
@@ -345,7 +345,7 @@ func TestGetBot(t *testing.T) {
 
 		th.AddPermissionToRole(model.PERMISSION_READ_BOTS.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_READ_OTHERS_BOTS.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		bot, resp := th.Client.GetBot(bot1.UserId, "")
 		CheckOKStatus(t, resp)
@@ -360,7 +360,7 @@ func TestGetBot(t *testing.T) {
 
 		th.AddPermissionToRole(model.PERMISSION_READ_BOTS.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_READ_OTHERS_BOTS.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		bot, resp := th.Client.GetBot(bot2.UserId, "")
 		CheckOKStatus(t, resp)
@@ -377,7 +377,7 @@ func TestGetBot(t *testing.T) {
 		th.AddPermissionToRole(model.PERMISSION_CREATE_BOT.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_MANAGE_BOTS.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_MANAGE_OTHERS_BOTS.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		_, resp := th.Client.GetBot(bot1.UserId, "")
 		CheckErrorMessage(t, resp, "store.sql_bot.get.missing.app_error")
@@ -389,7 +389,7 @@ func TestGetBot(t *testing.T) {
 		th.AddPermissionToRole(model.PERMISSION_CREATE_BOT.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_MANAGE_BOTS.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_MANAGE_OTHERS_BOTS.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		_, resp := th.Client.GetBot(myBot.UserId, "")
 		CheckErrorMessage(t, resp, "store.sql_bot.get.missing.app_error")
@@ -400,7 +400,7 @@ func TestGetBot(t *testing.T) {
 
 		th.AddPermissionToRole(model.PERMISSION_READ_BOTS.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_READ_OTHERS_BOTS.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		_, resp := th.Client.GetBot(deletedBot.UserId, "")
 		CheckNotFoundStatus(t, resp)
@@ -411,7 +411,7 @@ func TestGetBot(t *testing.T) {
 
 		th.AddPermissionToRole(model.PERMISSION_READ_BOTS.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_READ_OTHERS_BOTS.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		bot, resp := th.Client.GetBotIncludeDeleted(deletedBot.UserId, "")
 		CheckOKStatus(t, resp)
@@ -472,7 +472,7 @@ func TestGetBots(t *testing.T) {
 	CheckOKStatus(t, resp)
 
 	th.AddPermissionToRole(model.PERMISSION_CREATE_BOT.Id, model.TEAM_USER_ROLE_ID)
-	th.App.UpdateUserRoles(th.BasicUser2.Id, model.TEAM_USER_ROLE_ID, false)
+	th.App.UpdateUserRoles(th.BasicUser2.ClientId, model.TEAM_USER_ROLE_ID, false)
 	th.LoginBasic2()
 	orphanedBot, resp := th.Client.CreateBot(&model.Bot{
 		Username:    GenerateTestUsername(),
@@ -485,7 +485,7 @@ func TestGetBots(t *testing.T) {
 	th.App.UpdateConfig(func(cfg *model.Config) {
 		*cfg.ServiceSettings.DisableBotsWhenOwnerIsDeactivated = false
 	})
-	_, resp = th.SystemAdminClient.DeleteUser(th.BasicUser2.Id)
+	_, resp = th.SystemAdminClient.DeleteUser(th.BasicUser2.ClientId)
 	CheckOKStatus(t, resp)
 
 	t.Run("get bots, page=0, perPage=10", func(t *testing.T) {
@@ -493,7 +493,7 @@ func TestGetBots(t *testing.T) {
 
 		th.AddPermissionToRole(model.PERMISSION_READ_BOTS.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_READ_OTHERS_BOTS.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		bots, resp := th.Client.GetBots(0, 10, "")
 		CheckOKStatus(t, resp)
@@ -509,7 +509,7 @@ func TestGetBots(t *testing.T) {
 
 		th.AddPermissionToRole(model.PERMISSION_READ_BOTS.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_READ_OTHERS_BOTS.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		bots, resp := th.Client.GetBots(0, 1, "")
 		CheckOKStatus(t, resp)
@@ -525,7 +525,7 @@ func TestGetBots(t *testing.T) {
 
 		th.AddPermissionToRole(model.PERMISSION_READ_BOTS.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_READ_OTHERS_BOTS.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		bots, resp := th.Client.GetBots(1, 2, "")
 		CheckOKStatus(t, resp)
@@ -541,7 +541,7 @@ func TestGetBots(t *testing.T) {
 
 		th.AddPermissionToRole(model.PERMISSION_READ_BOTS.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_READ_OTHERS_BOTS.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		bots, resp := th.Client.GetBots(2, 2, "")
 		CheckOKStatus(t, resp)
@@ -557,7 +557,7 @@ func TestGetBots(t *testing.T) {
 
 		th.AddPermissionToRole(model.PERMISSION_READ_BOTS.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_READ_OTHERS_BOTS.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		bots, resp := th.Client.GetBotsIncludeDeleted(0, 10, "")
 		CheckOKStatus(t, resp)
@@ -573,7 +573,7 @@ func TestGetBots(t *testing.T) {
 
 		th.AddPermissionToRole(model.PERMISSION_READ_BOTS.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_READ_OTHERS_BOTS.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		bots, resp := th.Client.GetBotsIncludeDeleted(0, 1, "")
 		CheckOKStatus(t, resp)
@@ -589,7 +589,7 @@ func TestGetBots(t *testing.T) {
 
 		th.AddPermissionToRole(model.PERMISSION_READ_BOTS.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_READ_OTHERS_BOTS.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		bots, resp := th.Client.GetBotsIncludeDeleted(1, 2, "")
 		CheckOKStatus(t, resp)
@@ -605,7 +605,7 @@ func TestGetBots(t *testing.T) {
 
 		th.AddPermissionToRole(model.PERMISSION_READ_BOTS.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_READ_OTHERS_BOTS.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		bots, resp := th.Client.GetBotsIncludeDeleted(2, 2, "")
 		CheckOKStatus(t, resp)
@@ -621,7 +621,7 @@ func TestGetBots(t *testing.T) {
 
 		th.AddPermissionToRole(model.PERMISSION_READ_BOTS.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_READ_OTHERS_BOTS.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		bots, resp := th.Client.GetBotsOrphaned(0, 10, "")
 		CheckOKStatus(t, resp)
@@ -638,7 +638,7 @@ func TestGetBots(t *testing.T) {
 		th.AddPermissionToRole(model.PERMISSION_CREATE_BOT.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_MANAGE_BOTS.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_MANAGE_OTHERS_BOTS.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		_, resp := th.Client.GetBots(0, 10, "")
 		CheckErrorMessage(t, resp, "api.context.permissions.app_error")
@@ -660,7 +660,7 @@ func TestDisableBot(t *testing.T) {
 		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
 
 		th.AddPermissionToRole(model.PERMISSION_CREATE_BOT.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		bot := &model.Bot{
 			Username:    GenerateTestUsername(),
@@ -682,7 +682,7 @@ func TestDisableBot(t *testing.T) {
 
 		th.AddPermissionToRole(model.PERMISSION_CREATE_BOT.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_READ_BOTS.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		bot := &model.Bot{
 			Username:    GenerateTestUsername(),
@@ -704,7 +704,7 @@ func TestDisableBot(t *testing.T) {
 
 		th.AddPermissionToRole(model.PERMISSION_CREATE_BOT.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_MANAGE_BOTS.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		bot, resp := th.Client.CreateBot(&model.Bot{
 			Username:    GenerateTestUsername(),
@@ -746,7 +746,7 @@ func TestEnableBot(t *testing.T) {
 		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
 
 		th.AddPermissionToRole(model.PERMISSION_CREATE_BOT.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		bot := &model.Bot{
 			Username:    GenerateTestUsername(),
@@ -771,7 +771,7 @@ func TestEnableBot(t *testing.T) {
 
 		th.AddPermissionToRole(model.PERMISSION_CREATE_BOT.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_READ_BOTS.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		bot := &model.Bot{
 			Username:    GenerateTestUsername(),
@@ -796,7 +796,7 @@ func TestEnableBot(t *testing.T) {
 
 		th.AddPermissionToRole(model.PERMISSION_CREATE_BOT.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_MANAGE_BOTS.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		bot, resp := th.Client.CreateBot(&model.Bot{
 			Username:    GenerateTestUsername(),
@@ -851,9 +851,9 @@ func TestAssignBot(t *testing.T) {
 
 		before, resp := th.Client.GetBot(bot.UserId, "")
 		CheckOKStatus(t, resp)
-		require.Equal(t, th.BasicUser.Id, before.OwnerId)
+		require.Equal(t, th.BasicUser.ClientId, before.OwnerId)
 
-		_, resp = th.SystemAdminClient.AssignBot(bot.UserId, th.SystemAdminUser.Id)
+		_, resp = th.SystemAdminClient.AssignBot(bot.UserId, th.SystemAdminUser.ClientId)
 		CheckOKStatus(t, resp)
 
 		// Original owner doesn't have read others bots permission, therefore can't see bot anymore
@@ -863,15 +863,15 @@ func TestAssignBot(t *testing.T) {
 		// System admin can see creator ID has changed
 		after, resp := th.SystemAdminClient.GetBot(bot.UserId, "")
 		CheckOKStatus(t, resp)
-		require.Equal(t, th.SystemAdminUser.Id, after.OwnerId)
+		require.Equal(t, th.SystemAdminUser.ClientId, after.OwnerId)
 
 		// Assign back to user without permissions to manage
-		_, resp = th.SystemAdminClient.AssignBot(bot.UserId, th.BasicUser.Id)
+		_, resp = th.SystemAdminClient.AssignBot(bot.UserId, th.BasicUser.ClientId)
 		CheckOKStatus(t, resp)
 
 		after, resp = th.SystemAdminClient.GetBot(bot.UserId, "")
 		CheckOKStatus(t, resp)
-		require.Equal(t, th.BasicUser.Id, after.OwnerId)
+		require.Equal(t, th.BasicUser.ClientId, after.OwnerId)
 	})
 
 	t.Run("random user assign bot", func(t *testing.T) {
@@ -891,12 +891,12 @@ func TestAssignBot(t *testing.T) {
 		th.LoginBasic2()
 
 		// Without permission to read others bots it doesn't exist
-		_, resp = th.Client.AssignBot(createdBot.UserId, th.BasicUser2.Id)
+		_, resp = th.Client.AssignBot(createdBot.UserId, th.BasicUser2.ClientId)
 		CheckErrorMessage(t, resp, "store.sql_bot.get.missing.app_error")
 
 		// With permissions to read we don't have permissions to modify
 		th.AddPermissionToRole(model.PERMISSION_READ_OTHERS_BOTS.Id, model.SYSTEM_USER_ROLE_ID)
-		_, resp = th.Client.AssignBot(createdBot.UserId, th.BasicUser2.Id)
+		_, resp = th.Client.AssignBot(createdBot.UserId, th.BasicUser2.ClientId)
 		CheckErrorMessage(t, resp, "api.context.permissions.app_error")
 
 		th.LoginBasic()
@@ -924,12 +924,12 @@ func TestAssignBot(t *testing.T) {
 		th.AddPermissionToRole(model.PERMISSION_MANAGE_OTHERS_BOTS.Id, model.SYSTEM_USER_ROLE_ID)
 		th.LoginBasic2()
 
-		_, resp = th.Client.AssignBot(bot.UserId, th.BasicUser2.Id)
+		_, resp = th.Client.AssignBot(bot.UserId, th.BasicUser2.ClientId)
 		CheckOKStatus(t, resp)
 
 		after, resp := th.SystemAdminClient.GetBot(bot.UserId, "")
 		CheckOKStatus(t, resp)
-		require.Equal(t, th.BasicUser2.Id, after.OwnerId)
+		require.Equal(t, th.BasicUser2.ClientId, after.OwnerId)
 	})
 }
 

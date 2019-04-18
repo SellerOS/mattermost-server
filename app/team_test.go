@@ -48,7 +48,7 @@ func TestCreateTeamWithUser(t *testing.T) {
 		Type:        model.TEAM_OPEN,
 	}
 
-	if _, err := th.App.CreateTeamWithUser(team, th.BasicUser.Id); err != nil {
+	if _, err := th.App.CreateTeamWithUser(team, th.BasicUser.ClientId); err != nil {
 		t.Fatal("Should create a new team with existing user", err)
 	}
 
@@ -171,15 +171,15 @@ func TestAddUserToTeam(t *testing.T) {
 		defer th.App.PermanentDeleteUser(&user2)
 		defer th.App.PermanentDeleteUser(&user3)
 
-		if _, err := th.App.AddUserToTeam(th.BasicTeam.Id, ruser1.Id, ""); err != nil {
+		if _, err := th.App.AddUserToTeam(th.BasicTeam.Id, ruser1.ClientId, ""); err != nil {
 			t.Log(err)
 			t.Fatal("Should have allowed whitelisted user1")
 		}
-		if _, err := th.App.AddUserToTeam(th.BasicTeam.Id, ruser2.Id, ""); err != nil {
+		if _, err := th.App.AddUserToTeam(th.BasicTeam.Id, ruser2.ClientId, ""); err != nil {
 			t.Log(err)
 			t.Fatal("Should have allowed whitelisted user2")
 		}
-		if _, err := th.App.AddUserToTeam(th.BasicTeam.Id, ruser3.Id, ""); err == nil || err.Where != "JoinUserToTeam" {
+		if _, err := th.App.AddUserToTeam(th.BasicTeam.Id, ruser3.ClientId, ""); err == nil || err.Where != "JoinUserToTeam" {
 			t.Log(err)
 			t.Fatal("Should not have allowed restricted user3")
 		}
@@ -339,7 +339,7 @@ func TestPermanentDeleteTeam(t *testing.T) {
 	}()
 
 	command, err := th.App.CreateCommand(&model.Command{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		TeamId:    team.Id,
 		Trigger:   "foo",
 		URL:       "http://foo",
@@ -676,7 +676,7 @@ func TestJoinUserToTeam(t *testing.T) {
 		defer th.App.PermanentDeleteUser(&user2)
 
 		th.App.joinUserToTeam(team, ruser1)
-		th.App.LeaveTeam(team, ruser1, ruser1.Id)
+		th.App.LeaveTeam(team, ruser1, ruser1.ClientId)
 		th.App.joinUserToTeam(team, ruser2)
 		if _, _, err := th.App.joinUserToTeam(team, ruser1); err == nil {
 			t.Fatal("Should fail")
@@ -707,8 +707,8 @@ func TestGetTeamMembers(t *testing.T) {
 	defer th.TearDown()
 
 	var userIDs sort.StringSlice
-	userIDs = append(userIDs, th.BasicUser.Id)
-	userIDs = append(userIDs, th.BasicUser2.Id)
+	userIDs = append(userIDs, th.BasicUser.ClientId)
+	userIDs = append(userIDs, th.BasicUser2.ClientId)
 
 	for i := 0; i < 8; i++ {
 		user := model.User{

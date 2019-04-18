@@ -15,7 +15,7 @@ type MyPlugin struct {
 }
 
 func (p *MyPlugin) MessageWillBePosted(c *plugin.Context, post *model.Post) (*model.Post, string) {
-	uid := "{{.BasicUser.Id}}"
+	uid := "{{.BasicUser.ClientId}}"
 
 	statuses := []string{model.STATUS_ONLINE, model.STATUS_AWAY, model.STATUS_DND, model.STATUS_OFFLINE}
 

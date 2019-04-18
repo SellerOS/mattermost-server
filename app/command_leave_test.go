@@ -23,7 +23,7 @@ func TestLeaveProviderDoCommand(t *testing.T) {
 		Name:        "aa" + model.NewId() + "a",
 		Type:        model.CHANNEL_OPEN,
 		TeamId:      th.BasicTeam.Id,
-		CreatorId:   th.BasicUser.Id,
+		CreatorId:   th.BasicUser.ClientId,
 	}, false)
 
 	privateChannel, _ := th.App.CreateChannel(&model.Channel{
@@ -31,10 +31,10 @@ func TestLeaveProviderDoCommand(t *testing.T) {
 		Name:        "aa" + model.NewId() + "a",
 		Type:        model.CHANNEL_OPEN,
 		TeamId:      th.BasicTeam.Id,
-		CreatorId:   th.BasicUser.Id,
+		CreatorId:   th.BasicUser.ClientId,
 	}, false)
 
-	th.App.AddUserToTeam(th.BasicTeam.Id, th.BasicUser.Id, th.BasicUser.Id)
+	th.App.AddUserToTeam(th.BasicTeam.Id, th.BasicUser.ClientId, th.BasicUser.ClientId)
 	th.App.AddUserToChannel(th.BasicUser, publicChannel)
 	th.App.AddUserToChannel(th.BasicUser, privateChannel)
 
@@ -64,7 +64,7 @@ func TestLeaveProviderDoCommand(t *testing.T) {
 
 	time.Sleep(100 * time.Millisecond)
 
-	member, err := th.App.GetChannelMember(publicChannel.Id, th.BasicUser.Id)
+	member, err := th.App.GetChannelMember(publicChannel.Id, th.BasicUser.ClientId)
 	if member == nil {
 		t.Errorf("Expected member object, got nil")
 	}

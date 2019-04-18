@@ -149,13 +149,13 @@ func TestFindTeamIdForFilename(t *testing.T) {
 	th := Setup(t).InitBasic()
 	defer th.TearDown()
 
-	teamId := th.App.FindTeamIdForFilename(th.BasicPost, fmt.Sprintf("/%v/%v/%v/blargh.png", th.BasicChannel.Id, th.BasicUser.Id, "someid"))
+	teamId := th.App.FindTeamIdForFilename(th.BasicPost, fmt.Sprintf("/%v/%v/%v/blargh.png", th.BasicChannel.Id, th.BasicUser.ClientId, "someid"))
 	assert.Equal(t, th.BasicTeam.Id, teamId)
 
-	_, err := th.App.CreateTeamWithUser(&model.Team{Email: th.BasicUser.Email, Name: "zz" + model.NewId(), DisplayName: "Joram's Test Team", Type: model.TEAM_OPEN}, th.BasicUser.Id)
+	_, err := th.App.CreateTeamWithUser(&model.Team{Email: th.BasicUser.Email, Name: "zz" + model.NewId(), DisplayName: "Joram's Test Team", Type: model.TEAM_OPEN}, th.BasicUser.ClientId)
 	require.Nil(t, err)
 
-	teamId = th.App.FindTeamIdForFilename(th.BasicPost, fmt.Sprintf("/%v/%v/%v/blargh.png", th.BasicChannel.Id, th.BasicUser.Id, "someid"))
+	teamId = th.App.FindTeamIdForFilename(th.BasicPost, fmt.Sprintf("/%v/%v/%v/blargh.png", th.BasicChannel.Id, th.BasicUser.ClientId, "someid"))
 	assert.Equal(t, "", teamId)
 }
 
@@ -167,7 +167,7 @@ func TestMigrateFilenamesToFileInfos(t *testing.T) {
 	infos := th.App.MigrateFilenamesToFileInfos(post)
 	assert.Equal(t, 0, len(infos))
 
-	post.Filenames = []string{fmt.Sprintf("/%v/%v/%v/blargh.png", th.BasicChannel.Id, th.BasicUser.Id, "someid")}
+	post.Filenames = []string{fmt.Sprintf("/%v/%v/%v/blargh.png", th.BasicChannel.Id, th.BasicUser.ClientId, "someid")}
 	infos = th.App.MigrateFilenamesToFileInfos(post)
 	assert.Equal(t, 0, len(infos))
 
@@ -176,10 +176,10 @@ func TestMigrateFilenamesToFileInfos(t *testing.T) {
 	require.Nil(t, fileErr)
 	defer file.Close()
 
-	fpath := fmt.Sprintf("/teams/%v/channels/%v/users/%v/%v/test.png", th.BasicTeam.Id, th.BasicChannel.Id, th.BasicUser.Id, "someid")
+	fpath := fmt.Sprintf("/teams/%v/channels/%v/users/%v/%v/test.png", th.BasicTeam.Id, th.BasicChannel.Id, th.BasicUser.ClientId, "someid")
 	_, err := th.App.WriteFile(file, fpath)
 	require.Nil(t, err)
-	rpost, err := th.App.CreatePost(&model.Post{UserId: th.BasicUser.Id, ChannelId: th.BasicChannel.Id, Filenames: []string{fmt.Sprintf("/%v/%v/%v/test.png", th.BasicChannel.Id, th.BasicUser.Id, "someid")}}, th.BasicChannel, false)
+	rpost, err := th.App.CreatePost(&model.Post{UserId: th.BasicUser.ClientId, ChannelId: th.BasicChannel.Id, Filenames: []string{fmt.Sprintf("/%v/%v/%v/test.png", th.BasicChannel.Id, th.BasicUser.ClientId, "someid")}}, th.BasicChannel, false)
 	require.Nil(t, err)
 
 	infos = th.App.MigrateFilenamesToFileInfos(rpost)

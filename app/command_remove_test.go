@@ -22,7 +22,7 @@ func TestRemoveProviderDoCommand(t *testing.T) {
 		Name:        "aa" + model.NewId() + "a",
 		Type:        model.CHANNEL_OPEN,
 		TeamId:      th.BasicTeam.Id,
-		CreatorId:   th.BasicUser.Id,
+		CreatorId:   th.BasicUser.ClientId,
 	}, false)
 
 	privateChannel, _ := th.App.CreateChannel(&model.Channel{
@@ -30,11 +30,11 @@ func TestRemoveProviderDoCommand(t *testing.T) {
 		Name:        "aa" + model.NewId() + "a",
 		Type:        model.CHANNEL_OPEN,
 		TeamId:      th.BasicTeam.Id,
-		CreatorId:   th.BasicUser.Id,
+		CreatorId:   th.BasicUser.ClientId,
 	}, false)
 
 	targetUser := th.CreateUser()
-	th.App.AddUserToTeam(th.BasicTeam.Id, targetUser.Id, targetUser.Id)
+	th.App.AddUserToTeam(th.BasicTeam.Id, targetUser.ClientId, targetUser.ClientId)
 	th.App.AddUserToChannel(targetUser, publicChannel)
 	th.App.AddUserToChannel(targetUser, privateChannel)
 
@@ -42,7 +42,7 @@ func TestRemoveProviderDoCommand(t *testing.T) {
 	args := &model.CommandArgs{
 		T:         func(s string, args ...interface{}) string { return s },
 		ChannelId: publicChannel.Id,
-		Session:   model.Session{UserId: th.BasicUser.Id, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: ""}}},
+		Session:   model.Session{UserId: th.BasicUser.ClientId, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: ""}}},
 	}
 
 	actual := rp.DoCommand(th.App, args, targetUser.Username).Text
@@ -53,7 +53,7 @@ func TestRemoveProviderDoCommand(t *testing.T) {
 	args = &model.CommandArgs{
 		T:         func(s string, args ...interface{}) string { return s },
 		ChannelId: publicChannel.Id,
-		Session:   model.Session{UserId: th.BasicUser.Id, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: ""}}},
+		Session:   model.Session{UserId: th.BasicUser.ClientId, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: ""}}},
 	}
 
 	actual = rp.DoCommand(th.App, args, targetUser.Username).Text
@@ -63,7 +63,7 @@ func TestRemoveProviderDoCommand(t *testing.T) {
 	args = &model.CommandArgs{
 		T:         func(s string, args ...interface{}) string { return s },
 		ChannelId: privateChannel.Id,
-		Session:   model.Session{UserId: th.BasicUser.Id, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: ""}}},
+		Session:   model.Session{UserId: th.BasicUser.ClientId, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: ""}}},
 	}
 
 	actual = rp.DoCommand(th.App, args, targetUser.Username).Text
@@ -74,7 +74,7 @@ func TestRemoveProviderDoCommand(t *testing.T) {
 	args = &model.CommandArgs{
 		T:         func(s string, args ...interface{}) string { return s },
 		ChannelId: privateChannel.Id,
-		Session:   model.Session{UserId: th.BasicUser.Id, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: ""}}},
+		Session:   model.Session{UserId: th.BasicUser.ClientId, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: ""}}},
 	}
 
 	actual = rp.DoCommand(th.App, args, targetUser.Username).Text
@@ -89,7 +89,7 @@ func TestRemoveProviderDoCommand(t *testing.T) {
 	args = &model.CommandArgs{
 		T:         func(s string, args ...interface{}) string { return s },
 		ChannelId: groupChannel.Id,
-		Session:   model.Session{UserId: th.BasicUser.Id, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: ""}}},
+		Session:   model.Session{UserId: th.BasicUser.ClientId, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: ""}}},
 	}
 
 	actual = rp.DoCommand(th.App, args, user1.Username).Text
@@ -101,7 +101,7 @@ func TestRemoveProviderDoCommand(t *testing.T) {
 	args = &model.CommandArgs{
 		T:         func(s string, args ...interface{}) string { return s },
 		ChannelId: directChannel.Id,
-		Session:   model.Session{UserId: th.BasicUser.Id, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: ""}}},
+		Session:   model.Session{UserId: th.BasicUser.ClientId, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: ""}}},
 	}
 
 	actual = rp.DoCommand(th.App, args, user1.Username).Text
@@ -109,14 +109,14 @@ func TestRemoveProviderDoCommand(t *testing.T) {
 
 	// Try a public channel with a deactivated user.
 	deactivatedUser := th.CreateUser()
-	th.App.AddUserToTeam(th.BasicTeam.Id, deactivatedUser.Id, deactivatedUser.Id)
+	th.App.AddUserToTeam(th.BasicTeam.Id, deactivatedUser.ClientId, deactivatedUser.ClientId)
 	th.App.AddUserToChannel(deactivatedUser, publicChannel)
 	th.App.UpdateActive(deactivatedUser, false)
 
 	args = &model.CommandArgs{
 		T:         func(s string, args ...interface{}) string { return s },
 		ChannelId: publicChannel.Id,
-		Session:   model.Session{UserId: th.BasicUser.Id, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: ""}}},
+		Session:   model.Session{UserId: th.BasicUser.ClientId, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: ""}}},
 	}
 
 	actual = rp.DoCommand(th.App, args, deactivatedUser.Username).Text

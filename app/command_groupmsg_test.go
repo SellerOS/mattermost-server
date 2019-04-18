@@ -57,13 +57,13 @@ func TestGroupMsgProvider(t *testing.T) {
 		T:       i18n.IdentityTfunc(),
 		SiteURL: "http://test.url",
 		TeamId:  team.Id,
-		UserId:  th.BasicUser.Id,
+		UserId:  th.BasicUser.ClientId,
 		Session: model.Session{
 			Roles: "",
 		},
 	}, targetUsers+"hello")
 
-	channelName := model.GetGroupNameFromUserIds([]string{th.BasicUser.Id, th.BasicUser2.Id, user3.Id})
+	channelName := model.GetGroupNameFromUserIds([]string{th.BasicUser.ClientId, th.BasicUser2.ClientId, user3.ClientId})
 	assert.Equal(t, "api.command_groupmsg.permission.app_error", resp.Text)
 	assert.Equal(t, "", resp.GotoLocation)
 
@@ -72,7 +72,7 @@ func TestGroupMsgProvider(t *testing.T) {
 		T:       i18n.IdentityTfunc(),
 		SiteURL: "http://test.url",
 		TeamId:  team.Id,
-		UserId:  th.BasicUser.Id,
+		UserId:  th.BasicUser.ClientId,
 		Session: model.Session{
 			Roles: model.SYSTEM_USER_ROLE_ID,
 		},
@@ -86,7 +86,7 @@ func TestGroupMsgProvider(t *testing.T) {
 		T:       i18n.IdentityTfunc(),
 		SiteURL: "http://test.url",
 		TeamId:  team.Id,
-		UserId:  th.BasicUser.Id,
+		UserId:  th.BasicUser.ClientId,
 		Session: model.Session{
 			Roles: "",
 		},

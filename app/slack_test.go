@@ -22,7 +22,7 @@ func TestProcessSlackText(t *testing.T) {
 		t.Fail()
 	}
 
-	userId := th.BasicUser.Id
+	userId := th.BasicUser.ClientId
 	username := th.BasicUser.Username
 	if th.App.ProcessSlackText("<@"+userId+"> hello") != "@"+username+" hello" {
 		t.Fail()
@@ -33,7 +33,7 @@ func TestProcessSlackAnnouncement(t *testing.T) {
 	th := Setup(t).InitBasic()
 	defer th.TearDown()
 
-	userId := th.BasicUser.Id
+	userId := th.BasicUser.ClientId
 	username := th.BasicUser.Username
 
 	attachments := []*model.SlackAttachment{

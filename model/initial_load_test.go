@@ -9,12 +9,12 @@ import (
 )
 
 func TestInitialLoadJson(t *testing.T) {
-	u := &User{Id: NewId()}
+	u := &User{ClientId: NewId()}
 	o := InitialLoad{User: u}
 	json := o.ToJson()
 	ro := InitialLoadFromJson(strings.NewReader(json))
 
-	if o.User.Id != ro.User.Id {
+	if o.User.ClientId != ro.User.ClientId {
 		t.Fatal("Ids do not match")
 	}
 }

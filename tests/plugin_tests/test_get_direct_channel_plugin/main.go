@@ -42,7 +42,7 @@ func isEmpty(object interface{}) bool {
 }
 
 func (p *MyPlugin) MessageWillBePosted(c *plugin.Context, post *model.Post) (*model.Post, string) {
-	dm1, err := p.API.GetDirectChannel("{{.BasicUser.Id}}", "{{.BasicUser2.Id}}")
+	dm1, err := p.API.GetDirectChannel("{{.BasicUser.ClientId}}", "{{.BasicUser2.ClientId}}")
 	if err != nil {
 		return nil, err.Error()
 	}
@@ -50,7 +50,7 @@ func (p *MyPlugin) MessageWillBePosted(c *plugin.Context, post *model.Post) (*mo
 		return nil, "dm1 is empty"
 	}
 
-	dm2, err := p.API.GetDirectChannel("{{.BasicUser.Id}}", "{{.BasicUser.Id}}")
+	dm2, err := p.API.GetDirectChannel("{{.BasicUser.ClientId}}", "{{.BasicUser.ClientId}}")
 	if err != nil {
 		return nil, err.Error()
 	}
@@ -58,7 +58,7 @@ func (p *MyPlugin) MessageWillBePosted(c *plugin.Context, post *model.Post) (*mo
 		return nil, "dm2 is empty"
 	}
 
-	dm3, err := p.API.GetDirectChannel("{{.BasicUser.Id}}", model.NewId())
+	dm3, err := p.API.GetDirectChannel("{{.BasicUser.ClientId}}", model.NewId())
 	if err == nil {
 		return nil, "Expected to get error while fetching incorrect channel"
 	}

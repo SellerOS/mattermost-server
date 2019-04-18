@@ -504,13 +504,13 @@ func TestUserFromBot(t *testing.T) {
 	}
 
 	assert.Equal(t, &User{
-		Id:        bot1.UserId,
+		ClientId:        bot1.UserId,
 		Username:  "username",
 		Email:     "username@localhost",
 		FirstName: "display name",
 	}, UserFromBot(bot1))
 	assert.Equal(t, &User{
-		Id:        bot2.UserId,
+		ClientId:        bot2.UserId,
 		Username:  "username2",
 		Email:     "username2@localhost",
 		FirstName: "display name 2",

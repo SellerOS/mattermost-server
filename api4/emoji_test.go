@@ -33,7 +33,7 @@ func TestCreateEmoji(t *testing.T) {
 	}()
 
 	emoji := &model.Emoji{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		Name:      model.NewId(),
 	}
 
@@ -51,7 +51,7 @@ func TestCreateEmoji(t *testing.T) {
 
 	// try to create an emoji with a duplicate name
 	emoji2 := &model.Emoji{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		Name:      newEmoji.Name,
 	}
 	_, resp = Client.CreateEmoji(emoji2, utils.CreateTestGif(t, 10, 10), "image.gif")
@@ -60,7 +60,7 @@ func TestCreateEmoji(t *testing.T) {
 
 	// try to create a valid animated gif emoji
 	emoji = &model.Emoji{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		Name:      model.NewId(),
 	}
 
@@ -72,7 +72,7 @@ func TestCreateEmoji(t *testing.T) {
 
 	// try to create a valid jpeg emoji
 	emoji = &model.Emoji{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		Name:      model.NewId(),
 	}
 
@@ -84,7 +84,7 @@ func TestCreateEmoji(t *testing.T) {
 
 	// try to create a valid png emoji
 	emoji = &model.Emoji{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		Name:      model.NewId(),
 	}
 
@@ -96,7 +96,7 @@ func TestCreateEmoji(t *testing.T) {
 
 	// try to create an emoji that's too wide
 	emoji = &model.Emoji{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		Name:      model.NewId(),
 	}
 
@@ -108,7 +108,7 @@ func TestCreateEmoji(t *testing.T) {
 
 	// try to create an emoji that's too wide
 	emoji = &model.Emoji{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		Name:      model.NewId(),
 	}
 
@@ -119,7 +119,7 @@ func TestCreateEmoji(t *testing.T) {
 
 	// try to create an emoji that's too tall
 	emoji = &model.Emoji{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		Name:      model.NewId(),
 	}
 
@@ -130,7 +130,7 @@ func TestCreateEmoji(t *testing.T) {
 
 	// try to create an emoji that's too large
 	emoji = &model.Emoji{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		Name:      model.NewId(),
 	}
 
@@ -141,7 +141,7 @@ func TestCreateEmoji(t *testing.T) {
 
 	// try to create an emoji with data that isn't an image
 	emoji = &model.Emoji{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		Name:      model.NewId(),
 	}
 
@@ -151,7 +151,7 @@ func TestCreateEmoji(t *testing.T) {
 
 	// try to create an emoji as another user
 	emoji = &model.Emoji{
-		CreatorId: th.BasicUser2.Id,
+		CreatorId: th.BasicUser2.ClientId,
 		Name:      model.NewId(),
 	}
 
@@ -162,7 +162,7 @@ func TestCreateEmoji(t *testing.T) {
 	th.RemovePermissionFromRole(model.PERMISSION_CREATE_EMOJIS.Id, model.SYSTEM_USER_ROLE_ID)
 
 	emoji = &model.Emoji{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		Name:      model.NewId(),
 	}
 
@@ -173,7 +173,7 @@ func TestCreateEmoji(t *testing.T) {
 	th.AddPermissionToRole(model.PERMISSION_CREATE_EMOJIS.Id, model.TEAM_USER_ROLE_ID)
 
 	emoji = &model.Emoji{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		Name:      model.NewId(),
 	}
 
@@ -194,15 +194,15 @@ func TestGetEmojiList(t *testing.T) {
 
 	emojis := []*model.Emoji{
 		{
-			CreatorId: th.BasicUser.Id,
+			CreatorId: th.BasicUser.ClientId,
 			Name:      model.NewId(),
 		},
 		{
-			CreatorId: th.BasicUser.Id,
+			CreatorId: th.BasicUser.ClientId,
 			Name:      model.NewId(),
 		},
 		{
-			CreatorId: th.BasicUser.Id,
+			CreatorId: th.BasicUser.ClientId,
 			Name:      model.NewId(),
 		},
 	}
@@ -275,7 +275,7 @@ func TestDeleteEmoji(t *testing.T) {
 	}()
 
 	emoji := &model.Emoji{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		Name:      model.NewId(),
 	}
 
@@ -331,7 +331,7 @@ func TestDeleteEmoji(t *testing.T) {
 
 	//Try to delete other user's custom emoji without DELETE_EMOJIS permissions
 	emoji = &model.Emoji{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		Name:      model.NewId(),
 	}
 
@@ -355,7 +355,7 @@ func TestDeleteEmoji(t *testing.T) {
 
 	//Try to delete other user's custom emoji without DELETE_OTHERS_EMOJIS permissions
 	emoji = &model.Emoji{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		Name:      model.NewId(),
 	}
 
@@ -373,7 +373,7 @@ func TestDeleteEmoji(t *testing.T) {
 
 	//Try to delete other user's custom emoji with permissions
 	emoji = &model.Emoji{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		Name:      model.NewId(),
 	}
 
@@ -405,7 +405,7 @@ func TestDeleteEmoji(t *testing.T) {
 
 	//Try to delete other user's custom emoji with permissions at team level
 	emoji = &model.Emoji{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		Name:      model.NewId(),
 	}
 
@@ -437,7 +437,7 @@ func TestGetEmoji(t *testing.T) {
 	th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableCustomEmoji = true })
 
 	emoji := &model.Emoji{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		Name:      model.NewId(),
 	}
 
@@ -462,7 +462,7 @@ func TestGetEmojiByName(t *testing.T) {
 	th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableCustomEmoji = true })
 
 	emoji := &model.Emoji{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		Name:      model.NewId(),
 	}
 
@@ -489,7 +489,7 @@ func TestGetEmojiImage(t *testing.T) {
 	th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableCustomEmoji = true })
 
 	emoji1 := &model.Emoji{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		Name:      model.NewId(),
 	}
 
@@ -518,7 +518,7 @@ func TestGetEmojiImage(t *testing.T) {
 	}
 
 	emoji2 := &model.Emoji{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		Name:      model.NewId(),
 	}
 
@@ -538,7 +538,7 @@ func TestGetEmojiImage(t *testing.T) {
 	}
 
 	emoji3 := &model.Emoji{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		Name:      model.NewId(),
 	}
 	emoji3, resp = Client.CreateEmoji(emoji3, utils.CreateTestJpeg(t, 10, 10), "image.jpg")
@@ -557,7 +557,7 @@ func TestGetEmojiImage(t *testing.T) {
 	}
 
 	emoji4 := &model.Emoji{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		Name:      model.NewId(),
 	}
 	emoji4, resp = Client.CreateEmoji(emoji4, utils.CreateTestPng(t, 10, 10), "image.png")
@@ -600,11 +600,11 @@ func TestSearchEmoji(t *testing.T) {
 
 	emojis := []*model.Emoji{
 		{
-			CreatorId: th.BasicUser.Id,
+			CreatorId: th.BasicUser.ClientId,
 			Name:      searchTerm1,
 		},
 		{
-			CreatorId: th.BasicUser.Id,
+			CreatorId: th.BasicUser.ClientId,
 			Name:      "blargh_" + searchTerm2,
 		},
 	}
@@ -678,11 +678,11 @@ func TestAutocompleteEmoji(t *testing.T) {
 
 	emojis := []*model.Emoji{
 		{
-			CreatorId: th.BasicUser.Id,
+			CreatorId: th.BasicUser.ClientId,
 			Name:      searchTerm1,
 		},
 		{
-			CreatorId: th.BasicUser.Id,
+			CreatorId: th.BasicUser.ClientId,
 			Name:      "blargh_" + searchTerm1,
 		},
 	}

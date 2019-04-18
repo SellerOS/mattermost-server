@@ -15,7 +15,7 @@ func TestSaveUser(t *testing.T) {
 func TestUpdateUser(t *testing.T) {
 	t.Run("UpdateUser", func(t *testing.T) {
 		user := model.User{ClientId: "18071711142411212", FirstName: "test222", LastName: "wengang222"}
-		updateUser(&user)
+		UpdateUser(&user)
 	})
 }
 

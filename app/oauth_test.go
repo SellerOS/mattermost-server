@@ -24,7 +24,7 @@ func TestGetOAuthAccessTokenForImplicitFlow(t *testing.T) {
 
 	oapp := &model.OAuthApp{
 		Name:         "fakeoauthapp" + model.NewRandomString(10),
-		CreatorId:    th.BasicUser2.Id,
+		CreatorId:    th.BasicUser2.ClientId,
 		Homepage:     "https://nowhere.com",
 		Description:  "test",
 		CallbackUrls: []string{"https://nowhere.com"},
@@ -41,20 +41,20 @@ func TestGetOAuthAccessTokenForImplicitFlow(t *testing.T) {
 		State:        "123",
 	}
 
-	session, err := th.App.GetOAuthAccessTokenForImplicitFlow(th.BasicUser.Id, authRequest)
+	session, err := th.App.GetOAuthAccessTokenForImplicitFlow(th.BasicUser.ClientId, authRequest)
 	assert.Nil(t, err)
 	assert.NotNil(t, session)
 
 	th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableOAuthServiceProvider = false })
 
-	session, err = th.App.GetOAuthAccessTokenForImplicitFlow(th.BasicUser.Id, authRequest)
+	session, err = th.App.GetOAuthAccessTokenForImplicitFlow(th.BasicUser.ClientId, authRequest)
 	assert.NotNil(t, err, "should fail - oauth2 disabled")
 	assert.Nil(t, session)
 
 	th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableOAuthServiceProvider = true })
 	authRequest.ClientId = "junk"
 
-	session, err = th.App.GetOAuthAccessTokenForImplicitFlow(th.BasicUser.Id, authRequest)
+	session, err = th.App.GetOAuthAccessTokenForImplicitFlow(th.BasicUser.ClientId, authRequest)
 	assert.NotNil(t, err, "should fail - bad client id")
 	assert.Nil(t, session)
 

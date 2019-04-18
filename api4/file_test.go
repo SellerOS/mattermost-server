@@ -347,14 +347,14 @@ func TestUploadFiles(t *testing.T) {
 		{
 			title:             "Happy",
 			names:             []string{"test.png", "testgif.gif", "testplugin.tar.gz", "test-search.md", "test.tiff"},
-			expectedCreatorId: th.BasicUser.Id,
+			expectedCreatorId: th.BasicUser.ClientId,
 		},
 		// Upload a bunch of files, with clientIds
 		{
 			title:             "Happy client_ids",
 			names:             []string{"test.png", "testgif.gif", "testplugin.tar.gz", "test-search.md", "test.tiff"},
 			clientIds:         []string{"1", "2", "3", "4", "5"},
-			expectedCreatorId: th.BasicUser.Id,
+			expectedCreatorId: th.BasicUser.ClientId,
 		},
 		// Upload a bunch of images. testgif.gif is an animated GIF,
 		// so it does not have HasPreviewImage set.
@@ -362,7 +362,7 @@ func TestUploadFiles(t *testing.T) {
 			title:                   "Happy images",
 			names:                   []string{"test.png", "testgif.gif"},
 			expectImage:             true,
-			expectedCreatorId:       th.BasicUser.Id,
+			expectedCreatorId:       th.BasicUser.ClientId,
 			expectedImageWidths:     []int{408, 118},
 			expectedImageHeights:    []int{336, 118},
 			expectedImageHasPreview: []bool{true, false},
@@ -372,7 +372,7 @@ func TestUploadFiles(t *testing.T) {
 			names:                 []string{"testgif.gif"},
 			openers:               []UploadOpener{NewUploadOpenerFile(filepath.Join(testDir, "test-search.md"))},
 			skipPayloadValidation: true,
-			expectedCreatorId:     th.BasicUser.Id,
+			expectedCreatorId:     th.BasicUser.ClientId,
 		},
 		// Simple POST, chunked encoding
 		{
@@ -384,7 +384,7 @@ func TestUploadFiles(t *testing.T) {
 			expectedImageWidths:     []int{408},
 			expectedImageHeights:    []int{336},
 			expectedImageHasPreview: []bool{true},
-			expectedCreatorId:       th.BasicUser.Id,
+			expectedCreatorId:       th.BasicUser.ClientId,
 		},
 		// Image thumbnail and preview: size and orientation. Note that
 		// the expected image dimensions remain the same regardless of the
@@ -399,7 +399,7 @@ func TestUploadFiles(t *testing.T) {
 			expectedImageWidths:         []int{2860},
 			expectedImageHeights:        []int{1578},
 			expectedImageHasPreview:     []bool{true},
-			expectedCreatorId:           th.BasicUser.Id,
+			expectedCreatorId:           th.BasicUser.ClientId,
 		},
 		{
 			title:                       "Happy image thumbnail/preview 2",
@@ -410,7 +410,7 @@ func TestUploadFiles(t *testing.T) {
 			expectedImageWidths:         []int{2860},
 			expectedImageHeights:        []int{1578},
 			expectedImageHasPreview:     []bool{true},
-			expectedCreatorId:           th.BasicUser.Id,
+			expectedCreatorId:           th.BasicUser.ClientId,
 		},
 		{
 			title:                       "Happy image thumbnail/preview 3",
@@ -421,7 +421,7 @@ func TestUploadFiles(t *testing.T) {
 			expectedImageWidths:         []int{2860},
 			expectedImageHeights:        []int{1578},
 			expectedImageHasPreview:     []bool{true},
-			expectedCreatorId:           th.BasicUser.Id,
+			expectedCreatorId:           th.BasicUser.ClientId,
 		},
 		{
 			title:                       "Happy image thumbnail/preview 4",
@@ -432,7 +432,7 @@ func TestUploadFiles(t *testing.T) {
 			expectedImageWidths:         []int{2860},
 			expectedImageHeights:        []int{1578},
 			expectedImageHasPreview:     []bool{true},
-			expectedCreatorId:           th.BasicUser.Id,
+			expectedCreatorId:           th.BasicUser.ClientId,
 		},
 		{
 			title:                       "Happy image thumbnail/preview 5",
@@ -443,7 +443,7 @@ func TestUploadFiles(t *testing.T) {
 			expectedImageWidths:         []int{2860},
 			expectedImageHeights:        []int{1578},
 			expectedImageHasPreview:     []bool{true},
-			expectedCreatorId:           th.BasicUser.Id,
+			expectedCreatorId:           th.BasicUser.ClientId,
 		},
 		{
 			title:                       "Happy image thumbnail/preview 6",
@@ -454,7 +454,7 @@ func TestUploadFiles(t *testing.T) {
 			expectedImageWidths:         []int{2860},
 			expectedImageHeights:        []int{1578},
 			expectedImageHasPreview:     []bool{true},
-			expectedCreatorId:           th.BasicUser.Id,
+			expectedCreatorId:           th.BasicUser.ClientId,
 		},
 		{
 			title:                       "Happy image thumbnail/preview 7",
@@ -465,7 +465,7 @@ func TestUploadFiles(t *testing.T) {
 			expectedImageWidths:         []int{2860},
 			expectedImageHeights:        []int{1578},
 			expectedImageHasPreview:     []bool{true},
-			expectedCreatorId:           th.BasicUser.Id,
+			expectedCreatorId:           th.BasicUser.ClientId,
 		},
 		{
 			title:                       "Happy image thumbnail/preview 8",
@@ -476,7 +476,7 @@ func TestUploadFiles(t *testing.T) {
 			expectedImageWidths:         []int{2860},
 			expectedImageHeights:        []int{1578},
 			expectedImageHasPreview:     []bool{true},
-			expectedCreatorId:           th.BasicUser.Id,
+			expectedCreatorId:           th.BasicUser.ClientId,
 		},
 		// TIFF preview test
 		{
@@ -488,13 +488,13 @@ func TestUploadFiles(t *testing.T) {
 			expectedImageWidths:         []int{701},
 			expectedImageHeights:        []int{701},
 			expectedImageHasPreview:     []bool{true},
-			expectedCreatorId:           th.BasicUser.Id,
+			expectedCreatorId:           th.BasicUser.ClientId,
 		},
 		{
 			title:             "Happy admin",
 			client:            th.SystemAdminClient,
 			names:             []string{"test.png"},
-			expectedCreatorId: th.SystemAdminUser.Id,
+			expectedCreatorId: th.SystemAdminUser.ClientId,
 		},
 		{
 			title:                  "Happy stream",
@@ -509,7 +509,7 @@ func TestUploadFiles(t *testing.T) {
 					a.UpdateConfig(func(cfg *model.Config) { *cfg.FileSettings.MaxFileSize = maxFileSize })
 				}
 			},
-			expectedCreatorId: th.BasicUser.Id,
+			expectedCreatorId: th.BasicUser.ClientId,
 		},
 		// Error cases
 		{
@@ -957,7 +957,7 @@ func TestGetFileLink(t *testing.T) {
 	CheckBadRequestStatus(t, resp)
 
 	// Hacky way to assign file to a post (usually would be done by CreatePost call)
-	store.Must(th.App.Srv.Store.FileInfo().AttachToPost(fileId, th.BasicPost.Id, th.BasicUser.Id))
+	store.Must(th.App.Srv.Store.FileInfo().AttachToPost(fileId, th.BasicPost.Id, th.BasicUser.ClientId))
 
 	th.App.UpdateConfig(func(cfg *model.Config) { *cfg.FileSettings.EnablePublicLink = false })
 	_, resp = Client.GetFileLink(fileId)
@@ -1139,7 +1139,7 @@ func TestGetPublicFile(t *testing.T) {
 	}
 
 	// Hacky way to assign file to a post (usually would be done by CreatePost call)
-	store.Must(th.App.Srv.Store.FileInfo().AttachToPost(fileId, th.BasicPost.Id, th.BasicUser.Id))
+	store.Must(th.App.Srv.Store.FileInfo().AttachToPost(fileId, th.BasicPost.Id, th.BasicUser.ClientId))
 
 	result := <-th.App.Srv.Store.FileInfo().Get(fileId)
 	info := result.Data.(*model.FileInfo)

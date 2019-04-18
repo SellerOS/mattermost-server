@@ -16,7 +16,7 @@ func TestSaveReaction(t *testing.T) {
 	th := Setup().InitBasic()
 	defer th.TearDown()
 	Client := th.Client
-	userId := th.BasicUser.Id
+	userId := th.BasicUser.ClientId
 	postId := th.BasicPost.Id
 
 	// Check the appropriate permissions are enforced.
@@ -228,8 +228,8 @@ func TestGetReactions(t *testing.T) {
 	th := Setup().InitBasic()
 	defer th.TearDown()
 	Client := th.Client
-	userId := th.BasicUser.Id
-	user.ClientId := th.BasicUser2.Id
+	userId := th.BasicUser.ClientId
+	ClientId := th.BasicUser2.ClientId
 	postId := th.BasicPost.Id
 
 	userReactions := []*model.Reaction{
@@ -249,12 +249,12 @@ func TestGetReactions(t *testing.T) {
 			EmojiName: "sad",
 		},
 		{
-			UserId:    user.ClientId,
+			UserId:    ClientId,
 			PostId:    postId,
 			EmojiName: "smile",
 		},
 		{
-			UserId:    user.ClientId,
+			UserId:    ClientId,
 			PostId:    postId,
 			EmojiName: "sad",
 		},
@@ -309,8 +309,8 @@ func TestDeleteReaction(t *testing.T) {
 	th := Setup().InitBasic()
 	defer th.TearDown()
 	Client := th.Client
-	userId := th.BasicUser.Id
-	user.ClientId := th.BasicUser2.Id
+	userId := th.BasicUser.ClientId
+	ClientId := th.BasicUser2.ClientId
 	postId := th.BasicPost.Id
 
 	r1 := &model.Reaction{
@@ -332,7 +332,7 @@ func TestDeleteReaction(t *testing.T) {
 	}
 
 	r4 := &model.Reaction{
-		UserId:    user.ClientId,
+		UserId:    ClientId,
 		PostId:    postId,
 		EmojiName: "smile_",
 	}
@@ -572,14 +572,14 @@ func TestGetBulkReactions(t *testing.T) {
 	th := Setup().InitBasic()
 	defer th.TearDown()
 	Client := th.Client
-	userId := th.BasicUser.Id
-	user.ClientId := th.BasicUser2.Id
+	userId := th.BasicUser.ClientId
+	ClientId := th.BasicUser2.ClientId
 	post1 := &model.Post{UserId: userId, ChannelId: th.BasicChannel.Id, Message: "zz" + model.NewId() + "a"}
 	post2 := &model.Post{UserId: userId, ChannelId: th.BasicChannel.Id, Message: "zz" + model.NewId() + "a"}
 	post3 := &model.Post{UserId: userId, ChannelId: th.BasicChannel.Id, Message: "zz" + model.NewId() + "a"}
 
-	post4 := &model.Post{UserId: user.ClientId, ChannelId: th.BasicChannel.Id, Message: "zz" + model.NewId() + "a"}
-	post5 := &model.Post{UserId: user.ClientId, ChannelId: th.BasicChannel.Id, Message: "zz" + model.NewId() + "a"}
+	post4 := &model.Post{UserId: ClientId, ChannelId: th.BasicChannel.Id, Message: "zz" + model.NewId() + "a"}
+	post5 := &model.Post{UserId: ClientId, ChannelId: th.BasicChannel.Id, Message: "zz" + model.NewId() + "a"}
 
 	post1, _ = Client.CreatePost(post1)
 	post2, _ = Client.CreatePost(post2)
@@ -610,7 +610,7 @@ func TestGetBulkReactions(t *testing.T) {
 			EmojiName: "smile",
 		},
 		{
-			UserId:    user.ClientId,
+			UserId:    ClientId,
 			PostId:    post4.Id,
 			EmojiName: "smile",
 		},

@@ -63,7 +63,7 @@ func TestPostActionCookies(t *testing.T) {
 	post := &model.Post{
 		Id:        model.NewId(),
 		Type:      model.POST_EPHEMERAL,
-		UserId:    th.BasicUser.Id,
+		UserId:    th.BasicUser.ClientId,
 		ChannelId: th.BasicChannel.Id,
 		CreateAt:  model.GetMillis(),
 		UpdateAt:  model.GetMillis(),
@@ -102,7 +102,7 @@ func TestOpenDialog(t *testing.T) {
 		*cfg.ServiceSettings.AllowedUntrustedInternalConnections = "localhost 127.0.0.1"
 	})
 
-	_, triggerId, err := model.GenerateTriggerId(th.BasicUser.Id, th.App.AsymmetricSigningKey())
+	_, triggerId, err := model.GenerateTriggerId(th.BasicUser.ClientId, th.App.AsymmetricSigningKey())
 	require.Nil(t, err)
 
 	request := model.OpenDialogRequest{
@@ -166,7 +166,7 @@ func TestSubmitDialog(t *testing.T) {
 	submit := model.SubmitDialogRequest{
 		CallbackId: "callbackid",
 		State:      "somestate",
-		UserId:     th.BasicUser.Id,
+		UserId:     th.BasicUser.ClientId,
 		ChannelId:  th.BasicChannel.Id,
 		TeamId:     th.BasicTeam.Id,
 		Submission: map[string]interface{}{"somename": "somevalue"},

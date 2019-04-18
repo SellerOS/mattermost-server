@@ -27,7 +27,7 @@ func TestCreateCommand(t *testing.T) {
 	th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableCommands = true })
 
 	newCmd := &model.Command{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		TeamId:    th.BasicTeam.Id,
 		URL:       "http://nowhere.com",
 		Method:    model.COMMAND_METHOD_POST,
@@ -39,7 +39,7 @@ func TestCreateCommand(t *testing.T) {
 	createdCmd, resp := th.SystemAdminClient.CreateCommand(newCmd)
 	CheckNoError(t, resp)
 	CheckCreatedStatus(t, resp)
-	if createdCmd.CreatorId != th.SystemAdminUser.Id {
+	if createdCmd.CreatorId != th.SystemAdminUser.ClientId {
 		t.Fatal("user ids didn't match")
 	}
 	if createdCmd.TeamId != th.BasicTeam.Id {
@@ -225,7 +225,7 @@ func TestListCommands(t *testing.T) {
 	th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableCommands = true })
 
 	newCmd := &model.Command{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		TeamId:    th.BasicTeam.Id,
 		URL:       "http://nowhere.com",
 		Method:    model.COMMAND_METHOD_POST,
@@ -302,7 +302,7 @@ func TestListAutocompleteCommands(t *testing.T) {
 	Client := th.Client
 
 	newCmd := &model.Command{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		TeamId:    th.BasicTeam.Id,
 		URL:       "http://nowhere.com",
 		Method:    model.COMMAND_METHOD_POST,
@@ -368,7 +368,7 @@ func TestRegenToken(t *testing.T) {
 	th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableCommands = true })
 
 	newCmd := &model.Command{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		TeamId:    th.BasicTeam.Id,
 		URL:       "http://nowhere.com",
 		Method:    model.COMMAND_METHOD_POST,
@@ -416,7 +416,7 @@ func TestExecuteInvalidCommand(t *testing.T) {
 	defer ts.Close()
 
 	getCmd := &model.Command{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		TeamId:    th.BasicTeam.Id,
 		URL:       ts.URL,
 		Method:    model.COMMAND_METHOD_GET,
@@ -495,7 +495,7 @@ func TestExecuteGetCommand(t *testing.T) {
 	defer ts.Close()
 
 	getCmd := &model.Command{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		TeamId:    th.BasicTeam.Id,
 		URL:       ts.URL + "/?cmd=ourCommand",
 		Method:    model.COMMAND_METHOD_GET,
@@ -555,7 +555,7 @@ func TestExecutePostCommand(t *testing.T) {
 	defer ts.Close()
 
 	postCmd := &model.Command{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		TeamId:    th.BasicTeam.Id,
 		URL:       ts.URL,
 		Method:    model.COMMAND_METHOD_POST,
@@ -612,7 +612,7 @@ func TestExecuteCommandAgainstChannelOnAnotherTeam(t *testing.T) {
 	// create a slash command on some other team where we have permission to do so
 	team2 := th.CreateTeam()
 	postCmd := &model.Command{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		TeamId:    team2.Id,
 		URL:       ts.URL,
 		Method:    model.COMMAND_METHOD_POST,
@@ -662,7 +662,7 @@ func TestExecuteCommandAgainstChannelUserIsNotIn(t *testing.T) {
 	// create a slash command on some other team where we have permission to do so
 	team2 := th.CreateTeam()
 	postCmd := &model.Command{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		TeamId:    team2.Id,
 		URL:       ts.URL,
 		Method:    model.COMMAND_METHOD_POST,
@@ -674,7 +674,7 @@ func TestExecuteCommandAgainstChannelUserIsNotIn(t *testing.T) {
 
 	// make a channel on that team, ensuring that our test user isn't in it
 	channel2 := th.CreateChannelWithClientAndTeam(client, model.CHANNEL_OPEN, team2.Id)
-	if success, _ := client.RemoveUserFromChannel(channel2.Id, th.BasicUser.Id); !success {
+	if success, _ := client.RemoveUserFromChannel(channel2.Id, th.BasicUser.ClientId); !success {
 		t.Fatal("Failed to remove user from channel")
 	}
 
@@ -720,7 +720,7 @@ func TestExecuteCommandInDirectMessageChannel(t *testing.T) {
 
 	// create a slash command on some other team where we have permission to do so
 	postCmd := &model.Command{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		TeamId:    team2.Id,
 		URL:       ts.URL,
 		Method:    model.COMMAND_METHOD_POST,
@@ -731,7 +731,7 @@ func TestExecuteCommandInDirectMessageChannel(t *testing.T) {
 	}
 
 	// make a direct message channel
-	dmChannel, response := client.CreateDirectChannel(th.BasicUser.Id, th.BasicUser2.Id)
+	dmChannel, response := client.CreateDirectChannel(th.BasicUser.ClientId, th.BasicUser2.ClientId)
 	CheckCreatedStatus(t, response)
 
 	// we should be able to run the slash command in the DM channel
@@ -783,7 +783,7 @@ func TestExecuteCommandInTeamUserIsNotOn(t *testing.T) {
 
 	// create a slash command on that team
 	postCmd := &model.Command{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		TeamId:    team2.Id,
 		URL:       ts.URL,
 		Method:    model.COMMAND_METHOD_POST,
@@ -794,7 +794,7 @@ func TestExecuteCommandInTeamUserIsNotOn(t *testing.T) {
 	}
 
 	// make a direct message channel
-	dmChannel, response := client.CreateDirectChannel(th.BasicUser.Id, th.BasicUser2.Id)
+	dmChannel, response := client.CreateDirectChannel(th.BasicUser.ClientId, th.BasicUser2.ClientId)
 	CheckCreatedStatus(t, response)
 
 	// we should be able to run the slash command in the DM channel
@@ -802,7 +802,7 @@ func TestExecuteCommandInTeamUserIsNotOn(t *testing.T) {
 	CheckOKStatus(t, resp)
 
 	// if the user is removed from the team, they should NOT be able to run the slash command in the DM channel
-	if success, _ := client.RemoveTeamMember(team2.Id, th.BasicUser.Id); !success {
+	if success, _ := client.RemoveTeamMember(team2.Id, th.BasicUser.ClientId); !success {
 		t.Fatal("Failed to remove user from team")
 	}
 	_, resp = client.ExecuteCommandWithTeam(dmChannel.Id, team2.Id, "/postcommand")

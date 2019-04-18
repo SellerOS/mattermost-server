@@ -17,12 +17,12 @@ func TestWebConnShouldSendEvent(t *testing.T) {
 	th := Setup(t).InitBasic()
 	defer th.TearDown()
 
-	session, err := th.App.CreateSession(&model.Session{UserId: th.BasicUser.Id, Roles: th.BasicUser.GetRawRoles()})
+	session, err := th.App.CreateSession(&model.Session{UserId: th.BasicUser.ClientId, Roles: th.BasicUser.GetRawRoles()})
 	require.Nil(t, err)
 
 	basicUserWc := &WebConn{
 		App:    th.App,
-		UserId: th.BasicUser.Id,
+		UserId: th.BasicUser.ClientId,
 		T:      utils.T,
 	}
 
@@ -30,12 +30,12 @@ func TestWebConnShouldSendEvent(t *testing.T) {
 	basicUserWc.SetSessionToken(session.Token)
 	basicUserWc.SetSessionExpiresAt(session.ExpiresAt)
 
-	session2, err := th.App.CreateSession(&model.Session{UserId: th.BasicUser2.Id, Roles: th.BasicUser2.GetRawRoles()})
+	session2, err := th.App.CreateSession(&model.Session{UserId: th.BasicUser2.ClientId, Roles: th.BasicUser2.GetRawRoles()})
 	require.Nil(t, err)
 
 	basicUser2Wc := &WebConn{
 		App:    th.App,
-		UserId: th.BasicUser2.Id,
+		UserId: th.BasicUser2.ClientId,
 		T:      utils.T,
 	}
 
@@ -43,12 +43,12 @@ func TestWebConnShouldSendEvent(t *testing.T) {
 	basicUser2Wc.SetSessionToken(session2.Token)
 	basicUser2Wc.SetSessionExpiresAt(session2.ExpiresAt)
 
-	session3, err := th.App.CreateSession(&model.Session{UserId: th.SystemAdminUser.Id, Roles: th.SystemAdminUser.GetRawRoles()})
+	session3, err := th.App.CreateSession(&model.Session{UserId: th.SystemAdminUser.ClientId, Roles: th.SystemAdminUser.GetRawRoles()})
 	require.Nil(t, err)
 
 	adminUserWc := &WebConn{
 		App:    th.App,
-		UserId: th.SystemAdminUser.Id,
+		UserId: th.SystemAdminUser.ClientId,
 		T:      utils.T,
 	}
 
@@ -64,8 +64,8 @@ func TestWebConnShouldSendEvent(t *testing.T) {
 		AdminExpected bool
 	}{
 		{"should send to all", &model.WebsocketBroadcast{}, true, true, true},
-		{"should only send to basic user", &model.WebsocketBroadcast{UserId: th.BasicUser.Id}, true, false, false},
-		{"should omit basic user 2", &model.WebsocketBroadcast{OmitUsers: map[string]bool{th.BasicUser2.Id: true}}, true, false, true},
+		{"should only send to basic user", &model.WebsocketBroadcast{UserId: th.BasicUser.ClientId}, true, false, false},
+		{"should omit basic user 2", &model.WebsocketBroadcast{OmitUsers: map[string]bool{th.BasicUser2.ClientId: true}}, true, false, true},
 		{"should only send to admin", &model.WebsocketBroadcast{ContainsSensitiveData: true}, false, false, true},
 		{"should only send to non-admins", &model.WebsocketBroadcast{ContainsSanitizedData: true}, true, true, false},
 		{"should send to nobody", &model.WebsocketBroadcast{ContainsSensitiveData: true, ContainsSanitizedData: true}, false, false, false},

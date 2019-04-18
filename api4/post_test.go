@@ -126,7 +126,7 @@ func TestCreatePostEphemeral(t *testing.T) {
 	Client := th.SystemAdminClient
 
 	ephemeralPost := &model.PostEphemeral{
-		UserID: th.BasicUser2.Id,
+		UserID: th.BasicUser2.ClientId,
 		Post:   &model.Post{ChannelId: th.BasicChannel.Id, Message: "a" + model.NewId() + "a", Props: model.StringInterface{model.PROPS_ADD_CHANNEL_MEMBER: "no good"}},
 	}
 
@@ -410,7 +410,7 @@ func TestCreatePostAll(t *testing.T) {
 
 	user := model.User{Email: th.GenerateTestEmail(), Nickname: "Joram Wilander", Password: "hello1", Username: GenerateTestUsername(), Roles: model.SYSTEM_USER_ROLE_ID}
 
-	directChannel, _ := th.App.GetOrCreateDirectChannel(th.BasicUser.Id, th.BasicUser2.Id)
+	directChannel, _ := th.App.GetOrCreateDirectChannel(th.BasicUser.ClientId, th.BasicUser2.ClientId)
 
 	ruser, resp := Client.CreateUser(&user)
 	CheckNoError(t, resp)
@@ -571,7 +571,7 @@ func TestUpdatePost(t *testing.T) {
 		t.Fatal("failed to sanitize Props['add_channel_member'], should be nil")
 	}
 
-	rpost2, err := th.App.CreatePost(&model.Post{ChannelId: channel.Id, Message: "zz" + model.NewId() + "a", Type: model.POST_JOIN_LEAVE, UserId: th.BasicUser.Id}, channel, false)
+	rpost2, err := th.App.CreatePost(&model.Post{ChannelId: channel.Id, Message: "zz" + model.NewId() + "a", Type: model.POST_JOIN_LEAVE, UserId: th.BasicUser.ClientId}, channel, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -580,7 +580,7 @@ func TestUpdatePost(t *testing.T) {
 	_, resp = Client.UpdatePost(rpost2.Id, up2)
 	CheckBadRequestStatus(t, resp)
 
-	rpost3, err := th.App.CreatePost(&model.Post{ChannelId: channel.Id, Message: "zz" + model.NewId() + "a", UserId: th.BasicUser.Id}, channel, false)
+	rpost3, err := th.App.CreatePost(&model.Post{ChannelId: channel.Id, Message: "zz" + model.NewId() + "a", UserId: th.BasicUser.ClientId}, channel, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -636,7 +636,7 @@ func TestUpdateOthersPostInDirectMessageChannel(t *testing.T) {
 		Message:       "asd",
 		ChannelId:     dmChannel.Id,
 		PendingPostId: model.NewId() + ":" + fmt.Sprint(model.GetMillis()),
-		UserId:        th.BasicUser.Id,
+		UserId:        th.BasicUser.ClientId,
 		CreateAt:      0,
 	}
 
@@ -1299,7 +1299,7 @@ func TestGetPost(t *testing.T) {
 	_, resp = Client.GetPost(model.NewId(), "")
 	CheckNotFoundStatus(t, resp)
 
-	Client.RemoveUserFromChannel(th.BasicChannel.Id, th.BasicUser.Id)
+	Client.RemoveUserFromChannel(th.BasicChannel.Id, th.BasicUser.ClientId)
 
 	// Channel is public, should be able to read post
 	_, resp = Client.GetPost(th.BasicPost.Id, "")
@@ -1310,7 +1310,7 @@ func TestGetPost(t *testing.T) {
 	_, resp = Client.GetPost(privatePost.Id, "")
 	CheckNoError(t, resp)
 
-	Client.RemoveUserFromChannel(th.BasicPrivateChannel.Id, th.BasicUser.Id)
+	Client.RemoveUserFromChannel(th.BasicPrivateChannel.Id, th.BasicUser.ClientId)
 
 	// Channel is private, should not be able to read post
 	_, resp = Client.GetPost(privatePost.Id, "")
@@ -1395,7 +1395,7 @@ func TestGetPostThread(t *testing.T) {
 	_, resp = Client.GetPostThread(model.NewId(), "")
 	CheckNotFoundStatus(t, resp)
 
-	Client.RemoveUserFromChannel(th.BasicChannel.Id, th.BasicUser.Id)
+	Client.RemoveUserFromChannel(th.BasicChannel.Id, th.BasicUser.ClientId)
 
 	// Channel is public, should be able to read post
 	_, resp = Client.GetPostThread(th.BasicPost.Id, "")
@@ -1406,7 +1406,7 @@ func TestGetPostThread(t *testing.T) {
 	_, resp = Client.GetPostThread(privatePost.Id, "")
 	CheckNoError(t, resp)
 
-	Client.RemoveUserFromChannel(th.BasicPrivateChannel.Id, th.BasicUser.Id)
+	Client.RemoveUserFromChannel(th.BasicPrivateChannel.Id, th.BasicUser.ClientId)
 
 	// Channel is private, should not be able to read post
 	_, resp = Client.GetPostThread(privatePost.Id, "")
@@ -1767,7 +1767,7 @@ func TestSearchPostsWithDateFlags(t *testing.T) {
 	posts, _ = Client.SearchPosts(th.BasicTeam.Id, "after:2018-08-01", false)
 	resultCount := 0
 	for _, post := range posts.Posts {
-		if post.UserId == th.BasicUser.Id {
+		if post.UserId == th.BasicUser.ClientId {
 			resultCount = resultCount + 1
 		}
 	}

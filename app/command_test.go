@@ -60,7 +60,7 @@ func TestCreateCommandPost(t *testing.T) {
 
 	post := &model.Post{
 		ChannelId: th.BasicChannel.Id,
-		UserId:    th.BasicUser.Id,
+		UserId:    th.BasicUser.ClientId,
 		Type:      model.POST_SYSTEM_GENERIC,
 	}
 
@@ -82,7 +82,7 @@ func TestHandleCommandResponsePost(t *testing.T) {
 	args := &model.CommandArgs{
 		ChannelId: th.BasicChannel.Id,
 		TeamId:    th.BasicTeam.Id,
-		UserId:    th.BasicUser.Id,
+		UserId:    th.BasicUser.ClientId,
 		RootId:    "",
 		ParentId:  "",
 	}
@@ -199,7 +199,7 @@ func TestHandleCommandResponsePost(t *testing.T) {
 
 	channel = th.CreatePrivateChannel(th.BasicTeam)
 	resp.ChannelId = channel.Id
-	args.UserId = th.BasicUser2.Id
+	args.UserId = th.BasicUser2.ClientId
 	post, err = th.App.HandleCommandResponsePost(command, args, resp, builtIn)
 
 	if err == nil || err.Id != "api.command.command_post.forbidden.app_error" {
@@ -214,7 +214,7 @@ func TestHandleCommandResponse(t *testing.T) {
 
 	args := &model.CommandArgs{
 		Command:   "/invite username",
-		UserId:    th.BasicUser.Id,
+		UserId:    th.BasicUser.ClientId,
 		ChannelId: th.BasicChannel.Id,
 	}
 

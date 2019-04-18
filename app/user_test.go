@@ -121,7 +121,7 @@ func TestSetDefaultProfileImage(t *testing.T) {
 	defer th.TearDown()
 
 	err := th.App.SetDefaultProfileImage(&model.User{
-		Id:       model.NewId(),
+		ClientId:       model.NewId(),
 		Username: "notvaliduser",
 	})
 	require.Error(t, err)
@@ -179,7 +179,7 @@ func TestUpdateActiveBotsSideEffect(t *testing.T) {
 	bot, err := th.App.CreateBot(&model.Bot{
 		Username:    "username",
 		Description: "a bot",
-		OwnerId:     th.BasicUser.Id,
+		OwnerId:     th.BasicUser.ClientId,
 	})
 	require.Nil(t, err)
 	defer th.App.PermanentDeleteBot(bot.UserId)
@@ -351,13 +351,13 @@ func TestUpdateUserEmail(t *testing.T) {
 		assert.Equal(t, currentEmail, user2.Email)
 		assert.True(t, user2.EmailVerified)
 
-		token, err := th.App.CreateVerifyEmailToken(user2.Id, newEmail)
+		token, err := th.App.CreateVerifyEmailToken(user2.ClientId, newEmail)
 		assert.Nil(t, err)
 
 		err = th.App.VerifyEmailFromToken(token.Token)
 		assert.Nil(t, err)
 
-		user2, err = th.App.GetUser(user2.Id)
+		user2, err = th.App.GetUser(user2.ClientId)
 		assert.Nil(t, err)
 		assert.Equal(t, newEmail, user2.Email)
 		assert.True(t, user2.EmailVerified)
@@ -498,7 +498,7 @@ func TestGetUsersByStatus(t *testing.T) {
 		}
 
 		for i := range usersByStatus {
-			if usersByStatus[i].Id != expectedUsersByStatus[i].Id {
+			if usersByStatus[i].ClientId != expectedUsersByStatus[i].ClientId {
 				t.Fatalf("received user %v at index %v, expected %v", usersByStatus[i].Username, i, expectedUsersByStatus[i].Username)
 			}
 		}
@@ -514,11 +514,11 @@ func TestGetUsersByStatus(t *testing.T) {
 			t.Fatal("received too many users")
 		}
 
-		if usersByStatus[0].Id != onlineUser1.Id && usersByStatus[1].Id != onlineUser2.Id {
+		if usersByStatus[0].ClientId != onlineUser1.ClientId && usersByStatus[1].ClientId != onlineUser2.ClientId {
 			t.Fatal("expected to receive online users first")
 		}
 
-		if usersByStatus[2].Id != awayUser1.Id {
+		if usersByStatus[2].ClientId != awayUser1.ClientId {
 			t.Fatal("expected to receive away users second")
 		}
 
@@ -527,11 +527,11 @@ func TestGetUsersByStatus(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if usersByStatus[0].Id != awayUser2.Id {
+		if usersByStatus[0].ClientId != awayUser2.ClientId {
 			t.Fatal("expected to receive away users second")
 		}
 
-		if usersByStatus[1].Id != dndUser1.Id && usersByStatus[2].Id != dndUser2.Id {
+		if usersByStatus[1].ClientId != dndUser1.ClientId && usersByStatus[2].ClientId != dndUser2.ClientId {
 			t.Fatal("expected to receive dnd users third")
 		}
 
@@ -544,11 +544,11 @@ func TestGetUsersByStatus(t *testing.T) {
 			t.Fatal("received too many users")
 		}
 
-		if usersByStatus[0].Id != dndUser1.Id && usersByStatus[1].Id != dndUser2.Id {
+		if usersByStatus[0].ClientId != dndUser1.ClientId && usersByStatus[1].ClientId != dndUser2.ClientId {
 			t.Fatal("expected to receive dnd users third")
 		}
 
-		if usersByStatus[2].Id != offlineUser1.Id && usersByStatus[3].Id != offlineUser2.Id {
+		if usersByStatus[2].ClientId != offlineUser1.ClientId && usersByStatus[3].ClientId != offlineUser2.ClientId {
 			t.Fatal("expected to receive offline users last")
 		}
 	})
@@ -630,7 +630,7 @@ func TestPermanentDeleteUser(t *testing.T) {
 
 	b := []byte("testimage")
 
-	finfo, err := th.App.DoUploadFile(time.Now(), th.BasicTeam.Id, th.BasicChannel.Id, th.BasicUser.Id, "testfile.txt", b)
+	finfo, err := th.App.DoUploadFile(time.Now(), th.BasicTeam.Id, th.BasicChannel.Id, th.BasicUser.ClientId, "testfile.txt", b)
 
 	if err != nil {
 		t.Log(err)
@@ -672,7 +672,7 @@ func TestPasswordRecovery(t *testing.T) {
 	th := Setup(t).InitBasic()
 	defer th.TearDown()
 
-	token, err := th.App.CreatePasswordRecoveryToken(th.BasicUser.Id, th.BasicUser.Email)
+	token, err := th.App.CreatePasswordRecoveryToken(th.BasicUser.ClientId, th.BasicUser.Email)
 	assert.Nil(t, err)
 
 	tokenData := struct {
@@ -682,7 +682,7 @@ func TestPasswordRecovery(t *testing.T) {
 
 	err2 := json.Unmarshal([]byte(token.Extra), &tokenData)
 	assert.Nil(t, err2)
-	assert.Equal(t, th.BasicUser.Id, tokenData.UserId)
+	assert.Equal(t, th.BasicUser.ClientId, tokenData.UserId)
 	assert.Equal(t, th.BasicUser.Email, tokenData.Email)
 
 	// Password token with same eMail as during creation
@@ -690,7 +690,7 @@ func TestPasswordRecovery(t *testing.T) {
 	assert.Nil(t, err)
 
 	// Password token with modified eMail after creation
-	token, err = th.App.CreatePasswordRecoveryToken(th.BasicUser.Id, th.BasicUser.Email)
+	token, err = th.App.CreatePasswordRecoveryToken(th.BasicUser.ClientId, th.BasicUser.Email)
 	assert.Nil(t, err)
 
 	th.App.UpdateConfig(func(c *model.Config) {

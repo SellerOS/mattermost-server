@@ -21,7 +21,7 @@ func TestReactionsOfPost(t *testing.T) {
 	post.HasReactions = true
 
 	reactionObject := model.Reaction{
-		UserId:    th.BasicUser.Id,
+		UserId:    th.BasicUser.ClientId,
 		PostId:    post.Id,
 		EmojiName: "emoji",
 		CreateAt:  model.GetMillis(),
@@ -117,7 +117,7 @@ func TestCopyEmojiImages(t *testing.T) {
 	defer th.TearDown()
 
 	emoji := &model.Emoji{
-		Id: th.BasicUser.Id,
+		Id: th.BasicUser.ClientId,
 	}
 
 	// Creating a dir named `exported_emoji_test` in the root of the repo
@@ -380,14 +380,14 @@ func TestExportDMandGMPost(t *testing.T) {
 	p1 := &model.Post{
 		ChannelId: dmChannel.Id,
 		Message:   "aa" + model.NewId() + "a",
-		UserId:    th1.BasicUser.Id,
+		UserId:    th1.BasicUser.ClientId,
 	}
 	th1.App.CreatePost(p1, dmChannel, false)
 
 	p2 := &model.Post{
 		ChannelId: dmChannel.Id,
 		Message:   "bb" + model.NewId() + "a",
-		UserId:    th1.BasicUser.Id,
+		UserId:    th1.BasicUser.ClientId,
 	}
 	th1.App.CreatePost(p2, dmChannel, false)
 
@@ -395,14 +395,14 @@ func TestExportDMandGMPost(t *testing.T) {
 	p3 := &model.Post{
 		ChannelId: gmChannel.Id,
 		Message:   "cc" + model.NewId() + "a",
-		UserId:    th1.BasicUser.Id,
+		UserId:    th1.BasicUser.ClientId,
 	}
 	th1.App.CreatePost(p3, gmChannel, false)
 
 	p4 := &model.Post{
 		ChannelId: gmChannel.Id,
 		Message:   "dd" + model.NewId() + "a",
-		UserId:    th1.BasicUser.Id,
+		UserId:    th1.BasicUser.ClientId,
 	}
 	th1.App.CreatePost(p4, gmChannel, false)
 

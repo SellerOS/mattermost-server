@@ -182,7 +182,7 @@ func TestUpdateOAuthApp(t *testing.T) {
 	}
 
 	th.LoginBasic2()
-	updatedApp.CreatorId = th.BasicUser2.Id
+	updatedApp.CreatorId = th.BasicUser2.ClientId
 	_, resp = Client.UpdateOAuthApp(oapp)
 	CheckForbiddenStatus(t, resp)
 
@@ -610,7 +610,7 @@ func TestGetAuthorizedOAuthAppsForUser(t *testing.T) {
 	_, resp = Client.AuthorizeOAuthApp(authRequest)
 	CheckNoError(t, resp)
 
-	apps, resp := Client.GetAuthorizedOAuthAppsForUser(th.BasicUser.Id, 0, 1000)
+	apps, resp := Client.GetAuthorizedOAuthAppsForUser(th.BasicUser.ClientId, 0, 1000)
 	CheckNoError(t, resp)
 
 	found := false
@@ -628,17 +628,17 @@ func TestGetAuthorizedOAuthAppsForUser(t *testing.T) {
 		t.Fatal("missing app")
 	}
 
-	_, resp = Client.GetAuthorizedOAuthAppsForUser(th.BasicUser2.Id, 0, 1000)
+	_, resp = Client.GetAuthorizedOAuthAppsForUser(th.BasicUser2.ClientId, 0, 1000)
 	CheckForbiddenStatus(t, resp)
 
 	_, resp = Client.GetAuthorizedOAuthAppsForUser("junk", 0, 1000)
 	CheckBadRequestStatus(t, resp)
 
 	Client.Logout()
-	_, resp = Client.GetAuthorizedOAuthAppsForUser(th.BasicUser.Id, 0, 1000)
+	_, resp = Client.GetAuthorizedOAuthAppsForUser(th.BasicUser.ClientId, 0, 1000)
 	CheckUnauthorizedStatus(t, resp)
 
-	_, resp = AdminClient.GetAuthorizedOAuthAppsForUser(th.BasicUser.Id, 0, 1000)
+	_, resp = AdminClient.GetAuthorizedOAuthAppsForUser(th.BasicUser.ClientId, 0, 1000)
 	CheckNoError(t, resp)
 }
 
@@ -975,7 +975,7 @@ func TestOAuthAccessToken(t *testing.T) {
 		}
 	}
 
-	authData := &model.AuthData{ClientId: oauthApp.Id, RedirectUri: oauthApp.CallbackUrls[0], UserId: th.BasicUser.Id, Code: model.NewId(), ExpiresIn: -1}
+	authData := &model.AuthData{ClientId: oauthApp.Id, RedirectUri: oauthApp.CallbackUrls[0], UserId: th.BasicUser.ClientId, Code: model.NewId(), ExpiresIn: -1}
 	<-th.App.Srv.Store.OAuth().SaveAuthData(authData)
 
 	data.Set("grant_type", model.ACCESS_TOKEN_GRANT_TYPE)
@@ -1111,7 +1111,7 @@ func TestOAuthComplete(t *testing.T) {
 	}
 
 	if result := <-th.App.Srv.Store.User().UpdateAuthData(
-		th.BasicUser.Id, model.SERVICE_GITLAB, &th.BasicUser.Email, th.BasicUser.Email, true); result.Err != nil {
+		th.BasicUser.ClientId, model.SERVICE_GITLAB, &th.BasicUser.Email, th.BasicUser.Email, true); result.Err != nil {
 		t.Fatal(result.Err)
 	}
 

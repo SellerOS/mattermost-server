@@ -14,14 +14,14 @@ type MyPlugin struct {
 
 func (p *MyPlugin) MessageWillBePosted(c *plugin.Context, post *model.Post) (*model.Post, string) {
 
-	channels, err := p.API.GetChannelsForTeamForUser("{{.BasicTeam.Id}}", "{{.BasicUser.Id}}", false)
+	channels, err := p.API.GetChannelsForTeamForUser("{{.BasicTeam.Id}}", "{{.BasicUser.ClientId}}", false)
 	if err != nil {
 		return nil, err.Error()
 	}
 	if len(channels) != 3 {
 		return nil, "Returned invalid number of channels"
 	}
-	channels, err = p.API.GetChannelsForTeamForUser("invalidid", "{{.BasicUser.Id}}", false)
+	channels, err = p.API.GetChannelsForTeamForUser("invalidid", "{{.BasicUser.ClientId}}", false)
 	if err == nil {
 		return nil, "Expected to get an error while retrieving channels for invalid id"
 	}

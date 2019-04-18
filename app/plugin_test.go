@@ -193,7 +193,7 @@ func TestHandlePluginRequest(t *testing.T) {
 	})
 
 	token, err := th.App.CreateUserAccessToken(&model.UserAccessToken{
-		UserId: th.BasicUser.Id,
+		UserId: th.BasicUser.ClientId,
 	})
 	require.Nil(t, err)
 
@@ -209,7 +209,7 @@ func TestHandlePluginRequest(t *testing.T) {
 	r.Header.Add("Authorization", "Bearer "+token.Token)
 	assertions = func(r *http.Request) {
 		assert.Equal(t, "/bar", r.URL.Path)
-		assert.Equal(t, th.BasicUser.Id, r.Header.Get("Mattermost-User-Id"))
+		assert.Equal(t, th.BasicUser.ClientId, r.Header.Get("Mattermost-User-Id"))
 	}
 	router.ServeHTTP(nil, r)
 
@@ -217,7 +217,7 @@ func TestHandlePluginRequest(t *testing.T) {
 	assertions = func(r *http.Request) {
 		assert.Equal(t, "/bar", r.URL.Path)
 		assert.Equal(t, "a=b&c=d", r.URL.RawQuery)
-		assert.Equal(t, th.BasicUser.Id, r.Header.Get("Mattermost-User-Id"))
+		assert.Equal(t, th.BasicUser.ClientId, r.Header.Get("Mattermost-User-Id"))
 	}
 	router.ServeHTTP(nil, r)
 

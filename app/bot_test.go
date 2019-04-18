@@ -23,7 +23,7 @@ func TestCreateBot(t *testing.T) {
 			_, err := th.App.CreateBot(&model.Bot{
 				Username:    "invalid username",
 				Description: "a bot",
-				OwnerId:     th.BasicUser.Id,
+				OwnerId:     th.BasicUser.ClientId,
 			})
 			require.NotNil(t, err)
 			require.Equal(t, "model.user.is_valid.username.app_error", err.Id)
@@ -36,7 +36,7 @@ func TestCreateBot(t *testing.T) {
 			_, err := th.App.CreateBot(&model.Bot{
 				Username:    "username",
 				Description: strings.Repeat("x", 1025),
-				OwnerId:     th.BasicUser.Id,
+				OwnerId:     th.BasicUser.ClientId,
 			})
 			require.NotNil(t, err)
 			require.Equal(t, "model.bot.is_valid.description.app_error", err.Id)
@@ -50,13 +50,13 @@ func TestCreateBot(t *testing.T) {
 		bot, err := th.App.CreateBot(&model.Bot{
 			Username:    "username",
 			Description: "a bot",
-			OwnerId:     th.BasicUser.Id,
+			OwnerId:     th.BasicUser.ClientId,
 		})
 		require.Nil(t, err)
 		defer th.App.PermanentDeleteBot(bot.UserId)
 		assert.Equal(t, "username", bot.Username)
 		assert.Equal(t, "a bot", bot.Description)
-		assert.Equal(t, th.BasicUser.Id, bot.OwnerId)
+		assert.Equal(t, th.BasicUser.ClientId, bot.OwnerId)
 	})
 
 	t.Run("create bot, username already used by a non-bot user", func(t *testing.T) {
@@ -66,7 +66,7 @@ func TestCreateBot(t *testing.T) {
 		_, err := th.App.CreateBot(&model.Bot{
 			Username:    th.BasicUser.Username,
 			Description: "a bot",
-			OwnerId:     th.BasicUser.Id,
+			OwnerId:     th.BasicUser.ClientId,
 		})
 		require.NotNil(t, err)
 		require.Equal(t, "store.sql_user.save.username_exists.app_error", err.Id)
@@ -81,7 +81,7 @@ func TestPatchBot(t *testing.T) {
 		bot, err := th.App.CreateBot(&model.Bot{
 			Username:    "username",
 			Description: "a bot",
-			OwnerId:     th.BasicUser.Id,
+			OwnerId:     th.BasicUser.ClientId,
 		})
 		require.Nil(t, err)
 		defer th.App.PermanentDeleteBot(bot.UserId)
@@ -104,7 +104,7 @@ func TestPatchBot(t *testing.T) {
 		bot, err := th.App.CreateBot(&model.Bot{
 			Username:    "username",
 			Description: "a bot",
-			OwnerId:     th.BasicUser.Id,
+			OwnerId:     th.BasicUser.ClientId,
 		})
 		require.Nil(t, err)
 		defer th.App.PermanentDeleteBot(bot.UserId)
@@ -128,7 +128,7 @@ func TestPatchBot(t *testing.T) {
 			Username:    "username",
 			DisplayName: "bot",
 			Description: "a bot",
-			OwnerId:     th.BasicUser.Id,
+			OwnerId:     th.BasicUser.ClientId,
 		}
 
 		createdBot, err := th.App.CreateBot(bot)
@@ -159,7 +159,7 @@ func TestPatchBot(t *testing.T) {
 			Username:    "username",
 			DisplayName: "bot",
 			Description: "a bot",
-			OwnerId:     th.BasicUser.Id,
+			OwnerId:     th.BasicUser.ClientId,
 		})
 		require.Nil(t, err)
 		defer th.App.PermanentDeleteBot(bot.UserId)
@@ -181,7 +181,7 @@ func TestGetBot(t *testing.T) {
 	bot1, err := th.App.CreateBot(&model.Bot{
 		Username:    "username",
 		Description: "a bot",
-		OwnerId:     th.BasicUser.Id,
+		OwnerId:     th.BasicUser.ClientId,
 	})
 	require.Nil(t, err)
 	defer th.App.PermanentDeleteBot(bot1.UserId)
@@ -189,7 +189,7 @@ func TestGetBot(t *testing.T) {
 	bot2, err := th.App.CreateBot(&model.Bot{
 		Username:    "username2",
 		Description: "a second bot",
-		OwnerId:     th.BasicUser.Id,
+		OwnerId:     th.BasicUser.ClientId,
 	})
 	require.Nil(t, err)
 	defer th.App.PermanentDeleteBot(bot2.UserId)
@@ -197,7 +197,7 @@ func TestGetBot(t *testing.T) {
 	deletedBot, err := th.App.CreateBot(&model.Bot{
 		Username:    "username3",
 		Description: "a deleted bot",
-		OwnerId:     th.BasicUser.Id,
+		OwnerId:     th.BasicUser.ClientId,
 	})
 	require.Nil(t, err)
 	deletedBot, err = th.App.UpdateBotActive(deletedBot.UserId, false)
@@ -444,7 +444,7 @@ func TestUpdateBotActive(t *testing.T) {
 		bot, err := th.App.CreateBot(&model.Bot{
 			Username:    "username",
 			Description: "a bot",
-			OwnerId:     th.BasicUser.Id,
+			OwnerId:     th.BasicUser.ClientId,
 		})
 		require.Nil(t, err)
 		defer th.App.PermanentDeleteBot(bot.UserId)
@@ -476,7 +476,7 @@ func TestPermanentDeleteBot(t *testing.T) {
 	bot, err := th.App.CreateBot(&model.Bot{
 		Username:    "username",
 		Description: "a bot",
-		OwnerId:     th.BasicUser.Id,
+		OwnerId:     th.BasicUser.ClientId,
 	})
 	require.Nil(t, err)
 

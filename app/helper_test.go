@@ -103,8 +103,8 @@ func Setup(tb testing.TB) *TestHelper {
 
 func (me *TestHelper) InitBasic() *TestHelper {
 	me.SystemAdminUser = me.CreateUser()
-	me.App.UpdateUserRoles(me.SystemAdminUser.Id, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_ADMIN_ROLE_ID, false)
-	me.SystemAdminUser, _ = me.App.GetUser(me.SystemAdminUser.Id)
+	me.App.UpdateUserRoles(me.SystemAdminUser.ClientId, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_ADMIN_ROLE_ID, false)
+	me.SystemAdminUser, _ = me.App.GetUser(me.SystemAdminUser.ClientId)
 
 	me.BasicTeam = me.CreateTeam()
 	me.BasicUser = me.CreateUser()
@@ -182,7 +182,7 @@ func (me *TestHelper) createChannel(team *model.Team, channelType string) *model
 		Name:        "name_" + id,
 		Type:        channelType,
 		TeamId:      team.Id,
-		CreatorId:   me.BasicUser.Id,
+		CreatorId:   me.BasicUser.ClientId,
 	}
 
 	utils.DisableDebugLogForTest()
@@ -224,7 +224,7 @@ func (me *TestHelper) CreateDmChannel(user *model.User) *model.Channel {
 	utils.DisableDebugLogForTest()
 	var err *model.AppError
 	var channel *model.Channel
-	if channel, err = me.App.GetOrCreateDirectChannel(me.BasicUser.Id, user.ClientId); err != nil {
+	if channel, err = me.App.GetOrCreateDirectChannel(me.BasicUser.ClientId, user.ClientId); err != nil {
 		mlog.Error(err.Error())
 
 		time.Sleep(time.Second)
@@ -238,7 +238,7 @@ func (me *TestHelper) CreateGroupChannel(user1 *model.User, user2 *model.User) *
 	utils.DisableDebugLogForTest()
 	var err *model.AppError
 	var channel *model.Channel
-	if channel, err = me.App.CreateGroupChannel([]string{me.BasicUser.Id, user1.Id, user2.Id}, me.BasicUser.Id); err != nil {
+	if channel, err = me.App.CreateGroupChannel([]string{me.BasicUser.ClientId, user1.ClientId, user2.ClientId}, me.BasicUser.ClientId); err != nil {
 		mlog.Error(err.Error())
 
 		time.Sleep(time.Second)
@@ -252,7 +252,7 @@ func (me *TestHelper) CreatePost(channel *model.Channel) *model.Post {
 	id := model.NewId()
 
 	post := &model.Post{
-		UserId:    me.BasicUser.Id,
+		UserId:    me.BasicUser.ClientId,
 		ChannelId: channel.Id,
 		Message:   "message_" + id,
 		CreateAt:  model.GetMillis() - 10000,
@@ -360,7 +360,7 @@ func (me *TestHelper) CreateEmoji() *model.Emoji {
 	utils.DisableDebugLogForTest()
 
 	result := <-me.App.Srv.Store.Emoji().Save(&model.Emoji{
-		CreatorId: me.BasicUser.Id,
+		CreatorId: me.BasicUser.ClientId,
 		Name:      model.NewRandomString(10),
 	})
 	if result.Err != nil {

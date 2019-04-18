@@ -34,7 +34,7 @@ func (p *HelloUserPlugin) ServeHTTP(context *plugin.Context, w http.ResponseWrit
 func Example() {
 	t := &testing.T{}
 	user := &model.User{
-		Id:       model.NewId(),
+		ClientId:       model.NewId(),
 		Username: "billybob",
 	}
 

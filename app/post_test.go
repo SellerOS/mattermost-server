@@ -25,7 +25,7 @@ func TestCreatePostDeduplicate(t *testing.T) {
 	t.Run("duplicate create post is idempotent", func(t *testing.T) {
 		pendingPostId := model.NewId()
 		post, err := th.App.CreatePostAsUser(&model.Post{
-			UserId:        th.BasicUser.Id,
+			UserId:        th.BasicUser.ClientId,
 			ChannelId:     th.BasicChannel.Id,
 			Message:       "message",
 			PendingPostId: pendingPostId,
@@ -34,7 +34,7 @@ func TestCreatePostDeduplicate(t *testing.T) {
 		require.Equal(t, "message", post.Message)
 
 		duplicatePost, err := th.App.CreatePostAsUser(&model.Post{
-			UserId:        th.BasicUser.Id,
+			UserId:        th.BasicUser.ClientId,
 			ChannelId:     th.BasicChannel.Id,
 			Message:       "message",
 			PendingPostId: pendingPostId,
@@ -74,7 +74,7 @@ func TestCreatePostDeduplicate(t *testing.T) {
 
 		pendingPostId := model.NewId()
 		post, err := th.App.CreatePostAsUser(&model.Post{
-			UserId:        th.BasicUser.Id,
+			UserId:        th.BasicUser.ClientId,
 			ChannelId:     th.BasicChannel.Id,
 			Message:       "message",
 			PendingPostId: pendingPostId,
@@ -84,7 +84,7 @@ func TestCreatePostDeduplicate(t *testing.T) {
 		require.Nil(t, post)
 
 		duplicatePost, err := th.App.CreatePostAsUser(&model.Post{
-			UserId:        th.BasicUser.Id,
+			UserId:        th.BasicUser.ClientId,
 			ChannelId:     th.BasicChannel.Id,
 			Message:       "message",
 			PendingPostId: pendingPostId,
@@ -134,7 +134,7 @@ func TestCreatePostDeduplicate(t *testing.T) {
 			defer wg.Done()
 			var err error
 			post, err = th.App.CreatePostAsUser(&model.Post{
-				UserId:        th.BasicUser.Id,
+				UserId:        th.BasicUser.ClientId,
 				ChannelId:     th.BasicChannel.Id,
 				Message:       "plugin delayed",
 				PendingPostId: pendingPostId,
@@ -148,7 +148,7 @@ func TestCreatePostDeduplicate(t *testing.T) {
 
 		// Try creating a duplicate post
 		duplicatePost, err := th.App.CreatePostAsUser(&model.Post{
-			UserId:        th.BasicUser.Id,
+			UserId:        th.BasicUser.ClientId,
 			ChannelId:     th.BasicChannel.Id,
 			Message:       "plugin delayed",
 			PendingPostId: pendingPostId,
@@ -164,7 +164,7 @@ func TestCreatePostDeduplicate(t *testing.T) {
 	t.Run("duplicate create post after cache expires is not idempotent", func(t *testing.T) {
 		pendingPostId := model.NewId()
 		post, err := th.App.CreatePostAsUser(&model.Post{
-			UserId:        th.BasicUser.Id,
+			UserId:        th.BasicUser.ClientId,
 			ChannelId:     th.BasicChannel.Id,
 			Message:       "message",
 			PendingPostId: pendingPostId,
@@ -175,7 +175,7 @@ func TestCreatePostDeduplicate(t *testing.T) {
 		time.Sleep(PENDING_POST_IDS_CACHE_TTL)
 
 		duplicatePost, err := th.App.CreatePostAsUser(&model.Post{
-			UserId:        th.BasicUser.Id,
+			UserId:        th.BasicUser.ClientId,
 			ChannelId:     th.BasicChannel.Id,
 			Message:       "message",
 			PendingPostId: pendingPostId,
@@ -192,11 +192,11 @@ func TestAttachFilesToPost(t *testing.T) {
 		defer th.TearDown()
 
 		info1 := store.Must(th.App.Srv.Store.FileInfo().Save(&model.FileInfo{
-			CreatorId: th.BasicUser.Id,
+			CreatorId: th.BasicUser.ClientId,
 			Path:      "path.txt",
 		})).(*model.FileInfo)
 		info2 := store.Must(th.App.Srv.Store.FileInfo().Save(&model.FileInfo{
-			CreatorId: th.BasicUser.Id,
+			CreatorId: th.BasicUser.ClientId,
 			Path:      "path.txt",
 		})).(*model.FileInfo)
 
@@ -216,12 +216,12 @@ func TestAttachFilesToPost(t *testing.T) {
 		defer th.TearDown()
 
 		info1 := store.Must(th.App.Srv.Store.FileInfo().Save(&model.FileInfo{
-			CreatorId: th.BasicUser.Id,
+			CreatorId: th.BasicUser.ClientId,
 			Path:      "path.txt",
 			PostId:    model.NewId(),
 		})).(*model.FileInfo)
 		info2 := store.Must(th.App.Srv.Store.FileInfo().Save(&model.FileInfo{
-			CreatorId: th.BasicUser.Id,
+			CreatorId: th.BasicUser.ClientId,
 			Path:      "path.txt",
 		})).(*model.FileInfo)
 
@@ -336,7 +336,7 @@ func TestPostReplyToPostWhereRootPosterLeftChannel(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err := th.App.RemoveUserFromChannel(userNotInChannel.Id, "", channel); err != nil {
+	if err := th.App.RemoveUserFromChannel(userNotInChannel.ClientId, "", channel); err != nil {
 		t.Fatal(err)
 	}
 
@@ -346,7 +346,7 @@ func TestPostReplyToPostWhereRootPosterLeftChannel(t *testing.T) {
 		RootId:        rootPost.Id,
 		ParentId:      rootPost.Id,
 		PendingPostId: model.NewId() + ":" + fmt.Sprint(model.GetMillis()),
-		UserId:        userInChannel.Id,
+		UserId:        userInChannel.ClientId,
 		CreateAt:      0,
 	}
 
@@ -614,7 +614,7 @@ func TestDeletePostWithFileAttachments(t *testing.T) {
 	// Create a post with a file attachment.
 	teamId := th.BasicTeam.Id
 	channelId := th.BasicChannel.Id
-	userId := th.BasicUser.Id
+	userId := th.BasicUser.ClientId
 	filename := "test"
 	data := []byte("abcd")
 
@@ -684,7 +684,7 @@ func TestCreatePost(t *testing.T) {
 		post := &model.Post{
 			ChannelId: th.BasicChannel.Id,
 			Message:   "![image](" + imageURL + ")",
-			UserId:    th.BasicUser.Id,
+			UserId:    th.BasicUser.ClientId,
 		}
 
 		rpost, err := th.App.CreatePost(post, th.BasicChannel, false)
@@ -712,7 +712,7 @@ func TestPatchPost(t *testing.T) {
 		post := &model.Post{
 			ChannelId: th.BasicChannel.Id,
 			Message:   "![image](http://mydomain/anotherimage)",
-			UserId:    th.BasicUser.Id,
+			UserId:    th.BasicUser.ClientId,
 		}
 
 		rpost, err := th.App.CreatePost(post, th.BasicChannel, false)
@@ -761,7 +761,7 @@ func TestUpdatePost(t *testing.T) {
 		post := &model.Post{
 			ChannelId: th.BasicChannel.Id,
 			Message:   "![image](http://mydomain/anotherimage)",
-			UserId:    th.BasicUser.Id,
+			UserId:    th.BasicUser.ClientId,
 		}
 
 		rpost, err := th.App.CreatePost(post, th.BasicChannel, false)

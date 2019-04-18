@@ -345,7 +345,7 @@ func TestGetMe(t *testing.T) {
 	ruser, resp := th.Client.GetMe("")
 	CheckNoError(t, resp)
 
-	if ruser.ClientId != th.BasicUser.Id {
+	if ruser.ClientId != th.BasicUser.ClientId {
 		t.Fatal("wrong user")
 	}
 
@@ -424,11 +424,11 @@ func TestGetUserWithAcceptedTermsOfServiceForOtherUser(t *testing.T) {
 
 	user := th.CreateUser()
 
-	tos, _ := th.App.CreateTermsOfService("Dummy TOS", user.Id)
+	tos, _ := th.App.CreateTermsOfService("Dummy TOS", user.ClientId)
 
 	th.App.UpdateUser(user, false)
 
-	ruser, resp := th.Client.GetUser(user.Id, "")
+	ruser, resp := th.Client.GetUser(user.ClientId, "")
 	CheckNoError(t, resp)
 	CheckUserSanitization(t, ruser)
 
@@ -438,9 +438,9 @@ func TestGetUserWithAcceptedTermsOfServiceForOtherUser(t *testing.T) {
 
 	assert.Empty(t, ruser.TermsOfServiceId)
 
-	th.App.SaveUserTermsOfService(user.Id, tos.Id, true)
+	th.App.SaveUserTermsOfService(user.ClientId, tos.Id, true)
 
-	ruser, resp = th.Client.GetUser(user.Id, "")
+	ruser, resp = th.Client.GetUser(user.ClientId, "")
 	CheckNoError(t, resp)
 	CheckUserSanitization(t, ruser)
 
@@ -458,9 +458,9 @@ func TestGetUserWithAcceptedTermsOfService(t *testing.T) {
 
 	user := th.BasicUser
 
-	tos, _ := th.App.CreateTermsOfService("Dummy TOS", user.Id)
+	tos, _ := th.App.CreateTermsOfService("Dummy TOS", user.ClientId)
 
-	ruser, resp := th.Client.GetUser(user.Id, "")
+	ruser, resp := th.Client.GetUser(user.ClientId, "")
 	CheckNoError(t, resp)
 	CheckUserSanitization(t, ruser)
 
@@ -470,9 +470,9 @@ func TestGetUserWithAcceptedTermsOfService(t *testing.T) {
 
 	assert.Empty(t, ruser.TermsOfServiceId)
 
-	th.App.SaveUserTermsOfService(user.Id, tos.Id, true)
+	th.App.SaveUserTermsOfService(user.ClientId, tos.Id, true)
 
-	ruser, resp = th.Client.GetUser(user.Id, "")
+	ruser, resp = th.Client.GetUser(user.ClientId, "")
 	CheckNoError(t, resp)
 	CheckUserSanitization(t, ruser)
 
@@ -491,9 +491,9 @@ func TestGetUserWithAcceptedTermsOfServiceWithAdminUser(t *testing.T) {
 
 	user := th.BasicUser
 
-	tos, _ := th.App.CreateTermsOfService("Dummy TOS", user.Id)
+	tos, _ := th.App.CreateTermsOfService("Dummy TOS", user.ClientId)
 
-	ruser, resp := th.SystemAdminClient.GetUser(user.Id, "")
+	ruser, resp := th.SystemAdminClient.GetUser(user.ClientId, "")
 	CheckNoError(t, resp)
 	CheckUserSanitization(t, ruser)
 
@@ -503,9 +503,9 @@ func TestGetUserWithAcceptedTermsOfServiceWithAdminUser(t *testing.T) {
 
 	assert.Empty(t, ruser.TermsOfServiceId)
 
-	th.App.SaveUserTermsOfService(user.Id, tos.Id, true)
+	th.App.SaveUserTermsOfService(user.ClientId, tos.Id, true)
 
-	ruser, resp = th.SystemAdminClient.GetUser(user.Id, "")
+	ruser, resp = th.SystemAdminClient.GetUser(user.ClientId, "")
 	CheckNoError(t, resp)
 	CheckUserSanitization(t, ruser)
 
@@ -524,7 +524,7 @@ func TestGetBotUser(t *testing.T) {
 	defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
 
 	th.AddPermissionToRole(model.PERMISSION_CREATE_BOT.Id, model.TEAM_USER_ROLE_ID)
-	th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+	th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 	bot := &model.Bot{
 		Username:    GenerateTestUsername(),
@@ -615,8 +615,8 @@ func TestGetUserByUsernameWithAcceptedTermsOfService(t *testing.T) {
 		t.Fatal("emails did not match")
 	}
 
-	tos, _ := th.App.CreateTermsOfService("Dummy TOS", user.Id)
-	th.App.SaveUserTermsOfService(ruser.Id, tos.Id, true)
+	tos, _ := th.App.CreateTermsOfService("Dummy TOS", user.ClientId)
+	th.App.SaveUserTermsOfService(ruser.ClientId, tos.Id, true)
 
 	ruser, resp = th.Client.GetUserByUsername(user.Username, "")
 	CheckNoError(t, resp)
@@ -757,7 +757,7 @@ func TestSearchUsers(t *testing.T) {
 	users, resp := th.Client.SearchUsers(search)
 	CheckNoError(t, resp)
 
-	if !findUserInList(th.BasicUser.Id, users) {
+	if !findUserInList(th.BasicUser.ClientId, users) {
 		t.Fatal("should have found user")
 	}
 
@@ -772,7 +772,7 @@ func TestSearchUsers(t *testing.T) {
 	users, resp = th.Client.SearchUsers(search)
 	CheckNoError(t, resp)
 
-	if findUserInList(th.BasicUser2.Id, users) {
+	if findUserInList(th.BasicUser2.ClientId, users) {
 		t.Fatal("should not have found user")
 	}
 
@@ -781,7 +781,7 @@ func TestSearchUsers(t *testing.T) {
 	users, resp = th.Client.SearchUsers(search)
 	CheckNoError(t, resp)
 
-	if !findUserInList(th.BasicUser2.Id, users) {
+	if !findUserInList(th.BasicUser2.ClientId, users) {
 		t.Fatal("should have found user")
 	}
 
@@ -792,7 +792,7 @@ func TestSearchUsers(t *testing.T) {
 	users, resp = th.Client.SearchUsers(search)
 	CheckNoError(t, resp)
 
-	if !findUserInList(th.BasicUser.Id, users) {
+	if !findUserInList(th.BasicUser.ClientId, users) {
 		t.Fatal("should have found user")
 	}
 
@@ -801,7 +801,7 @@ func TestSearchUsers(t *testing.T) {
 	users, resp = th.Client.SearchUsers(search)
 	CheckNoError(t, resp)
 
-	if findUserInList(th.BasicUser.Id, users) {
+	if findUserInList(th.BasicUser.ClientId, users) {
 		t.Fatal("should not have found user")
 	}
 
@@ -812,7 +812,7 @@ func TestSearchUsers(t *testing.T) {
 	users, resp = th.Client.SearchUsers(search)
 	CheckNoError(t, resp)
 
-	if !findUserInList(th.BasicUser.Id, users) {
+	if !findUserInList(th.BasicUser.ClientId, users) {
 		t.Fatal("should have found user")
 	}
 
@@ -845,7 +845,7 @@ func TestSearchUsers(t *testing.T) {
 	users, resp = th.Client.SearchUsers(search)
 	CheckNoError(t, resp)
 
-	if findUserInList(th.BasicUser.Id, users) {
+	if findUserInList(th.BasicUser.ClientId, users) {
 		t.Fatal("should not have found user")
 	}
 
@@ -855,17 +855,17 @@ func TestSearchUsers(t *testing.T) {
 	users, resp = th.Client.SearchUsers(search)
 	CheckNoError(t, resp)
 
-	if !findUserInList(oddUser.Id, users) {
+	if !findUserInList(oddUser.ClientId, users) {
 		t.Fatal("should have found user")
 	}
 
-	_, resp = th.SystemAdminClient.AddTeamMember(th.BasicTeam.Id, oddUser.Id)
+	_, resp = th.SystemAdminClient.AddTeamMember(th.BasicTeam.Id, oddUser.ClientId)
 	CheckNoError(t, resp)
 
 	users, resp = th.Client.SearchUsers(search)
 	CheckNoError(t, resp)
 
-	if findUserInList(oddUser.Id, users) {
+	if findUserInList(oddUser.ClientId, users) {
 		t.Fatal("should not have found user")
 	}
 
@@ -889,7 +889,7 @@ func TestSearchUsers(t *testing.T) {
 	users, resp = th.Client.SearchUsers(search)
 	CheckNoError(t, resp)
 
-	if findUserInList(th.BasicUser2.Id, users) {
+	if findUserInList(th.BasicUser2.ClientId, users) {
 		t.Fatal("should not have found user")
 	}
 
@@ -897,7 +897,7 @@ func TestSearchUsers(t *testing.T) {
 	users, resp = th.Client.SearchUsers(search)
 	CheckNoError(t, resp)
 
-	if findUserInList(th.BasicUser2.Id, users) {
+	if findUserInList(th.BasicUser2.ClientId, users) {
 		t.Fatal("should not have found user")
 	}
 
@@ -905,7 +905,7 @@ func TestSearchUsers(t *testing.T) {
 	users, resp = th.Client.SearchUsers(search)
 	CheckNoError(t, resp)
 
-	if findUserInList(th.BasicUser2.Id, users) {
+	if findUserInList(th.BasicUser2.ClientId, users) {
 		t.Fatal("should not have found user")
 	}
 
@@ -916,7 +916,7 @@ func TestSearchUsers(t *testing.T) {
 	users, resp = th.SystemAdminClient.SearchUsers(search)
 	CheckNoError(t, resp)
 
-	if !findUserInList(th.BasicUser.Id, users) {
+	if !findUserInList(th.BasicUser.ClientId, users) {
 		t.Fatal("should have found user")
 	}
 }
@@ -1096,10 +1096,10 @@ func TestGetUsersByIds(t *testing.T) {
 	th := Setup().InitBasic()
 	defer th.TearDown()
 
-	users, resp := th.Client.GetUsersByIds([]string{th.BasicUser.Id})
+	users, resp := th.Client.GetUsersByIds([]string{th.BasicUser.ClientId})
 	CheckNoError(t, resp)
 
-	if users[0].Id != th.BasicUser.Id {
+	if users[0].ClientId != th.BasicUser.ClientId {
 		t.Fatal("returned wrong user")
 	}
 	CheckUserSanitization(t, users[0])
@@ -1113,14 +1113,14 @@ func TestGetUsersByIds(t *testing.T) {
 		t.Fatal("no users should be returned")
 	}
 
-	users, resp = th.Client.GetUsersByIds([]string{"junk", th.BasicUser.Id})
+	users, resp = th.Client.GetUsersByIds([]string{"junk", th.BasicUser.ClientId})
 	CheckNoError(t, resp)
 	if len(users) != 1 {
 		t.Fatal("1 user should be returned")
 	}
 
 	th.Client.Logout()
-	_, resp = th.Client.GetUsersByIds([]string{th.BasicUser.Id})
+	_, resp = th.Client.GetUsersByIds([]string{th.BasicUser.ClientId})
 	CheckUnauthorizedStatus(t, resp)
 }
 
@@ -1131,7 +1131,7 @@ func TestGetUsersByUsernames(t *testing.T) {
 	users, resp := th.Client.GetUsersByUsernames([]string{th.BasicUser.Username})
 	CheckNoError(t, resp)
 
-	if users[0].Id != th.BasicUser.Id {
+	if users[0].ClientId != th.BasicUser.ClientId {
 		t.Fatal("returned wrong user")
 	}
 	CheckUserSanitization(t, users[0])
@@ -1421,7 +1421,7 @@ func TestUpdateUserAuth(t *testing.T) {
 	// Regular user can not use endpoint
 	user2 := th.CreateUser()
 	th.LinkUserToTeam(user2, team)
-	store.Must(th.App.Srv.Store.User().VerifyEmail(user2.Id, user2.Email))
+	store.Must(th.App.Srv.Store.User().VerifyEmail(user2.ClientId, user2.Email))
 
 	th.SystemAdminClient.Login(user2.Email, "passwd1")
 
@@ -1441,7 +1441,7 @@ func TestDeleteUser(t *testing.T) {
 	th.LoginBasic()
 
 	testUser := th.SystemAdminUser
-	_, resp := th.Client.DeleteUser(testUser.Id)
+	_, resp := th.Client.DeleteUser(testUser.ClientId)
 	CheckForbiddenStatus(t, resp)
 
 	th.Client.Logout()
@@ -1459,7 +1459,7 @@ func TestDeleteUser(t *testing.T) {
 	_, resp = th.Client.DeleteUser(user.ClientId)
 	CheckBadRequestStatus(t, resp)
 
-	_, resp = th.Client.DeleteUser(testUser.Id)
+	_, resp = th.Client.DeleteUser(testUser.ClientId)
 	CheckNoError(t, resp)
 
 	selfDeleteUser := th.CreateUser()
@@ -1468,13 +1468,13 @@ func TestDeleteUser(t *testing.T) {
 	th.App.UpdateConfig(func(c *model.Config) {
 		*c.TeamSettings.EnableUserDeactivation = false
 	})
-	_, resp = th.Client.DeleteUser(selfDeleteUser.Id)
+	_, resp = th.Client.DeleteUser(selfDeleteUser.ClientId)
 	CheckUnauthorizedStatus(t, resp)
 
 	th.App.UpdateConfig(func(c *model.Config) {
 		*c.TeamSettings.EnableUserDeactivation = true
 	})
-	_, resp = th.Client.DeleteUser(selfDeleteUser.Id)
+	_, resp = th.Client.DeleteUser(selfDeleteUser.ClientId)
 	CheckNoError(t, resp)
 }
 
@@ -1482,16 +1482,16 @@ func TestUpdateUserRoles(t *testing.T) {
 	th := Setup().InitBasic()
 	defer th.TearDown()
 
-	_, resp := th.Client.UpdateUserRoles(th.SystemAdminUser.Id, model.SYSTEM_USER_ROLE_ID)
+	_, resp := th.Client.UpdateUserRoles(th.SystemAdminUser.ClientId, model.SYSTEM_USER_ROLE_ID)
 	CheckForbiddenStatus(t, resp)
 
-	_, resp = th.SystemAdminClient.UpdateUserRoles(th.BasicUser.Id, model.SYSTEM_USER_ROLE_ID)
+	_, resp = th.SystemAdminClient.UpdateUserRoles(th.BasicUser.ClientId, model.SYSTEM_USER_ROLE_ID)
 	CheckNoError(t, resp)
 
-	_, resp = th.SystemAdminClient.UpdateUserRoles(th.BasicUser.Id, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_ADMIN_ROLE_ID)
+	_, resp = th.SystemAdminClient.UpdateUserRoles(th.BasicUser.ClientId, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_ADMIN_ROLE_ID)
 	CheckNoError(t, resp)
 
-	_, resp = th.SystemAdminClient.UpdateUserRoles(th.BasicUser.Id, "junk")
+	_, resp = th.SystemAdminClient.UpdateUserRoles(th.BasicUser.ClientId, "junk")
 	CheckBadRequestStatus(t, resp)
 
 	_, resp = th.SystemAdminClient.UpdateUserRoles("junk", model.SYSTEM_USER_ROLE_ID)
@@ -1712,7 +1712,7 @@ func TestGetRecentlyActiveUsersInTeam(t *testing.T) {
 	defer th.TearDown()
 	teamId := th.BasicTeam.Id
 
-	th.App.SetStatusOnline(th.BasicUser.Id, true)
+	th.App.SetStatusOnline(th.BasicUser.ClientId, true)
 
 	rusers, resp := th.Client.GetRecentlyActiveUsersInTeam(teamId, 0, 60, "")
 	CheckNoError(t, resp)
@@ -1760,7 +1760,7 @@ func TestGetUsersWithoutTeam(t *testing.T) {
 		Password: "Password1",
 	})
 	CheckNoError(t, resp)
-	defer th.App.Srv.Store.User().PermanentDelete(user2.Id)
+	defer th.App.Srv.Store.User().PermanentDelete(user2.ClientId)
 
 	rusers, resp := th.SystemAdminClient.GetUsersWithoutTeam(0, 100, "")
 	CheckNoError(t, resp)
@@ -1769,9 +1769,9 @@ func TestGetUsersWithoutTeam(t *testing.T) {
 	found2 := false
 
 	for _, u := range rusers {
-		if u.Id == user.ClientId {
+		if u.ClientId == user.ClientId {
 			found1 = true
-		} else if u.Id == user2.Id {
+		} else if u.ClientId == user2.ClientId {
 			found2 = true
 		}
 	}
@@ -1961,7 +1961,7 @@ func TestUpdateUserMfa(t *testing.T) {
 	session.IsOAuth = true
 	th.App.AddSessionToCache(session)
 
-	_, resp := th.Client.UpdateUserMfa(th.BasicUser.Id, "12345", false)
+	_, resp := th.Client.UpdateUserMfa(th.BasicUser.ClientId, "12345", false)
 	CheckForbiddenStatus(t, resp)
 }
 
@@ -2037,15 +2037,15 @@ func TestUserLoginMFAFlow(t *testing.T) {
 	})
 
 	t.Run("WithInvalidMFA", func(t *testing.T) {
-		secret, err := th.App.GenerateMfaSecret(th.BasicUser.Id)
+		secret, err := th.App.GenerateMfaSecret(th.BasicUser.ClientId)
 		assert.Nil(t, err)
 
 		// Fake user has MFA enabled
-		if result := <-th.Server.Store.User().UpdateMfaActive(th.BasicUser.Id, true); result.Err != nil {
+		if result := <-th.Server.Store.User().UpdateMfaActive(th.BasicUser.ClientId, true); result.Err != nil {
 			t.Fatal(result.Err)
 		}
 
-		if result := <-th.Server.Store.User().UpdateMfaSecret(th.BasicUser.Id, secret.Secret); result.Err != nil {
+		if result := <-th.Server.Store.User().UpdateMfaSecret(th.BasicUser.ClientId, secret.Secret); result.Err != nil {
 			t.Fatal(result.Err)
 		}
 
@@ -2061,7 +2061,7 @@ func TestUserLoginMFAFlow(t *testing.T) {
 		CheckErrorMessage(t, resp, "mfa.validate_token.authenticate.app_error")
 		assert.Nil(t, user)
 
-		secret2, err := th.App.GenerateMfaSecret(th.BasicUser2.Id)
+		secret2, err := th.App.GenerateMfaSecret(th.BasicUser2.ClientId)
 		assert.Nil(t, err)
 		user, resp = th.Client.LoginWithMFA(th.BasicUser.Email, th.BasicUser.Password, secret2.Secret)
 		CheckErrorMessage(t, resp, "mfa.validate_token.authenticate.app_error")
@@ -2069,15 +2069,15 @@ func TestUserLoginMFAFlow(t *testing.T) {
 	})
 
 	t.Run("WithCorrectMFA", func(t *testing.T) {
-		secret, err := th.App.GenerateMfaSecret(th.BasicUser.Id)
+		secret, err := th.App.GenerateMfaSecret(th.BasicUser.ClientId)
 		assert.Nil(t, err)
 
 		// Fake user has MFA enabled
-		if result := <-th.Server.Store.User().UpdateMfaActive(th.BasicUser.Id, true); result.Err != nil {
+		if result := <-th.Server.Store.User().UpdateMfaActive(th.BasicUser.ClientId, true); result.Err != nil {
 			t.Fatal(result.Err)
 		}
 
-		if result := <-th.Server.Store.User().UpdateMfaSecret(th.BasicUser.Id, secret.Secret); result.Err != nil {
+		if result := <-th.Server.Store.User().UpdateMfaSecret(th.BasicUser.ClientId, secret.Secret); result.Err != nil {
 			t.Fatal(result.Err)
 		}
 
@@ -2095,10 +2095,10 @@ func TestGenerateMfaSecret(t *testing.T) {
 
 	th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableMultifactorAuthentication = false })
 
-	_, resp := th.Client.GenerateMfaSecret(th.BasicUser.Id)
+	_, resp := th.Client.GenerateMfaSecret(th.BasicUser.ClientId)
 	CheckNotImplementedStatus(t, resp)
 
-	_, resp = th.SystemAdminClient.GenerateMfaSecret(th.BasicUser.Id)
+	_, resp = th.SystemAdminClient.GenerateMfaSecret(th.BasicUser.ClientId)
 	CheckNotImplementedStatus(t, resp)
 
 	_, resp = th.Client.GenerateMfaSecret("junk")
@@ -2114,12 +2114,12 @@ func TestGenerateMfaSecret(t *testing.T) {
 	session.IsOAuth = true
 	th.App.AddSessionToCache(session)
 
-	_, resp = th.Client.GenerateMfaSecret(th.BasicUser.Id)
+	_, resp = th.Client.GenerateMfaSecret(th.BasicUser.ClientId)
 	CheckForbiddenStatus(t, resp)
 
 	th.Client.Logout()
 
-	_, resp = th.Client.GenerateMfaSecret(th.BasicUser.Id)
+	_, resp = th.Client.GenerateMfaSecret(th.BasicUser.ClientId)
 	CheckUnauthorizedStatus(t, resp)
 }
 
@@ -2128,37 +2128,37 @@ func TestUpdateUserPassword(t *testing.T) {
 	defer th.TearDown()
 
 	password := "newpassword1"
-	pass, resp := th.Client.UpdateUserPassword(th.BasicUser.Id, th.BasicUser.Password, password)
+	pass, resp := th.Client.UpdateUserPassword(th.BasicUser.ClientId, th.BasicUser.Password, password)
 	CheckNoError(t, resp)
 
 	if !pass {
 		t.Fatal("should have returned true")
 	}
 
-	_, resp = th.Client.UpdateUserPassword(th.BasicUser.Id, password, "")
+	_, resp = th.Client.UpdateUserPassword(th.BasicUser.ClientId, password, "")
 	CheckBadRequestStatus(t, resp)
 
-	_, resp = th.Client.UpdateUserPassword(th.BasicUser.Id, password, "junk")
+	_, resp = th.Client.UpdateUserPassword(th.BasicUser.ClientId, password, "junk")
 	CheckBadRequestStatus(t, resp)
 
 	_, resp = th.Client.UpdateUserPassword("junk", password, password)
 	CheckBadRequestStatus(t, resp)
 
-	_, resp = th.Client.UpdateUserPassword(th.BasicUser.Id, "", password)
+	_, resp = th.Client.UpdateUserPassword(th.BasicUser.ClientId, "", password)
 	CheckBadRequestStatus(t, resp)
 
-	_, resp = th.Client.UpdateUserPassword(th.BasicUser.Id, "junk", password)
+	_, resp = th.Client.UpdateUserPassword(th.BasicUser.ClientId, "junk", password)
 	CheckBadRequestStatus(t, resp)
 
-	_, resp = th.Client.UpdateUserPassword(th.BasicUser.Id, password, th.BasicUser.Password)
+	_, resp = th.Client.UpdateUserPassword(th.BasicUser.ClientId, password, th.BasicUser.Password)
 	CheckNoError(t, resp)
 
 	th.Client.Logout()
-	_, resp = th.Client.UpdateUserPassword(th.BasicUser.Id, password, password)
+	_, resp = th.Client.UpdateUserPassword(th.BasicUser.ClientId, password, password)
 	CheckUnauthorizedStatus(t, resp)
 
 	th.LoginBasic2()
-	_, resp = th.Client.UpdateUserPassword(th.BasicUser.Id, password, password)
+	_, resp = th.Client.UpdateUserPassword(th.BasicUser.ClientId, password, password)
 	CheckForbiddenStatus(t, resp)
 
 	th.LoginBasic()
@@ -2167,19 +2167,19 @@ func TestUpdateUserPassword(t *testing.T) {
 	th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.MaximumLoginAttempts = 2 })
 
 	// Fail twice
-	_, resp = th.Client.UpdateUserPassword(th.BasicUser.Id, "badpwd", "newpwd")
+	_, resp = th.Client.UpdateUserPassword(th.BasicUser.ClientId, "badpwd", "newpwd")
 	CheckBadRequestStatus(t, resp)
-	_, resp = th.Client.UpdateUserPassword(th.BasicUser.Id, "badpwd", "newpwd")
+	_, resp = th.Client.UpdateUserPassword(th.BasicUser.ClientId, "badpwd", "newpwd")
 	CheckBadRequestStatus(t, resp)
 
 	// Should fail because account is locked out
-	_, resp = th.Client.UpdateUserPassword(th.BasicUser.Id, th.BasicUser.Password, "newpwd")
+	_, resp = th.Client.UpdateUserPassword(th.BasicUser.ClientId, th.BasicUser.Password, "newpwd")
 	CheckErrorMessage(t, resp, "api.user.check_user_login_attempts.too_many.app_error")
 	CheckUnauthorizedStatus(t, resp)
 
 	// System admin can update another user's password
 	adminSetPassword := "pwdsetbyadmin"
-	pass, resp = th.SystemAdminClient.UpdateUserPassword(th.BasicUser.Id, "", adminSetPassword)
+	pass, resp = th.SystemAdminClient.UpdateUserPassword(th.BasicUser.ClientId, "", adminSetPassword)
 	CheckNoError(t, resp)
 
 	if !pass {
@@ -2296,20 +2296,20 @@ func TestGetSessions(t *testing.T) {
 	_, resp = th.Client.RevokeSession("junk", model.NewId())
 	CheckBadRequestStatus(t, resp)
 
-	_, resp = th.Client.GetSessions(th.BasicUser2.Id, "")
+	_, resp = th.Client.GetSessions(th.BasicUser2.ClientId, "")
 	CheckForbiddenStatus(t, resp)
 
 	_, resp = th.Client.GetSessions(model.NewId(), "")
 	CheckForbiddenStatus(t, resp)
 
 	th.Client.Logout()
-	_, resp = th.Client.GetSessions(th.BasicUser2.Id, "")
+	_, resp = th.Client.GetSessions(th.BasicUser2.ClientId, "")
 	CheckUnauthorizedStatus(t, resp)
 
 	_, resp = th.SystemAdminClient.GetSessions(user.ClientId, "")
 	CheckNoError(t, resp)
 
-	_, resp = th.SystemAdminClient.GetSessions(th.BasicUser2.Id, "")
+	_, resp = th.SystemAdminClient.GetSessions(th.BasicUser2.ClientId, "")
 	CheckNoError(t, resp)
 
 	_, resp = th.SystemAdminClient.GetSessions(model.NewId(), "")
@@ -2336,7 +2336,7 @@ func TestRevokeSessions(t *testing.T) {
 	_, resp := th.Client.RevokeSession(user.ClientId, model.NewId())
 	CheckBadRequestStatus(t, resp)
 
-	_, resp = th.Client.RevokeSession(th.BasicUser2.Id, model.NewId())
+	_, resp = th.Client.RevokeSession(th.BasicUser2.ClientId, model.NewId())
 	CheckForbiddenStatus(t, resp)
 
 	_, resp = th.Client.RevokeSession("junk", model.NewId())
@@ -2350,7 +2350,7 @@ func TestRevokeSessions(t *testing.T) {
 
 	th.LoginBasic()
 
-	sessions, _ = th.App.GetSessions(th.SystemAdminUser.Id)
+	sessions, _ = th.App.GetSessions(th.SystemAdminUser.ClientId)
 	session = sessions[0]
 
 	_, resp = th.Client.RevokeSession(user.ClientId, session.Id)
@@ -2363,18 +2363,18 @@ func TestRevokeSessions(t *testing.T) {
 	_, resp = th.SystemAdminClient.RevokeSession(user.ClientId, model.NewId())
 	CheckBadRequestStatus(t, resp)
 
-	sessions, _ = th.SystemAdminClient.GetSessions(th.SystemAdminUser.Id, "")
+	sessions, _ = th.SystemAdminClient.GetSessions(th.SystemAdminUser.ClientId, "")
 	if len(sessions) == 0 {
 		t.Fatal("sessions should exist")
 	}
 	for _, session := range sessions {
-		if session.UserId != th.SystemAdminUser.Id {
+		if session.UserId != th.SystemAdminUser.ClientId {
 			t.Fatal("user id does not match session user id")
 		}
 	}
 	session = sessions[0]
 
-	_, resp = th.SystemAdminClient.RevokeSession(th.SystemAdminUser.Id, session.Id)
+	_, resp = th.SystemAdminClient.RevokeSession(th.SystemAdminUser.ClientId, session.Id)
 	CheckNoError(t, resp)
 }
 
@@ -2385,7 +2385,7 @@ func TestRevokeAllSessions(t *testing.T) {
 	user := th.BasicUser
 	th.Client.Login(user.Email, user.Password)
 
-	_, resp := th.Client.RevokeAllSessions(th.BasicUser2.Id)
+	_, resp := th.Client.RevokeAllSessions(th.BasicUser2.ClientId)
 	CheckForbiddenStatus(t, resp)
 
 	_, resp = th.Client.RevokeAllSessions("junk" + user.ClientId)
@@ -2432,7 +2432,7 @@ func TestAttachDeviceId(t *testing.T) {
 		t.Fatal("should have passed")
 	}
 
-	if sessions, err := th.App.GetSessions(th.BasicUser.Id); err != nil {
+	if sessions, err := th.App.GetSessions(th.BasicUser.ClientId); err != nil {
 		t.Fatal(err)
 	} else {
 		if sessions[0].DeviceId != deviceId {
@@ -2462,7 +2462,7 @@ func TestGetUserAudits(t *testing.T) {
 	}
 	CheckNoError(t, resp)
 
-	_, resp = th.Client.GetUserAudits(th.BasicUser2.Id, 0, 100, "")
+	_, resp = th.Client.GetUserAudits(th.BasicUser2.ClientId, 0, 100, "")
 	CheckForbiddenStatus(t, resp)
 
 	th.Client.Logout()
@@ -2630,7 +2630,7 @@ func TestLogin(t *testing.T) {
 	t.Run("valid login", func(t *testing.T) {
 		user, resp := th.Client.Login(th.BasicUser.Email, th.BasicUser.Password)
 		CheckNoError(t, resp)
-		assert.Equal(t, user.ClientId, th.BasicUser.Id)
+		assert.Equal(t, user.ClientId, th.BasicUser.ClientId)
 	})
 
 	t.Run("bot login rejected", func(t *testing.T) {
@@ -2687,7 +2687,7 @@ func TestCBALogin(t *testing.T) {
 			user, resp := th.Client.Login(th.BasicUser.Email, "")
 			CheckNoError(t, resp)
 			require.NotNil(t, user)
-			require.Equal(t, th.BasicUser.Id, user.ClientId)
+			require.Equal(t, th.BasicUser.ClientId, user.ClientId)
 		})
 
 		t.Run("bot login rejected", func(t *testing.T) {
@@ -2729,7 +2729,7 @@ func TestCBALogin(t *testing.T) {
 			user, resp := th.Client.Login(th.BasicUser.Email, th.BasicUser.Password)
 			CheckNoError(t, resp)
 			require.NotNil(t, user)
-			require.Equal(t, th.BasicUser.Id, user.ClientId)
+			require.Equal(t, th.BasicUser.ClientId, user.ClientId)
 		})
 
 		t.Run("bot login rejected", func(t *testing.T) {
@@ -2819,7 +2819,7 @@ func TestSwitchAccount(t *testing.T) {
 	th.LoginBasic()
 
 	fakeAuthData := model.NewId()
-	if result := <-th.App.Srv.Store.User().UpdateAuthData(th.BasicUser.Id, model.USER_AUTH_SERVICE_GITLAB, &fakeAuthData, th.BasicUser.Email, true); result.Err != nil {
+	if result := <-th.App.Srv.Store.User().UpdateAuthData(th.BasicUser.ClientId, model.USER_AUTH_SERVICE_GITLAB, &fakeAuthData, th.BasicUser.Email, true); result.Err != nil {
 		t.Fatal(result.Err)
 	}
 
@@ -2911,7 +2911,7 @@ func TestCreateUserAccessToken(t *testing.T) {
 
 		th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableUserAccessTokens = true })
 
-		_, resp := th.Client.CreateUserAccessToken(th.BasicUser.Id, "test token")
+		_, resp := th.Client.CreateUserAccessToken(th.BasicUser.ClientId, "test token")
 		CheckForbiddenStatus(t, resp)
 	})
 
@@ -2931,7 +2931,7 @@ func TestCreateUserAccessToken(t *testing.T) {
 
 		th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableUserAccessTokens = true })
 
-		_, resp := th.Client.CreateUserAccessToken(th.BasicUser.Id, "")
+		_, resp := th.Client.CreateUserAccessToken(th.BasicUser.ClientId, "")
 		CheckBadRequestStatus(t, resp)
 	})
 
@@ -2940,9 +2940,9 @@ func TestCreateUserAccessToken(t *testing.T) {
 		defer th.TearDown()
 
 		th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableUserAccessTokens = false })
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_USER_ACCESS_TOKEN_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_USER_ACCESS_TOKEN_ROLE_ID, false)
 
-		_, resp := th.Client.CreateUserAccessToken(th.BasicUser.Id, "test token")
+		_, resp := th.Client.CreateUserAccessToken(th.BasicUser.ClientId, "test token")
 		CheckNotImplementedStatus(t, resp)
 	})
 
@@ -2951,18 +2951,18 @@ func TestCreateUserAccessToken(t *testing.T) {
 		defer th.TearDown()
 
 		th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableUserAccessTokens = true })
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_USER_ACCESS_TOKEN_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_USER_ACCESS_TOKEN_ROLE_ID, false)
 
-		rtoken, resp := th.Client.CreateUserAccessToken(th.BasicUser.Id, "test token")
+		rtoken, resp := th.Client.CreateUserAccessToken(th.BasicUser.ClientId, "test token")
 		CheckNoError(t, resp)
 
-		assert.Equal(t, th.BasicUser.Id, rtoken.UserId, "wrong user id")
+		assert.Equal(t, th.BasicUser.ClientId, rtoken.UserId, "wrong user id")
 		assert.NotEmpty(t, rtoken.Token, "token should not be empty")
 		assert.NotEmpty(t, rtoken.Id, "id should not be empty")
 		assert.Equal(t, "test token", rtoken.Description, "description did not match")
 		assert.True(t, rtoken.IsActive, "token should be active")
 
-		assertToken(t, th, rtoken, th.BasicUser.Id)
+		assertToken(t, th, rtoken, th.BasicUser.ClientId)
 	})
 
 	t.Run("create user access token as second user, without permission", func(t *testing.T) {
@@ -2971,7 +2971,7 @@ func TestCreateUserAccessToken(t *testing.T) {
 
 		th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableUserAccessTokens = true })
 
-		_, resp := th.Client.CreateUserAccessToken(th.BasicUser2.Id, "test token")
+		_, resp := th.Client.CreateUserAccessToken(th.BasicUser2.ClientId, "test token")
 		CheckForbiddenStatus(t, resp)
 	})
 
@@ -2981,14 +2981,14 @@ func TestCreateUserAccessToken(t *testing.T) {
 
 		th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableUserAccessTokens = true })
 
-		rtoken, resp := th.SystemAdminClient.CreateUserAccessToken(th.BasicUser.Id, "test token")
+		rtoken, resp := th.SystemAdminClient.CreateUserAccessToken(th.BasicUser.ClientId, "test token")
 		CheckNoError(t, resp)
-		assert.Equal(t, th.BasicUser.Id, rtoken.UserId)
+		assert.Equal(t, th.BasicUser.ClientId, rtoken.UserId)
 
 		oldSessionToken := th.Client.AuthToken
 		defer func() { th.Client.AuthToken = oldSessionToken }()
 
-		assertToken(t, th, rtoken, th.BasicUser.Id)
+		assertToken(t, th, rtoken, th.BasicUser.ClientId)
 	})
 
 	t.Run("create access token as oauth session", func(t *testing.T) {
@@ -3001,7 +3001,7 @@ func TestCreateUserAccessToken(t *testing.T) {
 		session.IsOAuth = true
 		th.App.AddSessionToCache(session)
 
-		_, resp := th.Client.CreateUserAccessToken(th.BasicUser.Id, "test token")
+		_, resp := th.Client.CreateUserAccessToken(th.BasicUser.ClientId, "test token")
 		CheckForbiddenStatus(t, resp)
 	})
 
@@ -3014,7 +3014,7 @@ func TestCreateUserAccessToken(t *testing.T) {
 		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
 		th.AddPermissionToRole(model.PERMISSION_CREATE_BOT.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_CREATE_USER_ACCESS_TOKEN.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		createdBot, resp := th.Client.CreateBot(&model.Bot{
 			Username:    GenerateTestUsername(),
@@ -3051,7 +3051,7 @@ func TestCreateUserAccessToken(t *testing.T) {
 		th.AddPermissionToRole(model.PERMISSION_CREATE_BOT.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_MANAGE_BOTS.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_CREATE_USER_ACCESS_TOKEN.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		createdBot, resp := th.SystemAdminClient.CreateBot(&model.Bot{
 			Username:    GenerateTestUsername(),
@@ -3104,15 +3104,15 @@ func TestGetUserAccessToken(t *testing.T) {
 		defer th.TearDown()
 
 		th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableUserAccessTokens = true })
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_USER_ACCESS_TOKEN_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_USER_ACCESS_TOKEN_ROLE_ID, false)
 
-		token, resp := th.Client.CreateUserAccessToken(th.BasicUser.Id, "test token")
+		token, resp := th.Client.CreateUserAccessToken(th.BasicUser.ClientId, "test token")
 		CheckNoError(t, resp)
 
 		rtoken, resp := th.Client.GetUserAccessToken(token.Id)
 		CheckNoError(t, resp)
 
-		assert.Equal(t, th.BasicUser.Id, rtoken.UserId, "wrong user id")
+		assert.Equal(t, th.BasicUser.ClientId, rtoken.UserId, "wrong user id")
 		assert.Empty(t, rtoken.Token, "token should be blank")
 		assert.NotEmpty(t, rtoken.Id, "id should not be empty")
 		assert.Equal(t, "test token", rtoken.Description, "description did not match")
@@ -3124,15 +3124,15 @@ func TestGetUserAccessToken(t *testing.T) {
 
 		th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableUserAccessTokens = true })
 
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_USER_ACCESS_TOKEN_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_USER_ACCESS_TOKEN_ROLE_ID, false)
 
-		token, resp := th.Client.CreateUserAccessToken(th.BasicUser.Id, "test token")
+		token, resp := th.Client.CreateUserAccessToken(th.BasicUser.ClientId, "test token")
 		CheckNoError(t, resp)
 
 		rtoken, resp := th.SystemAdminClient.GetUserAccessToken(token.Id)
 		CheckNoError(t, resp)
 
-		assert.Equal(t, th.BasicUser.Id, rtoken.UserId, "wrong user id")
+		assert.Equal(t, th.BasicUser.ClientId, rtoken.UserId, "wrong user id")
 		assert.Empty(t, rtoken.Token, "token should be blank")
 		assert.NotEmpty(t, rtoken.Id, "id should not be empty")
 		assert.Equal(t, "test token", rtoken.Description, "description did not match")
@@ -3149,7 +3149,7 @@ func TestGetUserAccessToken(t *testing.T) {
 		th.AddPermissionToRole(model.PERMISSION_MANAGE_BOTS.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_CREATE_USER_ACCESS_TOKEN.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_READ_USER_ACCESS_TOKEN.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		createdBot, resp := th.Client.CreateBot(&model.Bot{
 			Username:    GenerateTestUsername(),
@@ -3192,7 +3192,7 @@ func TestGetUserAccessToken(t *testing.T) {
 		th.AddPermissionToRole(model.PERMISSION_MANAGE_BOTS.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_CREATE_USER_ACCESS_TOKEN.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_READ_USER_ACCESS_TOKEN.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		createdBot, resp := th.SystemAdminClient.CreateBot(&model.Bot{
 			Username:    GenerateTestUsername(),
@@ -3230,20 +3230,20 @@ func TestGetUserAccessTokensForUser(t *testing.T) {
 
 		th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableUserAccessTokens = true })
 
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_USER_ACCESS_TOKEN_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_USER_ACCESS_TOKEN_ROLE_ID, false)
 
-		_, resp := th.Client.CreateUserAccessToken(th.BasicUser.Id, "test token")
+		_, resp := th.Client.CreateUserAccessToken(th.BasicUser.ClientId, "test token")
 		CheckNoError(t, resp)
 
-		_, resp = th.Client.CreateUserAccessToken(th.BasicUser.Id, "test token 2")
+		_, resp = th.Client.CreateUserAccessToken(th.BasicUser.ClientId, "test token 2")
 		CheckNoError(t, resp)
 
-		rtokens, resp := th.Client.GetUserAccessTokensForUser(th.BasicUser.Id, 0, 100)
+		rtokens, resp := th.Client.GetUserAccessTokensForUser(th.BasicUser.ClientId, 0, 100)
 		CheckNoError(t, resp)
 
 		assert.Len(t, rtokens, 2, "should have 2 tokens")
 		for _, uat := range rtokens {
-			assert.Equal(t, th.BasicUser.Id, uat.UserId, "wrong user id")
+			assert.Equal(t, th.BasicUser.ClientId, uat.UserId, "wrong user id")
 		}
 	})
 
@@ -3253,20 +3253,20 @@ func TestGetUserAccessTokensForUser(t *testing.T) {
 
 		th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableUserAccessTokens = true })
 
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_USER_ACCESS_TOKEN_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_USER_ACCESS_TOKEN_ROLE_ID, false)
 
-		_, resp := th.Client.CreateUserAccessToken(th.BasicUser.Id, "test token")
+		_, resp := th.Client.CreateUserAccessToken(th.BasicUser.ClientId, "test token")
 		CheckNoError(t, resp)
 
-		_, resp = th.Client.CreateUserAccessToken(th.BasicUser.Id, "test token 2")
+		_, resp = th.Client.CreateUserAccessToken(th.BasicUser.ClientId, "test token 2")
 		CheckNoError(t, resp)
 
-		rtokens, resp := th.Client.GetUserAccessTokensForUser(th.BasicUser.Id, 0, 100)
+		rtokens, resp := th.Client.GetUserAccessTokensForUser(th.BasicUser.ClientId, 0, 100)
 		CheckNoError(t, resp)
 
 		assert.Len(t, rtokens, 2, "should have 2 tokens")
 		for _, uat := range rtokens {
-			assert.Equal(t, th.BasicUser.Id, uat.UserId, "wrong user id")
+			assert.Equal(t, th.BasicUser.ClientId, uat.UserId, "wrong user id")
 		}
 	})
 
@@ -3276,20 +3276,20 @@ func TestGetUserAccessTokensForUser(t *testing.T) {
 
 		th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableUserAccessTokens = true })
 
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_USER_ACCESS_TOKEN_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_USER_ACCESS_TOKEN_ROLE_ID, false)
 
-		_, resp := th.Client.CreateUserAccessToken(th.BasicUser.Id, "test token")
+		_, resp := th.Client.CreateUserAccessToken(th.BasicUser.ClientId, "test token")
 		CheckNoError(t, resp)
 
-		_, resp = th.Client.CreateUserAccessToken(th.BasicUser.Id, "test token 2")
+		_, resp = th.Client.CreateUserAccessToken(th.BasicUser.ClientId, "test token 2")
 		CheckNoError(t, resp)
 
-		rtokens, resp := th.Client.GetUserAccessTokensForUser(th.BasicUser.Id, 1, 1)
+		rtokens, resp := th.Client.GetUserAccessTokensForUser(th.BasicUser.ClientId, 1, 1)
 		CheckNoError(t, resp)
 
 		assert.Len(t, rtokens, 1, "should have 1 tokens")
 		for _, uat := range rtokens {
-			assert.Equal(t, th.BasicUser.Id, uat.UserId, "wrong user id")
+			assert.Equal(t, th.BasicUser.ClientId, uat.UserId, "wrong user id")
 		}
 	})
 }
@@ -3301,7 +3301,7 @@ func TestGetUserAccessTokens(t *testing.T) {
 
 		th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableUserAccessTokens = true })
 
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_USER_ACCESS_TOKEN_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_USER_ACCESS_TOKEN_ROLE_ID, false)
 
 		_, resp := th.Client.GetUserAccessTokens(0, 100)
 		CheckForbiddenStatus(t, resp)
@@ -3313,12 +3313,12 @@ func TestGetUserAccessTokens(t *testing.T) {
 
 		th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableUserAccessTokens = true })
 
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_USER_ACCESS_TOKEN_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_USER_ACCESS_TOKEN_ROLE_ID, false)
 
-		_, resp := th.Client.CreateUserAccessToken(th.BasicUser.Id, "test token 2")
+		_, resp := th.Client.CreateUserAccessToken(th.BasicUser.ClientId, "test token 2")
 		CheckNoError(t, resp)
 
-		_, resp = th.Client.CreateUserAccessToken(th.BasicUser.Id, "test token 2")
+		_, resp = th.Client.CreateUserAccessToken(th.BasicUser.ClientId, "test token 2")
 		CheckNoError(t, resp)
 
 		rtokens, resp := th.SystemAdminClient.GetUserAccessTokens(1, 1)
@@ -3333,12 +3333,12 @@ func TestGetUserAccessTokens(t *testing.T) {
 
 		th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableUserAccessTokens = true })
 
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_USER_ACCESS_TOKEN_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_USER_ACCESS_TOKEN_ROLE_ID, false)
 
-		_, resp := th.Client.CreateUserAccessToken(th.BasicUser.Id, "test token 2")
+		_, resp := th.Client.CreateUserAccessToken(th.BasicUser.ClientId, "test token 2")
 		CheckNoError(t, resp)
 
-		_, resp = th.Client.CreateUserAccessToken(th.BasicUser.Id, "test token 2")
+		_, resp = th.Client.CreateUserAccessToken(th.BasicUser.ClientId, "test token 2")
 		CheckNoError(t, resp)
 
 		rtokens, resp := th.SystemAdminClient.GetUserAccessTokens(0, 2)
@@ -3356,14 +3356,14 @@ func TestSearchUserAccessToken(t *testing.T) {
 
 	th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableUserAccessTokens = true })
 
-	th.App.UpdateUserRoles(th.BasicUser.Id, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_USER_ACCESS_TOKEN_ROLE_ID, false)
-	token, resp := th.Client.CreateUserAccessToken(th.BasicUser.Id, testDescription)
+	th.App.UpdateUserRoles(th.BasicUser.ClientId, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_USER_ACCESS_TOKEN_ROLE_ID, false)
+	token, resp := th.Client.CreateUserAccessToken(th.BasicUser.ClientId, testDescription)
 	CheckNoError(t, resp)
 
 	_, resp = th.Client.SearchUserAccessTokens(&model.UserAccessTokenSearch{Term: token.Id})
 	CheckForbiddenStatus(t, resp)
 
-	rtokens, resp := th.SystemAdminClient.SearchUserAccessTokens(&model.UserAccessTokenSearch{Term: th.BasicUser.Id})
+	rtokens, resp := th.SystemAdminClient.SearchUserAccessTokens(&model.UserAccessTokenSearch{Term: th.BasicUser.ClientId})
 	CheckNoError(t, resp)
 
 	if len(rtokens) != 1 {
@@ -3399,10 +3399,10 @@ func TestRevokeUserAccessToken(t *testing.T) {
 
 		th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableUserAccessTokens = true })
 
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_USER_ACCESS_TOKEN_ROLE_ID, false)
-		token, resp := th.Client.CreateUserAccessToken(th.BasicUser.Id, "test token")
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_USER_ACCESS_TOKEN_ROLE_ID, false)
+		token, resp := th.Client.CreateUserAccessToken(th.BasicUser.ClientId, "test token")
 		CheckNoError(t, resp)
-		assertToken(t, th, token, th.BasicUser.Id)
+		assertToken(t, th, token, th.BasicUser.ClientId)
 
 		ok, resp := th.Client.RevokeUserAccessToken(token.Id)
 		CheckNoError(t, resp)
@@ -3417,7 +3417,7 @@ func TestRevokeUserAccessToken(t *testing.T) {
 
 		th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableUserAccessTokens = true })
 
-		token, resp := th.SystemAdminClient.CreateUserAccessToken(th.BasicUser2.Id, "test token")
+		token, resp := th.SystemAdminClient.CreateUserAccessToken(th.BasicUser2.ClientId, "test token")
 		CheckNoError(t, resp)
 
 		ok, resp := th.Client.RevokeUserAccessToken(token.Id)
@@ -3436,7 +3436,7 @@ func TestRevokeUserAccessToken(t *testing.T) {
 		th.AddPermissionToRole(model.PERMISSION_MANAGE_BOTS.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_CREATE_USER_ACCESS_TOKEN.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_REVOKE_USER_ACCESS_TOKEN.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		createdBot, resp := th.Client.CreateBot(&model.Bot{
 			Username:    GenerateTestUsername(),
@@ -3476,7 +3476,7 @@ func TestRevokeUserAccessToken(t *testing.T) {
 		th.AddPermissionToRole(model.PERMISSION_MANAGE_BOTS.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_CREATE_USER_ACCESS_TOKEN.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_REVOKE_USER_ACCESS_TOKEN.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		createdBot, resp := th.SystemAdminClient.CreateBot(&model.Bot{
 			Username:    GenerateTestUsername(),
@@ -3511,10 +3511,10 @@ func TestDisableUserAccessToken(t *testing.T) {
 
 		th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableUserAccessTokens = true })
 
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_USER_ACCESS_TOKEN_ROLE_ID, false)
-		token, resp := th.Client.CreateUserAccessToken(th.BasicUser.Id, "test token")
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_USER_ACCESS_TOKEN_ROLE_ID, false)
+		token, resp := th.Client.CreateUserAccessToken(th.BasicUser.ClientId, "test token")
 		CheckNoError(t, resp)
-		assertToken(t, th, token, th.BasicUser.Id)
+		assertToken(t, th, token, th.BasicUser.ClientId)
 
 		ok, resp := th.Client.DisableUserAccessToken(token.Id)
 		CheckNoError(t, resp)
@@ -3529,7 +3529,7 @@ func TestDisableUserAccessToken(t *testing.T) {
 
 		th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableUserAccessTokens = true })
 
-		token, resp := th.SystemAdminClient.CreateUserAccessToken(th.BasicUser2.Id, "test token")
+		token, resp := th.SystemAdminClient.CreateUserAccessToken(th.BasicUser2.ClientId, "test token")
 		CheckNoError(t, resp)
 
 		ok, resp := th.Client.DisableUserAccessToken(token.Id)
@@ -3548,7 +3548,7 @@ func TestDisableUserAccessToken(t *testing.T) {
 		th.AddPermissionToRole(model.PERMISSION_MANAGE_BOTS.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_CREATE_USER_ACCESS_TOKEN.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_REVOKE_USER_ACCESS_TOKEN.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		createdBot, resp := th.Client.CreateBot(&model.Bot{
 			Username:    GenerateTestUsername(),
@@ -3588,7 +3588,7 @@ func TestDisableUserAccessToken(t *testing.T) {
 		th.AddPermissionToRole(model.PERMISSION_MANAGE_BOTS.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_CREATE_USER_ACCESS_TOKEN.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_REVOKE_USER_ACCESS_TOKEN.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		createdBot, resp := th.SystemAdminClient.CreateBot(&model.Bot{
 			Username:    GenerateTestUsername(),
@@ -3623,10 +3623,10 @@ func TestEnableUserAccessToken(t *testing.T) {
 
 		th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableUserAccessTokens = true })
 
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_USER_ACCESS_TOKEN_ROLE_ID, false)
-		token, resp := th.Client.CreateUserAccessToken(th.BasicUser.Id, "test token")
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_USER_ACCESS_TOKEN_ROLE_ID, false)
+		token, resp := th.Client.CreateUserAccessToken(th.BasicUser.ClientId, "test token")
 		CheckNoError(t, resp)
-		assertToken(t, th, token, th.BasicUser.Id)
+		assertToken(t, th, token, th.BasicUser.ClientId)
 
 		ok, resp := th.Client.DisableUserAccessToken(token.Id)
 		CheckNoError(t, resp)
@@ -3638,7 +3638,7 @@ func TestEnableUserAccessToken(t *testing.T) {
 		CheckNoError(t, resp)
 		assert.True(t, ok, "should have passed")
 
-		assertToken(t, th, token, th.BasicUser.Id)
+		assertToken(t, th, token, th.BasicUser.ClientId)
 	})
 
 	t.Run("enable token belonging to another user", func(t *testing.T) {
@@ -3647,7 +3647,7 @@ func TestEnableUserAccessToken(t *testing.T) {
 
 		th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableUserAccessTokens = true })
 
-		token, resp := th.SystemAdminClient.CreateUserAccessToken(th.BasicUser2.Id, "test token")
+		token, resp := th.SystemAdminClient.CreateUserAccessToken(th.BasicUser2.ClientId, "test token")
 		CheckNoError(t, resp)
 
 		ok, resp := th.SystemAdminClient.DisableUserAccessToken(token.Id)
@@ -3670,7 +3670,7 @@ func TestEnableUserAccessToken(t *testing.T) {
 		th.AddPermissionToRole(model.PERMISSION_MANAGE_BOTS.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_CREATE_USER_ACCESS_TOKEN.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_REVOKE_USER_ACCESS_TOKEN.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		createdBot, resp := th.Client.CreateBot(&model.Bot{
 			Username:    GenerateTestUsername(),
@@ -3714,7 +3714,7 @@ func TestEnableUserAccessToken(t *testing.T) {
 		th.AddPermissionToRole(model.PERMISSION_MANAGE_BOTS.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_CREATE_USER_ACCESS_TOKEN.Id, model.TEAM_USER_ROLE_ID)
 		th.AddPermissionToRole(model.PERMISSION_REVOKE_USER_ACCESS_TOKEN.Id, model.TEAM_USER_ROLE_ID)
-		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateUserRoles(th.BasicUser.ClientId, model.TEAM_USER_ROLE_ID, false)
 
 		createdBot, resp := th.SystemAdminClient.CreateBot(&model.Bot{
 			Username:    GenerateTestUsername(),
@@ -3754,8 +3754,8 @@ func TestUserAccessTokenInactiveUser(t *testing.T) {
 
 	th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableUserAccessTokens = true })
 
-	th.App.UpdateUserRoles(th.BasicUser.Id, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_USER_ACCESS_TOKEN_ROLE_ID, false)
-	token, resp := th.Client.CreateUserAccessToken(th.BasicUser.Id, testDescription)
+	th.App.UpdateUserRoles(th.BasicUser.ClientId, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_USER_ACCESS_TOKEN_ROLE_ID, false)
+	token, resp := th.Client.CreateUserAccessToken(th.BasicUser.ClientId, testDescription)
 	CheckNoError(t, resp)
 
 	th.Client.AuthToken = token.Token
@@ -3776,8 +3776,8 @@ func TestUserAccessTokenDisableConfig(t *testing.T) {
 
 	th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableUserAccessTokens = true })
 
-	th.App.UpdateUserRoles(th.BasicUser.Id, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_USER_ACCESS_TOKEN_ROLE_ID, false)
-	token, resp := th.Client.CreateUserAccessToken(th.BasicUser.Id, testDescription)
+	th.App.UpdateUserRoles(th.BasicUser.ClientId, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_USER_ACCESS_TOKEN_ROLE_ID, false)
+	token, resp := th.Client.CreateUserAccessToken(th.BasicUser.ClientId, testDescription)
 	CheckNoError(t, resp)
 
 	oldSessionToken := th.Client.AuthToken
@@ -3882,7 +3882,7 @@ func TestGetUsersByStatus(t *testing.T) {
 		}
 
 		for i := range usersByStatus {
-			if usersByStatus[i].Id != expectedUsersByStatus[i].Id {
+			if usersByStatus[i].ClientId != expectedUsersByStatus[i].ClientId {
 				t.Fatalf("received user %v at index %v, expected %v", usersByStatus[i].Username, i, expectedUsersByStatus[i].Username)
 			}
 		}
@@ -3898,11 +3898,11 @@ func TestGetUsersByStatus(t *testing.T) {
 			t.Fatal("received too many users")
 		}
 
-		if usersByStatus[0].Id != onlineUser1.Id && usersByStatus[1].Id != onlineUser2.Id {
+		if usersByStatus[0].ClientId != onlineUser1.ClientId && usersByStatus[1].ClientId != onlineUser2.ClientId {
 			t.Fatal("expected to receive online users first")
 		}
 
-		if usersByStatus[2].Id != awayUser1.Id {
+		if usersByStatus[2].ClientId != awayUser1.ClientId {
 			t.Fatal("expected to receive away users second")
 		}
 
@@ -3911,11 +3911,11 @@ func TestGetUsersByStatus(t *testing.T) {
 			t.Fatal(resp.Error)
 		}
 
-		if usersByStatus[0].Id != awayUser2.Id {
+		if usersByStatus[0].ClientId != awayUser2.ClientId {
 			t.Fatal("expected to receive away users second")
 		}
 
-		if usersByStatus[1].Id != dndUser1.Id && usersByStatus[2].Id != dndUser2.Id {
+		if usersByStatus[1].ClientId != dndUser1.ClientId && usersByStatus[2].ClientId != dndUser2.ClientId {
 			t.Fatal("expected to receive dnd users third")
 		}
 
@@ -3928,11 +3928,11 @@ func TestGetUsersByStatus(t *testing.T) {
 			t.Fatal("received too many users")
 		}
 
-		if usersByStatus[0].Id != dndUser1.Id && usersByStatus[1].Id != dndUser2.Id {
+		if usersByStatus[0].ClientId != dndUser1.ClientId && usersByStatus[1].ClientId != dndUser2.ClientId {
 			t.Fatal("expected to receive dnd users third")
 		}
 
-		if usersByStatus[2].Id != offlineUser1.Id && usersByStatus[3].Id != offlineUser2.Id {
+		if usersByStatus[2].ClientId != offlineUser1.ClientId && usersByStatus[3].ClientId != offlineUser2.ClientId {
 			t.Fatal("expected to receive offline users last")
 		}
 	})
@@ -3942,19 +3942,19 @@ func TestRegisterTermsOfServiceAction(t *testing.T) {
 	th := Setup().InitBasic()
 	defer th.TearDown()
 
-	success, resp := th.Client.RegisterTermsOfServiceAction(th.BasicUser.Id, "st_1", true)
+	success, resp := th.Client.RegisterTermsOfServiceAction(th.BasicUser.ClientId, "st_1", true)
 	CheckErrorMessage(t, resp, "store.sql_terms_of_service_store.get.no_rows.app_error")
 
-	termsOfService, err := th.App.CreateTermsOfService("terms of service", th.BasicUser.Id)
+	termsOfService, err := th.App.CreateTermsOfService("terms of service", th.BasicUser.ClientId)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	success, resp = th.Client.RegisterTermsOfServiceAction(th.BasicUser.Id, termsOfService.Id, true)
+	success, resp = th.Client.RegisterTermsOfServiceAction(th.BasicUser.ClientId, termsOfService.Id, true)
 	CheckNoError(t, resp)
 
 	assert.True(t, *success)
-	_, err = th.App.GetUser(th.BasicUser.Id)
+	_, err = th.App.GetUser(th.BasicUser.ClientId)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -3964,22 +3964,22 @@ func TestGetUserTermsOfService(t *testing.T) {
 	th := Setup().InitBasic()
 	defer th.TearDown()
 
-	_, resp := th.Client.GetUserTermsOfService(th.BasicUser.Id, "")
+	_, resp := th.Client.GetUserTermsOfService(th.BasicUser.ClientId, "")
 	CheckErrorMessage(t, resp, "store.sql_user_terms_of_service.get_by_user.no_rows.app_error")
 
-	termsOfService, err := th.App.CreateTermsOfService("terms of service", th.BasicUser.Id)
+	termsOfService, err := th.App.CreateTermsOfService("terms of service", th.BasicUser.ClientId)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	success, resp := th.Client.RegisterTermsOfServiceAction(th.BasicUser.Id, termsOfService.Id, true)
+	success, resp := th.Client.RegisterTermsOfServiceAction(th.BasicUser.ClientId, termsOfService.Id, true)
 	CheckNoError(t, resp)
 	assert.True(t, *success)
 
-	userTermsOfService, resp := th.Client.GetUserTermsOfService(th.BasicUser.Id, "")
+	userTermsOfService, resp := th.Client.GetUserTermsOfService(th.BasicUser.ClientId, "")
 	CheckNoError(t, resp)
 
-	assert.Equal(t, th.BasicUser.Id, userTermsOfService.UserId)
+	assert.Equal(t, th.BasicUser.ClientId, userTermsOfService.UserId)
 	assert.Equal(t, termsOfService.Id, userTermsOfService.TermsOfServiceId)
 	assert.NotEmpty(t, userTermsOfService.CreateAt)
 }
@@ -4006,7 +4006,7 @@ func TestLoginLockout(t *testing.T) {
 	CheckErrorMessage(t, resp, "api.user.check_user_login_attempts.too_many.app_error")
 
 	// Fake user has MFA enabled
-	if result := <-th.Server.Store.User().UpdateMfaActive(th.BasicUser2.Id, true); result.Err != nil {
+	if result := <-th.Server.Store.User().UpdateMfaActive(th.BasicUser2.ClientId, true); result.Err != nil {
 		t.Fatal(result.Err)
 	}
 	_, resp = th.Client.LoginWithMFA(th.BasicUser2.Email, th.BasicUser2.Password, "000000")

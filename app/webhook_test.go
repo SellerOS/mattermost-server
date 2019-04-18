@@ -128,7 +128,7 @@ func TestCreateIncomingWebhookForChannel(t *testing.T) {
 			})
 			th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnablePostIconOverride = tc.EnablePostIconOverride })
 
-			createdHook, err := th.App.CreateIncomingWebhookForChannel(th.BasicUser.Id, th.BasicChannel, &tc.IncomingWebhook)
+			createdHook, err := th.App.CreateIncomingWebhookForChannel(th.BasicUser.ClientId, th.BasicChannel, &tc.IncomingWebhook)
 			if tc.ExpectedError && err == nil {
 				t.Fatal("should have failed")
 			} else if !tc.ExpectedError && err != nil {
@@ -255,7 +255,7 @@ func TestUpdateIncomingWebhook(t *testing.T) {
 
 			th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableIncomingWebhooks = true })
 
-			hook, err := th.App.CreateIncomingWebhookForChannel(th.BasicUser.Id, th.BasicChannel, &model.IncomingWebhook{
+			hook, err := th.App.CreateIncomingWebhookForChannel(th.BasicUser.ClientId, th.BasicChannel, &model.IncomingWebhook{
 				ChannelId: th.BasicChannel.Id,
 			})
 			if err != nil {
@@ -294,7 +294,7 @@ func TestCreateWebhookPost(t *testing.T) {
 
 	th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableIncomingWebhooks = true })
 
-	hook, err := th.App.CreateIncomingWebhookForChannel(th.BasicUser.Id, th.BasicChannel, &model.IncomingWebhook{ChannelId: th.BasicChannel.Id})
+	hook, err := th.App.CreateIncomingWebhookForChannel(th.BasicUser.ClientId, th.BasicChannel, &model.IncomingWebhook{ChannelId: th.BasicChannel.Id})
 	if err != nil {
 		t.Fatal(err.Error())
 	}
@@ -489,7 +489,7 @@ func TestCreateOutGoingWebhookWithUsernameAndIconURL(t *testing.T) {
 		IconURL:      "http://some-icon/",
 		DisplayName:  "some-display-name",
 		Description:  "some-description",
-		CreatorId:    th.BasicUser.Id,
+		CreatorId:    th.BasicUser.ClientId,
 	}
 
 	th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableOutgoingWebhooks = true })
@@ -563,7 +563,7 @@ func TestTriggerOutGoingWebhookWithUsernameAndIconURL(t *testing.T) {
 			IconURL:      "http://some-icon/",
 			DisplayName:  "some-display-name",
 			Description:  "some-description",
-			CreatorId:    th.BasicUser.Id,
+			CreatorId:    th.BasicUser.ClientId,
 			TriggerWords: []string{"Abracadabra"},
 			ContentType:  "application/json",
 		}

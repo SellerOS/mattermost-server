@@ -231,29 +231,29 @@ func TestGetTeamUnread(t *testing.T) {
 	defer th.TearDown()
 	Client := th.Client
 
-	teamUnread, resp := Client.GetTeamUnread(th.BasicTeam.Id, th.BasicUser.Id)
+	teamUnread, resp := Client.GetTeamUnread(th.BasicTeam.Id, th.BasicUser.ClientId)
 	CheckNoError(t, resp)
 	if teamUnread.TeamId != th.BasicTeam.Id {
 		t.Fatal("wrong team id returned for regular user call")
 	}
 
-	_, resp = Client.GetTeamUnread("junk", th.BasicUser.Id)
+	_, resp = Client.GetTeamUnread("junk", th.BasicUser.ClientId)
 	CheckBadRequestStatus(t, resp)
 
 	_, resp = Client.GetTeamUnread(th.BasicTeam.Id, "junk")
 	CheckBadRequestStatus(t, resp)
 
-	_, resp = Client.GetTeamUnread(model.NewId(), th.BasicUser.Id)
+	_, resp = Client.GetTeamUnread(model.NewId(), th.BasicUser.ClientId)
 	CheckForbiddenStatus(t, resp)
 
 	_, resp = Client.GetTeamUnread(th.BasicTeam.Id, model.NewId())
 	CheckForbiddenStatus(t, resp)
 
 	Client.Logout()
-	_, resp = Client.GetTeamUnread(th.BasicTeam.Id, th.BasicUser.Id)
+	_, resp = Client.GetTeamUnread(th.BasicTeam.Id, th.BasicUser.ClientId)
 	CheckUnauthorizedStatus(t, resp)
 
-	teamUnread, resp = th.SystemAdminClient.GetTeamUnread(th.BasicTeam.Id, th.BasicUser.Id)
+	teamUnread, resp = th.SystemAdminClient.GetTeamUnread(th.BasicTeam.Id, th.BasicUser.ClientId)
 	CheckNoError(t, resp)
 	if teamUnread.TeamId != th.BasicTeam.Id {
 		t.Fatal("wrong team id returned")
@@ -1014,7 +1014,7 @@ func TestGetTeamsForUser(t *testing.T) {
 	team2 := &model.Team{DisplayName: "Name", Name: GenerateTestTeamName(), Email: th.GenerateTestEmail(), Type: model.TEAM_INVITE}
 	rteam2, _ := Client.CreateTeam(team2)
 
-	teams, resp := Client.GetTeamsForUser(th.BasicUser.Id, "")
+	teams, resp := Client.GetTeamsForUser(th.BasicUser.ClientId, "")
 	CheckNoError(t, resp)
 
 	if len(teams) != 2 {
@@ -1041,10 +1041,10 @@ func TestGetTeamsForUser(t *testing.T) {
 	_, resp = Client.GetTeamsForUser(model.NewId(), "")
 	CheckForbiddenStatus(t, resp)
 
-	_, resp = Client.GetTeamsForUser(th.BasicUser2.Id, "")
+	_, resp = Client.GetTeamsForUser(th.BasicUser2.ClientId, "")
 	CheckForbiddenStatus(t, resp)
 
-	_, resp = th.SystemAdminClient.GetTeamsForUser(th.BasicUser2.Id, "")
+	_, resp = th.SystemAdminClient.GetTeamsForUser(th.BasicUser2.ClientId, "")
 	CheckNoError(t, resp)
 }
 
@@ -1076,7 +1076,7 @@ func TestGetTeamsForUserSanitization(t *testing.T) {
 		client := th.CreateClient()
 		th.LoginBasic2WithClient(client)
 
-		rteams, resp := client.GetTeamsForUser(th.BasicUser2.Id, "")
+		rteams, resp := client.GetTeamsForUser(th.BasicUser2.ClientId, "")
 		CheckNoError(t, resp)
 		for _, rteam := range rteams {
 			if rteam.Id != team.Id && rteam.Id != team2.Id {
@@ -1090,7 +1090,7 @@ func TestGetTeamsForUserSanitization(t *testing.T) {
 	})
 
 	t.Run("team admin", func(t *testing.T) {
-		rteams, resp := th.Client.GetTeamsForUser(th.BasicUser.Id, "")
+		rteams, resp := th.Client.GetTeamsForUser(th.BasicUser.ClientId, "")
 		CheckNoError(t, resp)
 		for _, rteam := range rteams {
 			if rteam.Id != team.Id && rteam.Id != team2.Id {
@@ -1104,7 +1104,7 @@ func TestGetTeamsForUserSanitization(t *testing.T) {
 	})
 
 	t.Run("system admin", func(t *testing.T) {
-		rteams, resp := th.SystemAdminClient.GetTeamsForUser(th.BasicUser.Id, "")
+		rteams, resp := th.SystemAdminClient.GetTeamsForUser(th.BasicUser.ClientId, "")
 		CheckNoError(t, resp)
 		for _, rteam := range rteams {
 			if rteam.Id != team.Id && rteam.Id != team2.Id {
@@ -1172,7 +1172,7 @@ func TestGetTeamMembers(t *testing.T) {
 	}
 
 	for _, rmember := range rmembers {
-		if rmember.TeamId != team.Id || rmember.UserId == userNotMember.Id {
+		if rmember.TeamId != team.Id || rmember.UserId == userNotMember.ClientId {
 			t.Fatal("user should be a member of team")
 		}
 	}
@@ -1225,7 +1225,7 @@ func TestGetTeamMembersForUser(t *testing.T) {
 	defer th.TearDown()
 	Client := th.Client
 
-	members, resp := Client.GetTeamMembersForUser(th.BasicUser.Id, "")
+	members, resp := Client.GetTeamMembersForUser(th.BasicUser.ClientId, "")
 	CheckNoError(t, resp)
 
 	found := false
@@ -1246,15 +1246,15 @@ func TestGetTeamMembersForUser(t *testing.T) {
 	CheckForbiddenStatus(t, resp)
 
 	Client.Logout()
-	_, resp = Client.GetTeamMembersForUser(th.BasicUser.Id, "")
+	_, resp = Client.GetTeamMembersForUser(th.BasicUser.ClientId, "")
 	CheckUnauthorizedStatus(t, resp)
 
 	user := th.CreateUser()
 	Client.Login(user.Email, user.Password)
-	_, resp = Client.GetTeamMembersForUser(th.BasicUser.Id, "")
+	_, resp = Client.GetTeamMembersForUser(th.BasicUser.ClientId, "")
 	CheckForbiddenStatus(t, resp)
 
-	_, resp = th.SystemAdminClient.GetTeamMembersForUser(th.BasicUser.Id, "")
+	_, resp = th.SystemAdminClient.GetTeamMembersForUser(th.BasicUser.ClientId, "")
 	CheckNoError(t, resp)
 }
 
@@ -1263,10 +1263,10 @@ func TestGetTeamMembersByIds(t *testing.T) {
 	defer th.TearDown()
 	Client := th.Client
 
-	tm, resp := Client.GetTeamMembersByIds(th.BasicTeam.Id, []string{th.BasicUser.Id})
+	tm, resp := Client.GetTeamMembersByIds(th.BasicTeam.Id, []string{th.BasicUser.ClientId})
 	CheckNoError(t, resp)
 
-	if tm[0].UserId != th.BasicUser.Id {
+	if tm[0].UserId != th.BasicUser.ClientId {
 		t.Fatal("returned wrong user")
 	}
 
@@ -1279,20 +1279,20 @@ func TestGetTeamMembersByIds(t *testing.T) {
 		t.Fatal("no users should be returned")
 	}
 
-	tm1, resp = Client.GetTeamMembersByIds(th.BasicTeam.Id, []string{"junk", th.BasicUser.Id})
+	tm1, resp = Client.GetTeamMembersByIds(th.BasicTeam.Id, []string{"junk", th.BasicUser.ClientId})
 	CheckNoError(t, resp)
 	if len(tm1) != 1 {
 		t.Fatal("1 user should be returned")
 	}
 
-	_, resp = Client.GetTeamMembersByIds("junk", []string{th.BasicUser.Id})
+	_, resp = Client.GetTeamMembersByIds("junk", []string{th.BasicUser.ClientId})
 	CheckBadRequestStatus(t, resp)
 
-	_, resp = Client.GetTeamMembersByIds(model.NewId(), []string{th.BasicUser.Id})
+	_, resp = Client.GetTeamMembersByIds(model.NewId(), []string{th.BasicUser.ClientId})
 	CheckForbiddenStatus(t, resp)
 
 	Client.Logout()
-	_, resp = Client.GetTeamMembersByIds(th.BasicTeam.Id, []string{th.BasicUser.Id})
+	_, resp = Client.GetTeamMembersByIds(th.BasicTeam.Id, []string{th.BasicUser.ClientId})
 	CheckUnauthorizedStatus(t, resp)
 }
 
@@ -1303,13 +1303,13 @@ func TestAddTeamMember(t *testing.T) {
 	team := th.BasicTeam
 	otherUser := th.CreateUser()
 
-	if err := th.App.RemoveUserFromTeam(th.BasicTeam.Id, th.BasicUser2.Id, ""); err != nil {
+	if err := th.App.RemoveUserFromTeam(th.BasicTeam.Id, th.BasicUser2.ClientId, ""); err != nil {
 		t.Fatalf(err.Error())
 	}
 
 	// Regular user can't add a member to a team they don't belong to.
 	th.LoginBasic2()
-	_, resp := Client.AddTeamMember(team.Id, otherUser.Id)
+	_, resp := Client.AddTeamMember(team.Id, otherUser.ClientId)
 	CheckForbiddenStatus(t, resp)
 	if resp.Error == nil {
 		t.Fatalf("Error is nil")
@@ -1318,7 +1318,7 @@ func TestAddTeamMember(t *testing.T) {
 
 	// Regular user can add a member to a team they belong to.
 	th.LoginBasic()
-	tm, resp := Client.AddTeamMember(team.Id, otherUser.Id)
+	tm, resp := Client.AddTeamMember(team.Id, otherUser.ClientId)
 	CheckNoError(t, resp)
 	CheckCreatedStatus(t, resp)
 
@@ -1327,7 +1327,7 @@ func TestAddTeamMember(t *testing.T) {
 		t.Fatal("should have returned team member")
 	}
 
-	if tm.UserId != otherUser.Id {
+	if tm.UserId != otherUser.ClientId {
 		t.Fatal("user ids should have matched")
 	}
 
@@ -1343,10 +1343,10 @@ func TestAddTeamMember(t *testing.T) {
 		t.Fatal("should have not returned team member")
 	}
 
-	_, resp = Client.AddTeamMember("junk", otherUser.Id)
+	_, resp = Client.AddTeamMember("junk", otherUser.ClientId)
 	CheckBadRequestStatus(t, resp)
 
-	_, resp = Client.AddTeamMember(GenerateTestId(), otherUser.Id)
+	_, resp = Client.AddTeamMember(GenerateTestId(), otherUser.ClientId)
 	CheckForbiddenStatus(t, resp)
 
 	_, resp = Client.AddTeamMember(team.Id, GenerateTestId())
@@ -1369,7 +1369,7 @@ func TestAddTeamMember(t *testing.T) {
 	th.LoginBasic()
 
 	// Check that a regular user can't add someone to the team.
-	_, resp = Client.AddTeamMember(team.Id, otherUser.Id)
+	_, resp = Client.AddTeamMember(team.Id, otherUser.ClientId)
 	CheckForbiddenStatus(t, resp)
 
 	// Update user to team admin
@@ -1378,7 +1378,7 @@ func TestAddTeamMember(t *testing.T) {
 	th.LoginBasic()
 
 	// Should work as a team admin.
-	_, resp = Client.AddTeamMember(team.Id, otherUser.Id)
+	_, resp = Client.AddTeamMember(team.Id, otherUser.ClientId)
 	CheckNoError(t, resp)
 
 	// Change permission level to team user
@@ -1392,7 +1392,7 @@ func TestAddTeamMember(t *testing.T) {
 	th.LoginBasic()
 
 	// Should work as a regular user.
-	_, resp = Client.AddTeamMember(team.Id, otherUser.Id)
+	_, resp = Client.AddTeamMember(team.Id, otherUser.ClientId)
 	CheckNoError(t, resp)
 
 	// by token
@@ -1411,7 +1411,7 @@ func TestAddTeamMember(t *testing.T) {
 		t.Fatal("should have returned team member")
 	}
 
-	if tm.UserId != otherUser.Id {
+	if tm.UserId != otherUser.ClientId {
 		t.Fatal("user ids should have matched")
 	}
 
@@ -1461,7 +1461,7 @@ func TestAddTeamMember(t *testing.T) {
 		t.Fatal("should have returned team member")
 	}
 
-	if tm.UserId != otherUser.Id {
+	if tm.UserId != otherUser.ClientId {
 		t.Fatal("user ids should have matched")
 	}
 
@@ -1482,7 +1482,7 @@ func TestAddTeamMember(t *testing.T) {
 	require.Nil(t, err)
 
 	// User is not in associated groups so shouldn't be allowed
-	_, resp = th.SystemAdminClient.AddTeamMember(team.Id, otherUser.Id)
+	_, resp = th.SystemAdminClient.AddTeamMember(team.Id, otherUser.ClientId)
 	CheckErrorMessage(t, resp, "api.team.add_members.user_denied")
 
 	// Associate group to team
@@ -1494,10 +1494,10 @@ func TestAddTeamMember(t *testing.T) {
 	require.Nil(t, err)
 
 	// Add user to group
-	_, err = th.App.CreateOrRestoreGroupMember(th.Group.Id, otherUser.Id)
+	_, err = th.App.CreateOrRestoreGroupMember(th.Group.Id, otherUser.ClientId)
 	require.Nil(t, err)
 
-	_, resp = th.SystemAdminClient.AddTeamMember(team.Id, otherUser.Id)
+	_, resp = th.SystemAdminClient.AddTeamMember(team.Id, otherUser.ClientId)
 	CheckNoError(t, resp)
 }
 
@@ -1580,7 +1580,7 @@ func TestAddTeamMemberMyself(t *testing.T) {
 			} else {
 				th.RemovePermissionFromRole(model.PERMISSION_JOIN_PRIVATE_TEAMS.Id, model.SYSTEM_USER_ROLE_ID)
 			}
-			_, resp := Client.AddTeamMember(team.Id, th.BasicUser.Id)
+			_, resp := Client.AddTeamMember(team.Id, th.BasicUser.ClientId)
 			if tc.ExpectedSuccess {
 				CheckNoError(t, resp)
 			} else {
@@ -1598,10 +1598,10 @@ func TestAddTeamMembers(t *testing.T) {
 	team := th.BasicTeam
 	otherUser := th.CreateUser()
 	userList := []string{
-		otherUser.Id,
+		otherUser.ClientId,
 	}
 
-	if err := th.App.RemoveUserFromTeam(th.BasicTeam.Id, th.BasicUser2.Id, ""); err != nil {
+	if err := th.App.RemoveUserFromTeam(th.BasicTeam.Id, th.BasicUser2.ClientId, ""); err != nil {
 		t.Fatalf(err.Error())
 	}
 
@@ -1622,7 +1622,7 @@ func TestAddTeamMembers(t *testing.T) {
 		t.Fatal("should have returned team member")
 	}
 
-	if tm[0].UserId != otherUser.Id {
+	if tm[0].UserId != otherUser.ClientId {
 		t.Fatal("user ids should have matched")
 	}
 
@@ -1721,43 +1721,43 @@ func TestRemoveTeamMember(t *testing.T) {
 	defer th.TearDown()
 	Client := th.Client
 
-	pass, resp := Client.RemoveTeamMember(th.BasicTeam.Id, th.BasicUser.Id)
+	pass, resp := Client.RemoveTeamMember(th.BasicTeam.Id, th.BasicUser.ClientId)
 	CheckNoError(t, resp)
 
 	if !pass {
 		t.Fatal("should have passed")
 	}
 
-	_, resp = th.SystemAdminClient.AddTeamMember(th.BasicTeam.Id, th.BasicUser.Id)
+	_, resp = th.SystemAdminClient.AddTeamMember(th.BasicTeam.Id, th.BasicUser.ClientId)
 	CheckNoError(t, resp)
 
 	_, resp = Client.RemoveTeamMember(th.BasicTeam.Id, "junk")
 	CheckBadRequestStatus(t, resp)
 
-	_, resp = Client.RemoveTeamMember("junk", th.BasicUser2.Id)
+	_, resp = Client.RemoveTeamMember("junk", th.BasicUser2.ClientId)
 	CheckBadRequestStatus(t, resp)
 
-	_, resp = Client.RemoveTeamMember(th.BasicTeam.Id, th.BasicUser2.Id)
+	_, resp = Client.RemoveTeamMember(th.BasicTeam.Id, th.BasicUser2.ClientId)
 	CheckForbiddenStatus(t, resp)
 
-	_, resp = Client.RemoveTeamMember(model.NewId(), th.BasicUser.Id)
+	_, resp = Client.RemoveTeamMember(model.NewId(), th.BasicUser.ClientId)
 	CheckNotFoundStatus(t, resp)
 
-	_, resp = th.SystemAdminClient.RemoveTeamMember(th.BasicTeam.Id, th.BasicUser.Id)
+	_, resp = th.SystemAdminClient.RemoveTeamMember(th.BasicTeam.Id, th.BasicUser.ClientId)
 	CheckNoError(t, resp)
 
-	_, resp = th.SystemAdminClient.AddTeamMember(th.BasicTeam.Id, th.SystemAdminUser.Id)
+	_, resp = th.SystemAdminClient.AddTeamMember(th.BasicTeam.Id, th.SystemAdminUser.ClientId)
 	CheckNoError(t, resp)
 
 	// If the team is group-constrained the user cannot be removed
 	th.BasicTeam.GroupConstrained = model.NewBool(true)
 	_, err := th.App.UpdateTeam(th.BasicTeam)
 	require.Nil(t, err)
-	_, resp = th.SystemAdminClient.RemoveTeamMember(th.BasicTeam.Id, th.BasicUser.Id)
+	_, resp = th.SystemAdminClient.RemoveTeamMember(th.BasicTeam.Id, th.BasicUser.ClientId)
 	require.Equal(t, "api.team.remove_member.group_constrained.app_error", resp.Error.Id)
 
 	// Can remove self even if team is group-constrained
-	_, resp = th.SystemAdminClient.RemoveTeamMember(th.BasicTeam.Id, th.SystemAdminUser.Id)
+	_, resp = th.SystemAdminClient.RemoveTeamMember(th.BasicTeam.Id, th.SystemAdminUser.ClientId)
 	CheckNoError(t, resp)
 }
 
@@ -1826,42 +1826,42 @@ func TestUpdateTeamMemberRoles(t *testing.T) {
 	const TEAM_ADMIN = "team_user team_admin"
 
 	// user 1 tries to promote user 2
-	ok, resp := Client.UpdateTeamMemberRoles(th.BasicTeam.Id, th.BasicUser2.Id, TEAM_ADMIN)
+	ok, resp := Client.UpdateTeamMemberRoles(th.BasicTeam.Id, th.BasicUser2.ClientId, TEAM_ADMIN)
 	CheckForbiddenStatus(t, resp)
 	if ok {
 		t.Fatal("should have returned false")
 	}
 
 	// user 1 tries to promote himself
-	_, resp = Client.UpdateTeamMemberRoles(th.BasicTeam.Id, th.BasicUser.Id, TEAM_ADMIN)
+	_, resp = Client.UpdateTeamMemberRoles(th.BasicTeam.Id, th.BasicUser.ClientId, TEAM_ADMIN)
 	CheckForbiddenStatus(t, resp)
 
 	// user 1 tries to demote someone
-	_, resp = Client.UpdateTeamMemberRoles(th.BasicTeam.Id, th.SystemAdminUser.Id, TEAM_MEMBER)
+	_, resp = Client.UpdateTeamMemberRoles(th.BasicTeam.Id, th.SystemAdminUser.ClientId, TEAM_MEMBER)
 	CheckForbiddenStatus(t, resp)
 
 	// system admin promotes user 1
-	ok, resp = SystemAdminClient.UpdateTeamMemberRoles(th.BasicTeam.Id, th.BasicUser.Id, TEAM_ADMIN)
+	ok, resp = SystemAdminClient.UpdateTeamMemberRoles(th.BasicTeam.Id, th.BasicUser.ClientId, TEAM_ADMIN)
 	CheckNoError(t, resp)
 	if !ok {
 		t.Fatal("should have returned true")
 	}
 
 	// user 1 (team admin) promotes user 2
-	_, resp = Client.UpdateTeamMemberRoles(th.BasicTeam.Id, th.BasicUser2.Id, TEAM_ADMIN)
+	_, resp = Client.UpdateTeamMemberRoles(th.BasicTeam.Id, th.BasicUser2.ClientId, TEAM_ADMIN)
 	CheckNoError(t, resp)
 
 	// user 1 (team admin) demotes user 2 (team admin)
-	_, resp = Client.UpdateTeamMemberRoles(th.BasicTeam.Id, th.BasicUser2.Id, TEAM_MEMBER)
+	_, resp = Client.UpdateTeamMemberRoles(th.BasicTeam.Id, th.BasicUser2.ClientId, TEAM_MEMBER)
 	CheckNoError(t, resp)
 
 	// user 1 (team admin) tries to demote system admin (not member of a team)
-	_, resp = Client.UpdateTeamMemberRoles(th.BasicTeam.Id, th.SystemAdminUser.Id, TEAM_MEMBER)
+	_, resp = Client.UpdateTeamMemberRoles(th.BasicTeam.Id, th.SystemAdminUser.ClientId, TEAM_MEMBER)
 	CheckNotFoundStatus(t, resp)
 
 	// user 1 (team admin) demotes system admin (member of a team)
 	th.LinkUserToTeam(th.SystemAdminUser, th.BasicTeam)
-	_, resp = Client.UpdateTeamMemberRoles(th.BasicTeam.Id, th.SystemAdminUser.Id, TEAM_MEMBER)
+	_, resp = Client.UpdateTeamMemberRoles(th.BasicTeam.Id, th.SystemAdminUser.ClientId, TEAM_MEMBER)
 	CheckNoError(t, resp)
 	// Note from API v3
 	// Note to anyone who thinks this (above) test is wrong:
@@ -1870,15 +1870,15 @@ func TestUpdateTeamMemberRoles(t *testing.T) {
 
 	// System admins should be able to manipulate permission no matter what their team level permissions are.
 	// system admin promotes user 2
-	_, resp = SystemAdminClient.UpdateTeamMemberRoles(th.BasicTeam.Id, th.BasicUser2.Id, TEAM_ADMIN)
+	_, resp = SystemAdminClient.UpdateTeamMemberRoles(th.BasicTeam.Id, th.BasicUser2.ClientId, TEAM_ADMIN)
 	CheckNoError(t, resp)
 
 	// system admin demotes user 2 (team admin)
-	_, resp = SystemAdminClient.UpdateTeamMemberRoles(th.BasicTeam.Id, th.BasicUser2.Id, TEAM_MEMBER)
+	_, resp = SystemAdminClient.UpdateTeamMemberRoles(th.BasicTeam.Id, th.BasicUser2.ClientId, TEAM_MEMBER)
 	CheckNoError(t, resp)
 
 	// user 1 (team admin) tries to promote himself to a random team
-	_, resp = Client.UpdateTeamMemberRoles(model.NewId(), th.BasicUser.Id, TEAM_ADMIN)
+	_, resp = Client.UpdateTeamMemberRoles(model.NewId(), th.BasicUser.ClientId, TEAM_ADMIN)
 	CheckForbiddenStatus(t, resp)
 
 	// user 1 (team admin) tries to promote a random user
@@ -1886,11 +1886,11 @@ func TestUpdateTeamMemberRoles(t *testing.T) {
 	CheckNotFoundStatus(t, resp)
 
 	// user 1 (team admin) tries to promote invalid team permission
-	_, resp = Client.UpdateTeamMemberRoles(th.BasicTeam.Id, th.BasicUser.Id, "junk")
+	_, resp = Client.UpdateTeamMemberRoles(th.BasicTeam.Id, th.BasicUser.ClientId, "junk")
 	CheckBadRequestStatus(t, resp)
 
 	// user 1 (team admin) demotes himself
-	_, resp = Client.UpdateTeamMemberRoles(th.BasicTeam.Id, th.BasicUser.Id, TEAM_MEMBER)
+	_, resp = Client.UpdateTeamMemberRoles(th.BasicTeam.Id, th.BasicUser.ClientId, TEAM_MEMBER)
 	CheckNoError(t, resp)
 }
 
@@ -1904,10 +1904,10 @@ func TestUpdateTeamMemberSchemeRoles(t *testing.T) {
 		SchemeAdmin: false,
 		SchemeUser:  false,
 	}
-	_, r1 := SystemAdminClient.UpdateTeamMemberSchemeRoles(th.BasicTeam.Id, th.BasicUser.Id, s1)
+	_, r1 := SystemAdminClient.UpdateTeamMemberSchemeRoles(th.BasicTeam.Id, th.BasicUser.ClientId, s1)
 	CheckNoError(t, r1)
 
-	tm1, rtm1 := SystemAdminClient.GetTeamMember(th.BasicTeam.Id, th.BasicUser.Id, "")
+	tm1, rtm1 := SystemAdminClient.GetTeamMember(th.BasicTeam.Id, th.BasicUser.ClientId, "")
 	CheckNoError(t, rtm1)
 	assert.Equal(t, false, tm1.SchemeUser)
 	assert.Equal(t, false, tm1.SchemeAdmin)
@@ -1916,10 +1916,10 @@ func TestUpdateTeamMemberSchemeRoles(t *testing.T) {
 		SchemeAdmin: false,
 		SchemeUser:  true,
 	}
-	_, r2 := SystemAdminClient.UpdateTeamMemberSchemeRoles(th.BasicTeam.Id, th.BasicUser.Id, s2)
+	_, r2 := SystemAdminClient.UpdateTeamMemberSchemeRoles(th.BasicTeam.Id, th.BasicUser.ClientId, s2)
 	CheckNoError(t, r2)
 
-	tm2, rtm2 := SystemAdminClient.GetTeamMember(th.BasicTeam.Id, th.BasicUser.Id, "")
+	tm2, rtm2 := SystemAdminClient.GetTeamMember(th.BasicTeam.Id, th.BasicUser.ClientId, "")
 	CheckNoError(t, rtm2)
 	assert.Equal(t, true, tm2.SchemeUser)
 	assert.Equal(t, false, tm2.SchemeAdmin)
@@ -1928,10 +1928,10 @@ func TestUpdateTeamMemberSchemeRoles(t *testing.T) {
 		SchemeAdmin: true,
 		SchemeUser:  false,
 	}
-	_, r3 := SystemAdminClient.UpdateTeamMemberSchemeRoles(th.BasicTeam.Id, th.BasicUser.Id, s3)
+	_, r3 := SystemAdminClient.UpdateTeamMemberSchemeRoles(th.BasicTeam.Id, th.BasicUser.ClientId, s3)
 	CheckNoError(t, r3)
 
-	tm3, rtm3 := SystemAdminClient.GetTeamMember(th.BasicTeam.Id, th.BasicUser.Id, "")
+	tm3, rtm3 := SystemAdminClient.GetTeamMember(th.BasicTeam.Id, th.BasicUser.ClientId, "")
 	CheckNoError(t, rtm3)
 	assert.Equal(t, false, tm3.SchemeUser)
 	assert.Equal(t, true, tm3.SchemeAdmin)
@@ -1940,32 +1940,32 @@ func TestUpdateTeamMemberSchemeRoles(t *testing.T) {
 		SchemeAdmin: true,
 		SchemeUser:  true,
 	}
-	_, r4 := SystemAdminClient.UpdateTeamMemberSchemeRoles(th.BasicTeam.Id, th.BasicUser.Id, s4)
+	_, r4 := SystemAdminClient.UpdateTeamMemberSchemeRoles(th.BasicTeam.Id, th.BasicUser.ClientId, s4)
 	CheckNoError(t, r4)
 
-	tm4, rtm4 := SystemAdminClient.GetTeamMember(th.BasicTeam.Id, th.BasicUser.Id, "")
+	tm4, rtm4 := SystemAdminClient.GetTeamMember(th.BasicTeam.Id, th.BasicUser.ClientId, "")
 	CheckNoError(t, rtm4)
 	assert.Equal(t, true, tm4.SchemeUser)
 	assert.Equal(t, true, tm4.SchemeAdmin)
 
-	_, resp := SystemAdminClient.UpdateTeamMemberSchemeRoles(model.NewId(), th.BasicUser.Id, s4)
+	_, resp := SystemAdminClient.UpdateTeamMemberSchemeRoles(model.NewId(), th.BasicUser.ClientId, s4)
 	CheckNotFoundStatus(t, resp)
 
 	_, resp = SystemAdminClient.UpdateTeamMemberSchemeRoles(th.BasicTeam.Id, model.NewId(), s4)
 	CheckNotFoundStatus(t, resp)
 
-	_, resp = SystemAdminClient.UpdateTeamMemberSchemeRoles("ASDF", th.BasicUser.Id, s4)
+	_, resp = SystemAdminClient.UpdateTeamMemberSchemeRoles("ASDF", th.BasicUser.ClientId, s4)
 	CheckBadRequestStatus(t, resp)
 
 	_, resp = SystemAdminClient.UpdateTeamMemberSchemeRoles(th.BasicTeam.Id, "ASDF", s4)
 	CheckBadRequestStatus(t, resp)
 
 	th.LoginBasic2()
-	_, resp = th.Client.UpdateTeamMemberSchemeRoles(th.BasicTeam.Id, th.BasicUser.Id, s4)
+	_, resp = th.Client.UpdateTeamMemberSchemeRoles(th.BasicTeam.Id, th.BasicUser.ClientId, s4)
 	CheckForbiddenStatus(t, resp)
 
 	SystemAdminClient.Logout()
-	_, resp = SystemAdminClient.UpdateTeamMemberSchemeRoles(th.BasicTeam.Id, th.SystemAdminUser.Id, s4)
+	_, resp = SystemAdminClient.UpdateTeamMemberSchemeRoles(th.BasicTeam.Id, th.SystemAdminUser.ClientId, s4)
 	CheckUnauthorizedStatus(t, resp)
 }
 
@@ -2173,7 +2173,7 @@ func TestInviteUsersToTeam(t *testing.T) {
 	th.App.UpdateConfig(func(cfg *model.Config) { *cfg.TeamSettings.RestrictCreationToDomains = "@global.com,@common.com" })
 
 	t.Run("restricted domains", func(t *testing.T) {
-		err := th.App.InviteNewUsersToTeam(emailList, th.BasicTeam.Id, th.BasicUser.Id)
+		err := th.App.InviteNewUsersToTeam(emailList, th.BasicTeam.Id, th.BasicUser.ClientId)
 
 		if err == nil {
 			t.Fatal("Adding users with non-restricted domains was allowed")
@@ -2196,17 +2196,17 @@ func TestInviteUsersToTeam(t *testing.T) {
 			t.Fatal("Should update the team")
 		}
 
-		if err := th.App.InviteNewUsersToTeam([]string{"test@global.com"}, th.BasicTeam.Id, th.BasicUser.Id); err == nil || err.Where != "InviteNewUsersToTeam" {
+		if err := th.App.InviteNewUsersToTeam([]string{"test@global.com"}, th.BasicTeam.Id, th.BasicUser.ClientId); err == nil || err.Where != "InviteNewUsersToTeam" {
 			t.Log(err)
 			t.Fatal("Per team restriction should take precedence over the global restriction")
 		}
 
-		if err := th.App.InviteNewUsersToTeam([]string{"test@common.com"}, th.BasicTeam.Id, th.BasicUser.Id); err != nil {
+		if err := th.App.InviteNewUsersToTeam([]string{"test@common.com"}, th.BasicTeam.Id, th.BasicUser.ClientId); err != nil {
 			t.Log(err)
 			t.Fatal("Failed to invite user which was common between team and global domain restriction")
 		}
 
-		if err := th.App.InviteNewUsersToTeam([]string{"test@invalid.com"}, th.BasicTeam.Id, th.BasicUser.Id); err == nil {
+		if err := th.App.InviteNewUsersToTeam([]string{"test@invalid.com"}, th.BasicTeam.Id, th.BasicUser.ClientId); err == nil {
 			t.Log(err)
 			t.Fatal("Should not invite user")
 		}

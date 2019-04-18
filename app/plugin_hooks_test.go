@@ -85,7 +85,7 @@ func TestHookMessageWillBePosted(t *testing.T) {
 		defer tearDown()
 
 		post := &model.Post{
-			UserId:    th.BasicUser.Id,
+			UserId:    th.BasicUser.ClientId,
 			ChannelId: th.BasicChannel.Id,
 			Message:   "message_",
 			CreateAt:  model.GetMillis() - 10000,
@@ -126,7 +126,7 @@ func TestHookMessageWillBePosted(t *testing.T) {
 		defer tearDown()
 
 		post := &model.Post{
-			UserId:    th.BasicUser.Id,
+			UserId:    th.BasicUser.ClientId,
 			ChannelId: th.BasicChannel.Id,
 			Message:   "message_",
 			CreateAt:  model.GetMillis() - 10000,
@@ -166,7 +166,7 @@ func TestHookMessageWillBePosted(t *testing.T) {
 		defer tearDown()
 
 		post := &model.Post{
-			UserId:    th.BasicUser.Id,
+			UserId:    th.BasicUser.ClientId,
 			ChannelId: th.BasicChannel.Id,
 			Message:   "message",
 			CreateAt:  model.GetMillis() - 10000,
@@ -213,7 +213,7 @@ func TestHookMessageWillBePosted(t *testing.T) {
 		defer tearDown()
 
 		post := &model.Post{
-			UserId:    th.BasicUser.Id,
+			UserId:    th.BasicUser.ClientId,
 			ChannelId: th.BasicChannel.Id,
 			Message:   "message",
 			CreateAt:  model.GetMillis() - 10000,
@@ -282,7 +282,7 @@ func TestHookMessageWillBePosted(t *testing.T) {
 		defer tearDown()
 
 		post := &model.Post{
-			UserId:    th.BasicUser.Id,
+			UserId:    th.BasicUser.ClientId,
 			ChannelId: th.BasicChannel.Id,
 			Message:   "message",
 			CreateAt:  model.GetMillis() - 10000,
@@ -328,7 +328,7 @@ func TestHookMessageHasBeenPosted(t *testing.T) {
 	defer tearDown()
 
 	post := &model.Post{
-		UserId:    th.BasicUser.Id,
+		UserId:    th.BasicUser.ClientId,
 		ChannelId: th.BasicChannel.Id,
 		Message:   "message",
 		CreateAt:  model.GetMillis() - 10000,
@@ -369,7 +369,7 @@ func TestHookMessageWillBeUpdated(t *testing.T) {
 	defer tearDown()
 
 	post := &model.Post{
-		UserId:    th.BasicUser.Id,
+		UserId:    th.BasicUser.ClientId,
 		ChannelId: th.BasicChannel.Id,
 		Message:   "message_",
 		CreateAt:  model.GetMillis() - 10000,
@@ -421,7 +421,7 @@ func TestHookMessageHasBeenUpdated(t *testing.T) {
 	defer tearDown()
 
 	post := &model.Post{
-		UserId:    th.BasicUser.Id,
+		UserId:    th.BasicUser.ClientId,
 		ChannelId: th.BasicChannel.Id,
 		Message:   "message_",
 		CreateAt:  model.GetMillis() - 10000,
@@ -475,7 +475,7 @@ func TestHookFileWillBeUploaded(t *testing.T) {
 		_, err := th.App.UploadFiles(
 			"noteam",
 			th.BasicChannel.Id,
-			th.BasicUser.Id,
+			th.BasicUser.ClientId,
 			[]io.ReadCloser{ioutil.NopCloser(bytes.NewBufferString("inputfile"))},
 			[]string{"testhook.txt"},
 			[]string{},
@@ -524,7 +524,7 @@ func TestHookFileWillBeUploaded(t *testing.T) {
 		_, err := th.App.UploadFiles(
 			"noteam",
 			th.BasicChannel.Id,
-			th.BasicUser.Id,
+			th.BasicUser.ClientId,
 			[]io.ReadCloser{ioutil.NopCloser(bytes.NewBufferString("inputfile"))},
 			[]string{"testhook.txt"},
 			[]string{},
@@ -571,7 +571,7 @@ func TestHookFileWillBeUploaded(t *testing.T) {
 		response, err := th.App.UploadFiles(
 			"noteam",
 			th.BasicChannel.Id,
-			th.BasicUser.Id,
+			th.BasicUser.ClientId,
 			[]io.ReadCloser{ioutil.NopCloser(bytes.NewBufferString("inputfile"))},
 			[]string{"testhook.txt"},
 			[]string{},
@@ -639,7 +639,7 @@ func TestHookFileWillBeUploaded(t *testing.T) {
 		response, err := th.App.UploadFiles(
 			"noteam",
 			th.BasicChannel.Id,
-			th.BasicUser.Id,
+			th.BasicUser.ClientId,
 			[]io.ReadCloser{ioutil.NopCloser(bytes.NewBufferString("inputfile"))},
 			[]string{"testhook.txt"},
 			[]string{},
@@ -748,8 +748,8 @@ func TestUserWillLogInIn_Passed(t *testing.T) {
 		t.Errorf("Expected nil, got %s", err)
 	}
 
-	if session.UserId != th.BasicUser.Id {
-		t.Errorf("Expected %s, got %s", th.BasicUser.Id, session.UserId)
+	if session.UserId != th.BasicUser.ClientId {
+		t.Errorf("Expected %s, got %s", th.BasicUser.ClientId, session.UserId)
 	}
 }
 
@@ -798,7 +798,7 @@ func TestUserHasLoggedIn(t *testing.T) {
 
 	time.Sleep(2 * time.Second)
 
-	user, _ := th.App.GetUser(th.BasicUser.Id)
+	user, _ := th.App.GetUser(th.BasicUser.ClientId)
 
 	if user.FirstName != "plugin-callback-success" {
 		t.Errorf("Expected firstname overwrite, got default")
@@ -972,7 +972,7 @@ func TestHookContext(t *testing.T) {
 	defer tearDown()
 
 	post := &model.Post{
-		UserId:    th.BasicUser.Id,
+		UserId:    th.BasicUser.ClientId,
 		ChannelId: th.BasicChannel.Id,
 		Message:   "not this",
 		CreateAt:  model.GetMillis() - 10000,

@@ -26,7 +26,7 @@ func TestIncomingWebhook(t *testing.T) {
 		return
 	}
 
-	hook, err := th.App.CreateIncomingWebhookForChannel(th.BasicUser.Id, th.BasicChannel, &model.IncomingWebhook{ChannelId: th.BasicChannel.Id})
+	hook, err := th.App.CreateIncomingWebhookForChannel(th.BasicUser.ClientId, th.BasicChannel, &model.IncomingWebhook{ChannelId: th.BasicChannel.Id})
 	require.Nil(t, err)
 
 	url := ApiClient.Url + "/hooks/" + hook.Id
@@ -112,7 +112,7 @@ func TestIncomingWebhook(t *testing.T) {
 		assert.True(t, resp.StatusCode == http.StatusOK)
 
 		// System-Admin Owned Hook
-		adminHook, err := th.App.CreateIncomingWebhookForChannel(th.SystemAdminUser.Id, th.BasicChannel, &model.IncomingWebhook{ChannelId: th.BasicChannel.Id})
+		adminHook, err := th.App.CreateIncomingWebhookForChannel(th.SystemAdminUser.ClientId, th.BasicChannel, &model.IncomingWebhook{ChannelId: th.BasicChannel.Id})
 		require.Nil(t, err)
 		adminUrl := ApiClient.Url + "/hooks/" + adminHook.Id
 
@@ -200,10 +200,10 @@ func TestIncomingWebhook(t *testing.T) {
 	})
 
 	t.Run("ChannelLockedWebhook", func(t *testing.T) {
-		channel, err := th.App.CreateChannel(&model.Channel{TeamId: th.BasicTeam.Id, Name: model.NewId(), DisplayName: model.NewId(), Type: model.CHANNEL_OPEN, CreatorId: th.BasicUser.Id}, true)
+		channel, err := th.App.CreateChannel(&model.Channel{TeamId: th.BasicTeam.Id, Name: model.NewId(), DisplayName: model.NewId(), Type: model.CHANNEL_OPEN, CreatorId: th.BasicUser.ClientId}, true)
 		require.Nil(t, err)
 
-		hook, err := th.App.CreateIncomingWebhookForChannel(th.BasicUser.Id, th.BasicChannel, &model.IncomingWebhook{ChannelId: th.BasicChannel.Id, ChannelLocked: true})
+		hook, err := th.App.CreateIncomingWebhookForChannel(th.BasicUser.ClientId, th.BasicChannel, &model.IncomingWebhook{ChannelId: th.BasicChannel.Id, ChannelLocked: true})
 		require.Nil(t, err)
 		require.NotNil(t, hook)
 
@@ -236,7 +236,7 @@ func TestCommandWebhooks(t *testing.T) {
 	defer th.TearDown()
 
 	cmd, appErr := th.App.CreateCommand(&model.Command{
-		CreatorId: th.BasicUser.Id,
+		CreatorId: th.BasicUser.ClientId,
 		TeamId:    th.BasicTeam.Id,
 		URL:       "http://nowhere.com",
 		Method:    model.COMMAND_METHOD_POST,
@@ -245,7 +245,7 @@ func TestCommandWebhooks(t *testing.T) {
 
 	args := &model.CommandArgs{
 		TeamId:    th.BasicTeam.Id,
-		UserId:    th.BasicUser.Id,
+		UserId:    th.BasicUser.ClientId,
 		ChannelId: th.BasicChannel.Id,
 	}
 

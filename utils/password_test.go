@@ -1,12 +1,11 @@
 package utils
 
 import (
-	"strings"
+	//"strings"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
-	"github.com/mattermost/mattermost-server/model"
+	//"github.com/stretchr/testify/assert"
+	//"github.com/mattermost/mattermost-server/model"
 )
 
 func TestIsPasswordValid(t *testing.T) {

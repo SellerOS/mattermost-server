@@ -25,13 +25,13 @@ func TestMsgProvider(t *testing.T) {
 		T:       i18n.IdentityTfunc(),
 		SiteURL: "http://test.url",
 		TeamId:  team.Id,
-		UserId:  th.BasicUser.Id,
+		UserId:  th.BasicUser.ClientId,
 		Session: model.Session{
 			Roles: "",
 		},
 	}, "@"+th.BasicUser2.Username+" hello")
 
-	channelName := model.GetDMNameFromIds(th.BasicUser.Id, th.BasicUser2.Id)
+	channelName := model.GetDMNameFromIds(th.BasicUser.ClientId, th.BasicUser2.ClientId)
 	assert.Equal(t, "api.command_msg.permission.app_error", resp.Text)
 	assert.Equal(t, "", resp.GotoLocation)
 
@@ -40,7 +40,7 @@ func TestMsgProvider(t *testing.T) {
 		T:       i18n.IdentityTfunc(),
 		SiteURL: "http://test.url",
 		TeamId:  team.Id,
-		UserId:  th.BasicUser.Id,
+		UserId:  th.BasicUser.ClientId,
 		Session: model.Session{
 			Roles: model.SYSTEM_USER_ROLE_ID,
 		},
@@ -54,7 +54,7 @@ func TestMsgProvider(t *testing.T) {
 		T:       i18n.IdentityTfunc(),
 		SiteURL: "http://test.url",
 		TeamId:  team.Id,
-		UserId:  th.BasicUser.Id,
+		UserId:  th.BasicUser.ClientId,
 		Session: model.Session{
 			Roles: "",
 		},

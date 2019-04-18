@@ -30,7 +30,7 @@ func TestSetAutoResponderStatus(t *testing.T) {
 	// autoResponder is enabled, status should be OOO
 	th.App.SetAutoResponderStatus(userUpdated1, user.NotifyProps)
 
-	status, err := th.App.GetStatus(userUpdated1.Id)
+	status, err := th.App.GetStatus(userUpdated1.ClientId)
 	require.Nil(t, err)
 	assert.Equal(t, model.STATUS_OUT_OF_OFFICE, status.Status)
 
@@ -44,7 +44,7 @@ func TestSetAutoResponderStatus(t *testing.T) {
 	// autoResponder is disabled, status should be ONLINE
 	th.App.SetAutoResponderStatus(userUpdated2, userUpdated1.NotifyProps)
 
-	status, err = th.App.GetStatus(userUpdated2.Id)
+	status, err = th.App.GetStatus(userUpdated2.ClientId)
 	require.Nil(t, err)
 	assert.Equal(t, model.STATUS_ONLINE, status.Status)
 
@@ -97,7 +97,7 @@ func TestSendAutoResponseSuccess(t *testing.T) {
 	th.App.CreatePost(&model.Post{
 		ChannelId: th.BasicChannel.Id,
 		Message:   "zz" + model.NewId() + "a",
-		UserId:    th.BasicUser.Id},
+		UserId:    th.BasicUser.ClientId},
 		th.BasicChannel,
 		false)
 
@@ -134,7 +134,7 @@ func TestSendAutoResponseFailure(t *testing.T) {
 	th.App.CreatePost(&model.Post{
 		ChannelId: th.BasicChannel.Id,
 		Message:   "zz" + model.NewId() + "a",
-		UserId:    th.BasicUser.Id},
+		UserId:    th.BasicUser.ClientId},
 		th.BasicChannel,
 		false)
 

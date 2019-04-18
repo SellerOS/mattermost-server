@@ -56,14 +56,14 @@ func TestGroupmsgCommands(t *testing.T) {
 
 	rs1 := Client.Must(Client.ExecuteCommand(th.BasicChannel.Id, "/groupmsg "+user2.Username+","+user3.Username)).(*model.CommandResponse)
 
-	group1 := model.GetGroupNameFromUserIds([]string{user1.Id, user2.Id, user3.Id})
+	group1 := model.GetGroupNameFromUserIds([]string{user1.ClientId, user2.ClientId, user3.ClientId})
 
 	if !strings.HasSuffix(rs1.GotoLocation, "/"+team.Name+"/channels/"+group1) {
 		t.Fatal("failed to create group channel")
 	}
 
 	rs2 := Client.Must(Client.ExecuteCommand(th.BasicChannel.Id, "/groupmsg "+user3.Username+","+user4.Username+" foobar")).(*model.CommandResponse)
-	group2 := model.GetGroupNameFromUserIds([]string{user1.Id, user3.Id, user4.Id})
+	group2 := model.GetGroupNameFromUserIds([]string{user1.ClientId, user3.ClientId, user4.ClientId})
 
 	if !strings.HasSuffix(rs2.GotoLocation, "/"+team.Name+"/channels/"+group2) {
 		t.Fatal("failed to create second direct channel")
@@ -120,13 +120,13 @@ func testJoinCommands(t *testing.T, alias string) {
 
 	channel1 := &model.Channel{DisplayName: "AA", Name: "aa" + model.NewId() + "a", Type: model.CHANNEL_OPEN, TeamId: team.Id}
 	channel1 = Client.Must(Client.CreateChannel(channel1)).(*model.Channel)
-	Client.Must(Client.RemoveUserFromChannel(channel1.Id, th.BasicUser.Id))
+	Client.Must(Client.RemoveUserFromChannel(channel1.Id, th.BasicUser.ClientId))
 
 	channel2 := &model.Channel{DisplayName: "BB", Name: "bb" + model.NewId() + "a", Type: model.CHANNEL_OPEN, TeamId: team.Id}
 	channel2 = Client.Must(Client.CreateChannel(channel2)).(*model.Channel)
-	Client.Must(Client.RemoveUserFromChannel(channel2.Id, th.BasicUser.Id))
+	Client.Must(Client.RemoveUserFromChannel(channel2.Id, th.BasicUser.ClientId))
 
-	channel3 := Client.Must(Client.CreateDirectChannel(th.BasicUser.Id, user2.Id)).(*model.Channel)
+	channel3 := Client.Must(Client.CreateDirectChannel(th.BasicUser.ClientId, user2.ClientId)).(*model.Channel)
 
 	rs5 := Client.Must(Client.ExecuteCommand(channel0.Id, "/"+alias+" "+channel2.Name)).(*model.CommandResponse)
 	if !strings.HasSuffix(rs5.GotoLocation, "/"+team.Name+"/channels/"+channel2.Name) {
@@ -138,7 +138,7 @@ func testJoinCommands(t *testing.T, alias string) {
 		t.Fatal("should not have joined direct message channel")
 	}
 
-	c1 := Client.Must(Client.GetChannelsForTeamForUser(th.BasicTeam.Id, th.BasicUser.Id, "")).([]*model.Channel)
+	c1 := Client.Must(Client.GetChannelsForTeamForUser(th.BasicTeam.Id, th.BasicUser.ClientId, "")).([]*model.Channel)
 
 	found := false
 	for _, c := range c1 {
@@ -276,14 +276,14 @@ func TestLeaveCommands(t *testing.T) {
 
 	channel1 := &model.Channel{DisplayName: "AA", Name: "aa" + model.NewId() + "a", Type: model.CHANNEL_OPEN, TeamId: team.Id}
 	channel1 = Client.Must(Client.CreateChannel(channel1)).(*model.Channel)
-	Client.Must(Client.AddChannelMember(channel1.Id, th.BasicUser.Id))
+	Client.Must(Client.AddChannelMember(channel1.Id, th.BasicUser.ClientId))
 
 	channel2 := &model.Channel{DisplayName: "BB", Name: "bb" + model.NewId() + "a", Type: model.CHANNEL_PRIVATE, TeamId: team.Id}
 	channel2 = Client.Must(Client.CreateChannel(channel2)).(*model.Channel)
-	Client.Must(Client.AddChannelMember(channel2.Id, th.BasicUser.Id))
-	Client.Must(Client.AddChannelMember(channel2.Id, user2.Id))
+	Client.Must(Client.AddChannelMember(channel2.Id, th.BasicUser.ClientId))
+	Client.Must(Client.AddChannelMember(channel2.Id, user2.ClientId))
 
-	channel3 := Client.Must(Client.CreateDirectChannel(th.BasicUser.Id, user2.Id)).(*model.Channel)
+	channel3 := Client.Must(Client.CreateDirectChannel(th.BasicUser.ClientId, user2.ClientId)).(*model.Channel)
 
 	rs1 := Client.Must(Client.ExecuteCommand(channel1.Id, "/leave")).(*model.CommandResponse)
 	if !strings.HasSuffix(rs1.GotoLocation, "/"+team.Name+"/channels/"+model.DEFAULT_CHANNEL) {
@@ -300,7 +300,7 @@ func TestLeaveCommands(t *testing.T) {
 		t.Fatal("should fail leaving direct channel")
 	}
 
-	cdata := Client.Must(Client.GetChannelsForTeamForUser(th.BasicTeam.Id, th.BasicUser.Id, "")).([]*model.Channel)
+	cdata := Client.Must(Client.GetChannelsForTeamForUser(th.BasicTeam.Id, th.BasicUser.ClientId, "")).([]*model.Channel)
 
 	found := false
 	for _, c := range cdata {
@@ -315,7 +315,7 @@ func TestLeaveCommands(t *testing.T) {
 
 	for _, c := range cdata {
 		if c.Name == model.DEFAULT_CHANNEL {
-			if _, err := Client.RemoveUserFromChannel(c.Id, th.BasicUser.Id); err == nil {
+			if _, err := Client.RemoveUserFromChannel(c.Id, th.BasicUser.ClientId); err == nil {
 				t.Fatal("should have errored on leaving default channel")
 			}
 			break
@@ -368,16 +368,16 @@ func TestMsgCommands(t *testing.T) {
 	user3 := th.CreateUser()
 	th.LinkUserToTeam(user3, team)
 
-	Client.Must(Client.CreateDirectChannel(th.BasicUser.Id, user2.Id))
-	Client.Must(Client.CreateDirectChannel(th.BasicUser.Id, user3.Id))
+	Client.Must(Client.CreateDirectChannel(th.BasicUser.ClientId, user2.ClientId))
+	Client.Must(Client.CreateDirectChannel(th.BasicUser.ClientId, user3.ClientId))
 
 	rs1 := Client.Must(Client.ExecuteCommand(th.BasicChannel.Id, "/msg "+user2.Username)).(*model.CommandResponse)
-	if !strings.HasSuffix(rs1.GotoLocation, "/"+team.Name+"/channels/"+user1.Id+"__"+user2.Id) && !strings.HasSuffix(rs1.GotoLocation, "/"+team.Name+"/channels/"+user2.Id+"__"+user1.Id) {
+	if !strings.HasSuffix(rs1.GotoLocation, "/"+team.Name+"/channels/"+user1.ClientId+"__"+user2.ClientId) && !strings.HasSuffix(rs1.GotoLocation, "/"+team.Name+"/channels/"+user2.ClientId+"__"+user1.ClientId) {
 		t.Fatal("failed to create direct channel")
 	}
 
 	rs2 := Client.Must(Client.ExecuteCommand(th.BasicChannel.Id, "/msg "+user3.Username+" foobar")).(*model.CommandResponse)
-	if !strings.HasSuffix(rs2.GotoLocation, "/"+team.Name+"/channels/"+user1.Id+"__"+user3.Id) && !strings.HasSuffix(rs2.GotoLocation, "/"+team.Name+"/channels/"+user3.Id+"__"+user1.Id) {
+	if !strings.HasSuffix(rs2.GotoLocation, "/"+team.Name+"/channels/"+user1.ClientId+"__"+user3.ClientId) && !strings.HasSuffix(rs2.GotoLocation, "/"+team.Name+"/channels/"+user3.ClientId+"__"+user1.ClientId) {
 		t.Fatal("failed to create second direct channel")
 	}
 	if result := Client.Must(Client.SearchPosts(th.BasicTeam.Id, "foobar", false)).(*model.PostList); len(result.Order) == 0 {
@@ -385,7 +385,7 @@ func TestMsgCommands(t *testing.T) {
 	}
 
 	rs3 := Client.Must(Client.ExecuteCommand(th.BasicChannel.Id, "/msg "+user2.Username)).(*model.CommandResponse)
-	if !strings.HasSuffix(rs3.GotoLocation, "/"+team.Name+"/channels/"+user1.Id+"__"+user2.Id) && !strings.HasSuffix(rs3.GotoLocation, "/"+team.Name+"/channels/"+user2.Id+"__"+user1.Id) {
+	if !strings.HasSuffix(rs3.GotoLocation, "/"+team.Name+"/channels/"+user1.ClientId+"__"+user2.ClientId) && !strings.HasSuffix(rs3.GotoLocation, "/"+team.Name+"/channels/"+user2.ClientId+"__"+user1.ClientId) {
 		t.Fatal("failed to go back to existing direct channel")
 	}
 

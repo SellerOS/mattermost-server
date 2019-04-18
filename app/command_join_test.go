@@ -23,10 +23,10 @@ func TestJoinCommandNoChannel(t *testing.T) {
 	cmd := &JoinProvider{}
 	resp := cmd.DoCommand(th.App, &model.CommandArgs{
 		T:       i18n.IdentityTfunc(),
-		UserId:  th.BasicUser2.Id,
+		UserId:  th.BasicUser2.ClientId,
 		SiteURL: "http://test.url",
 		TeamId:  th.BasicTeam.Id,
-		Session: model.Session{UserId: th.BasicUser.Id, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: model.TEAM_USER_ROLE_ID}}},
+		Session: model.Session{UserId: th.BasicUser.ClientId, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: model.TEAM_USER_ROLE_ID}}},
 	}, "asdsad")
 
 	assert.Equal(t, "api.command_join.list.app_error", resp.Text)
@@ -45,16 +45,16 @@ func TestJoinCommandForExistingChannel(t *testing.T) {
 		Name:        "aa" + model.NewId() + "a",
 		Type:        model.CHANNEL_OPEN,
 		TeamId:      th.BasicTeam.Id,
-		CreatorId:   th.BasicUser.Id,
+		CreatorId:   th.BasicUser.ClientId,
 	}, false)
 
 	cmd := &JoinProvider{}
 	resp := cmd.DoCommand(th.App, &model.CommandArgs{
 		T:       i18n.IdentityTfunc(),
-		UserId:  th.BasicUser2.Id,
+		UserId:  th.BasicUser2.ClientId,
 		SiteURL: "http://test.url",
 		TeamId:  th.BasicTeam.Id,
-		Session: model.Session{UserId: th.BasicUser.Id, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: model.TEAM_USER_ROLE_ID}}},
+		Session: model.Session{UserId: th.BasicUser.ClientId, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: model.TEAM_USER_ROLE_ID}}},
 	}, channel2.Name)
 
 	assert.Equal(t, "", resp.Text)
@@ -74,16 +74,16 @@ func TestJoinCommandWithTilde(t *testing.T) {
 		Name:        "aa" + model.NewId() + "a",
 		Type:        model.CHANNEL_OPEN,
 		TeamId:      th.BasicTeam.Id,
-		CreatorId:   th.BasicUser.Id,
+		CreatorId:   th.BasicUser.ClientId,
 	}, false)
 
 	cmd := &JoinProvider{}
 	resp := cmd.DoCommand(th.App, &model.CommandArgs{
 		T:       i18n.IdentityTfunc(),
-		UserId:  th.BasicUser2.Id,
+		UserId:  th.BasicUser2.ClientId,
 		SiteURL: "http://test.url",
 		TeamId:  th.BasicTeam.Id,
-		Session: model.Session{UserId: th.BasicUser.Id, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: model.TEAM_USER_ROLE_ID}}},
+		Session: model.Session{UserId: th.BasicUser.ClientId, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: model.TEAM_USER_ROLE_ID}}},
 	}, "~"+channel2.Name)
 
 	assert.Equal(t, "", resp.Text)
@@ -99,7 +99,7 @@ func TestJoinCommandPermissions(t *testing.T) {
 		Name:        "aa" + model.NewId() + "a",
 		Type:        model.CHANNEL_OPEN,
 		TeamId:      th.BasicTeam.Id,
-		CreatorId:   th.BasicUser.Id,
+		CreatorId:   th.BasicUser.ClientId,
 	}, false)
 
 	cmd := &JoinProvider{}
@@ -107,10 +107,10 @@ func TestJoinCommandPermissions(t *testing.T) {
 	// Try a public channel *without* permission.
 	args := &model.CommandArgs{
 		T:       i18n.IdentityTfunc(),
-		UserId:  th.BasicUser2.Id,
+		UserId:  th.BasicUser2.ClientId,
 		SiteURL: "http://test.url",
 		TeamId:  th.BasicTeam.Id,
-		Session: model.Session{UserId: th.BasicUser.Id, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: ""}}},
+		Session: model.Session{UserId: th.BasicUser.ClientId, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: ""}}},
 	}
 
 	actual := cmd.DoCommand(th.App, args, "~"+channel2.Name).Text
@@ -119,10 +119,10 @@ func TestJoinCommandPermissions(t *testing.T) {
 	// Try a public channel with permission.
 	args = &model.CommandArgs{
 		T:       i18n.IdentityTfunc(),
-		UserId:  th.BasicUser2.Id,
+		UserId:  th.BasicUser2.ClientId,
 		SiteURL: "http://test.url",
 		TeamId:  th.BasicTeam.Id,
-		Session: model.Session{UserId: th.BasicUser.Id, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: model.TEAM_USER_ROLE_ID}}},
+		Session: model.Session{UserId: th.BasicUser.ClientId, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: model.TEAM_USER_ROLE_ID}}},
 	}
 
 	actual = cmd.DoCommand(th.App, args, "~"+channel2.Name).Text
@@ -134,15 +134,15 @@ func TestJoinCommandPermissions(t *testing.T) {
 		Name:        "aa" + model.NewId() + "a",
 		Type:        model.CHANNEL_PRIVATE,
 		TeamId:      th.BasicTeam.Id,
-		CreatorId:   th.BasicUser.Id,
+		CreatorId:   th.BasicUser.ClientId,
 	}, false)
 
 	args = &model.CommandArgs{
 		T:       i18n.IdentityTfunc(),
-		UserId:  th.BasicUser2.Id,
+		UserId:  th.BasicUser2.ClientId,
 		SiteURL: "http://test.url",
 		TeamId:  th.BasicTeam.Id,
-		Session: model.Session{UserId: th.BasicUser.Id, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: model.TEAM_USER_ROLE_ID}}},
+		Session: model.Session{UserId: th.BasicUser.ClientId, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: model.TEAM_USER_ROLE_ID}}},
 	}
 
 	actual = cmd.DoCommand(th.App, args, "~"+channel3.Name).Text

@@ -288,7 +288,7 @@ func TestPluginAPIGetFile(t *testing.T) {
 	uploadTime := time.Date(2007, 2, 4, 1, 2, 3, 4, time.Local)
 	filename := "testGetFile"
 	fileData := []byte("Hello World")
-	info, err := th.App.DoUploadFile(uploadTime, th.BasicTeam.Id, th.BasicChannel.Id, th.BasicUser.Id, filename, fileData)
+	info, err := th.App.DoUploadFile(uploadTime, th.BasicTeam.Id, th.BasicChannel.Id, th.BasicUser.ClientId, filename, fileData)
 	require.Nil(t, err)
 	defer func() {
 		<-th.App.Srv.Store.FileInfo().PermanentDelete(info.Id)

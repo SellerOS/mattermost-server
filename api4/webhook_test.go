@@ -37,7 +37,7 @@ func TestCreateIncomingWebhook(t *testing.T) {
 		t.Fatal("channel ids didn't match")
 	}
 
-	if rhook.UserId != th.SystemAdminUser.Id {
+	if rhook.UserId != th.SystemAdminUser.ClientId {
 		t.Fatal("user ids didn't match")
 	}
 
@@ -264,7 +264,7 @@ func TestCreateOutgoingWebhook(t *testing.T) {
 
 	if rhook.ChannelId != hook.ChannelId {
 		t.Fatal("channel ids didn't match")
-	} else if rhook.CreatorId != th.SystemAdminUser.Id {
+	} else if rhook.CreatorId != th.SystemAdminUser.ClientId {
 		t.Fatal("user ids didn't match")
 	} else if rhook.TeamId != th.BasicChannel.TeamId {
 		t.Fatal("team ids didn't match")
@@ -574,7 +574,7 @@ func TestUpdateIncomingHook(t *testing.T) {
 		th.AddPermissionToRole(model.PERMISSION_MANAGE_INCOMING_WEBHOOKS.Id, model.TEAM_USER_ROLE_ID)
 
 		t.Run("UpdateHookOfSameUser", func(t *testing.T) {
-			sameUserHook := &model.IncomingWebhook{ChannelId: th.BasicChannel.Id, UserId: th.BasicUser2.Id}
+			sameUserHook := &model.IncomingWebhook{ChannelId: th.BasicChannel.Id, UserId: th.BasicUser2.ClientId}
 
 			sameUserHook, resp := Client.CreateIncomingWebhook(sameUserHook)
 			CheckNoError(t, resp)
@@ -598,7 +598,7 @@ func TestUpdateIncomingHook(t *testing.T) {
 	t.Run("UpdateByDifferentUser", func(t *testing.T) {
 		updatedHook, resp := Client.UpdateIncomingWebhook(createdHook)
 		CheckNoError(t, resp)
-		if updatedHook.UserId == th.BasicUser2.Id {
+		if updatedHook.UserId == th.BasicUser2.ClientId {
 			t.Fatal("Hook's creator userId is not retained")
 		}
 	})
@@ -778,7 +778,7 @@ func TestUpdateOutgoingHook(t *testing.T) {
 		if updatedHook.DisplayName != "Basic user 2" {
 			t.Fatal("should apply the change")
 		}
-		if updatedHook.CreatorId != th.SystemAdminUser.Id {
+		if updatedHook.CreatorId != th.SystemAdminUser.ClientId {
 			t.Fatal("hook creator should not be changed")
 		}
 	})

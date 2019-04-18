@@ -60,12 +60,12 @@ func (p *MyPlugin) MessageWillBePosted(c *plugin.Context, post *model.Post) (*mo
 	dataBytes := buf.Bytes()
 
 	// Set the user profile image
-	if err := p.API.SetProfileImage("{{.BasicUser.Id}}", dataBytes); err != nil {
+	if err := p.API.SetProfileImage("{{.BasicUser.ClientId}}", dataBytes); err != nil {
 		return nil, err.Error()
 	}
 
 	// Get the user profile image to check
-	imageProfile, err := p.API.GetProfileImage("{{.BasicUser.Id}}")
+	imageProfile, err := p.API.GetProfileImage("{{.BasicUser.ClientId}}")
 	if err != nil {
 		return nil, err.Error()
 	}

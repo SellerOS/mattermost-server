@@ -30,7 +30,7 @@ func TestHandleNewNotifications(t *testing.T) {
 		t.Fatal("shouldn't have added any pending notifications")
 	}
 
-	job.Add(&model.User{Id: id1}, &model.Post{UserId: id1, Message: "test"}, &model.Team{Name: "team"})
+	job.Add(&model.User{ClientId: id1}, &model.Post{UserId: id1, Message: "test"}, &model.Team{Name: "team"})
 	if len(job.pendingNotifications) != 0 {
 		t.Fatal("shouldn't have added any pending notifications")
 	}
@@ -42,7 +42,7 @@ func TestHandleNewNotifications(t *testing.T) {
 		t.Fatal("should have received 1 post for user")
 	}
 
-	job.Add(&model.User{Id: id1}, &model.Post{UserId: id1, Message: "test"}, &model.Team{Name: "team"})
+	job.Add(&model.User{ClientId: id1}, &model.Post{UserId: id1, Message: "test"}, &model.Team{Name: "team"})
 	job.handleNewNotifications()
 	if len(job.pendingNotifications) != 1 {
 		t.Fatal("should have received posts for 1 user")
@@ -50,7 +50,7 @@ func TestHandleNewNotifications(t *testing.T) {
 		t.Fatal("should have received 2 posts for user1", job.pendingNotifications[id1])
 	}
 
-	job.Add(&model.User{Id: id2}, &model.Post{UserId: id1, Message: "test"}, &model.Team{Name: "team"})
+	job.Add(&model.User{ClientId: id2}, &model.Post{UserId: id1, Message: "test"}, &model.Team{Name: "team"})
 	job.handleNewNotifications()
 	if len(job.pendingNotifications) != 2 {
 		t.Fatal("should have received posts for 2 users")
@@ -60,10 +60,10 @@ func TestHandleNewNotifications(t *testing.T) {
 		t.Fatal("should have received 1 post for user2")
 	}
 
-	job.Add(&model.User{Id: id2}, &model.Post{UserId: id2, Message: "test"}, &model.Team{Name: "team"})
-	job.Add(&model.User{Id: id1}, &model.Post{UserId: id3, Message: "test"}, &model.Team{Name: "team"})
-	job.Add(&model.User{Id: id3}, &model.Post{UserId: id3, Message: "test"}, &model.Team{Name: "team"})
-	job.Add(&model.User{Id: id2}, &model.Post{UserId: id2, Message: "test"}, &model.Team{Name: "team"})
+	job.Add(&model.User{ClientId: id2}, &model.Post{UserId: id2, Message: "test"}, &model.Team{Name: "team"})
+	job.Add(&model.User{ClientId: id1}, &model.Post{UserId: id3, Message: "test"}, &model.Team{Name: "team"})
+	job.Add(&model.User{ClientId: id3}, &model.Post{UserId: id3, Message: "test"}, &model.Team{Name: "team"})
+	job.Add(&model.User{ClientId: id2}, &model.Post{UserId: id2, Message: "test"}, &model.Team{Name: "team"})
 	job.handleNewNotifications()
 	if len(job.pendingNotifications) != 3 {
 		t.Fatal("should have received posts for 3 users")
@@ -78,11 +78,11 @@ func TestHandleNewNotifications(t *testing.T) {
 	// test ordering of received posts
 	job = NewEmailBatchingJob(th.Server, 128)
 
-	job.Add(&model.User{Id: id1}, &model.Post{UserId: id1, Message: "test1"}, &model.Team{Name: "team"})
-	job.Add(&model.User{Id: id1}, &model.Post{UserId: id1, Message: "test2"}, &model.Team{Name: "team"})
-	job.Add(&model.User{Id: id2}, &model.Post{UserId: id1, Message: "test3"}, &model.Team{Name: "team"})
-	job.Add(&model.User{Id: id1}, &model.Post{UserId: id1, Message: "test4"}, &model.Team{Name: "team"})
-	job.Add(&model.User{Id: id2}, &model.Post{UserId: id1, Message: "test5"}, &model.Team{Name: "team"})
+	job.Add(&model.User{ClientId: id1}, &model.Post{UserId: id1, Message: "test1"}, &model.Team{Name: "team"})
+	job.Add(&model.User{ClientId: id1}, &model.Post{UserId: id1, Message: "test2"}, &model.Team{Name: "team"})
+	job.Add(&model.User{ClientId: id2}, &model.Post{UserId: id1, Message: "test3"}, &model.Team{Name: "team"})
+	job.Add(&model.User{ClientId: id1}, &model.Post{UserId: id1, Message: "test4"}, &model.Team{Name: "team"})
+	job.Add(&model.User{ClientId: id2}, &model.Post{UserId: id1, Message: "test5"}, &model.Team{Name: "team"})
 	job.handleNewNotifications()
 	if job.pendingNotifications[id1][0].post.Message != "test1" ||
 		job.pendingNotifications[id1][1].post.Message != "test2" ||
@@ -99,10 +99,10 @@ func TestCheckPendingNotifications(t *testing.T) {
 	defer th.TearDown()
 
 	job := NewEmailBatchingJob(th.Server, 128)
-	job.pendingNotifications[th.BasicUser.Id] = []*batchedNotification{
+	job.pendingNotifications[th.BasicUser.ClientId] = []*batchedNotification{
 		{
 			post: &model.Post{
-				UserId:    th.BasicUser.Id,
+				UserId:    th.BasicUser.ClientId,
 				ChannelId: th.BasicChannel.Id,
 				CreateAt:  10000000,
 			},
@@ -110,13 +110,13 @@ func TestCheckPendingNotifications(t *testing.T) {
 		},
 	}
 
-	channelMember, err := th.App.Srv.Store.Channel().GetMember(th.BasicChannel.Id, th.BasicUser.Id)
+	channelMember, err := th.App.Srv.Store.Channel().GetMember(th.BasicChannel.Id, th.BasicUser.ClientId)
 	require.Nil(t, err)
 	channelMember.LastViewedAt = 9999999
 	store.Must(th.App.Srv.Store.Channel().UpdateMember(channelMember))
 
 	store.Must(th.App.Srv.Store.Preference().Save(&model.Preferences{{
-		UserId:   th.BasicUser.Id,
+		UserId:   th.BasicUser.ClientId,
 		Category: model.PREFERENCE_CATEGORY_NOTIFICATIONS,
 		Name:     model.PREFERENCE_NAME_EMAIL_INTERVAL,
 		Value:    "60",
@@ -125,27 +125,27 @@ func TestCheckPendingNotifications(t *testing.T) {
 	// test that notifications aren't sent before interval
 	job.checkPendingNotifications(time.Unix(10001, 0), func(string, []*batchedNotification) {})
 
-	if job.pendingNotifications[th.BasicUser.Id] == nil || len(job.pendingNotifications[th.BasicUser.Id]) != 1 {
+	if job.pendingNotifications[th.BasicUser.ClientId] == nil || len(job.pendingNotifications[th.BasicUser.ClientId]) != 1 {
 		t.Fatal("shouldn't have sent queued post")
 	}
 
 	// test that notifications are cleared if the user has acted
-	channelMember, err = th.App.Srv.Store.Channel().GetMember(th.BasicChannel.Id, th.BasicUser.Id)
+	channelMember, err = th.App.Srv.Store.Channel().GetMember(th.BasicChannel.Id, th.BasicUser.ClientId)
 	require.Nil(t, err)
 	channelMember.LastViewedAt = 10001000
 	store.Must(th.App.Srv.Store.Channel().UpdateMember(channelMember))
 
 	job.checkPendingNotifications(time.Unix(10002, 0), func(string, []*batchedNotification) {})
 
-	if job.pendingNotifications[th.BasicUser.Id] != nil && len(job.pendingNotifications[th.BasicUser.Id]) != 0 {
+	if job.pendingNotifications[th.BasicUser.ClientId] != nil && len(job.pendingNotifications[th.BasicUser.ClientId]) != 0 {
 		t.Fatal("should've remove queued post since user acted")
 	}
 
 	// test that notifications are sent if enough time passes since the first message
-	job.pendingNotifications[th.BasicUser.Id] = []*batchedNotification{
+	job.pendingNotifications[th.BasicUser.ClientId] = []*batchedNotification{
 		{
 			post: &model.Post{
-				UserId:    th.BasicUser.Id,
+				UserId:    th.BasicUser.ClientId,
 				ChannelId: th.BasicChannel.Id,
 				CreateAt:  10060000,
 				Message:   "post1",
@@ -154,7 +154,7 @@ func TestCheckPendingNotifications(t *testing.T) {
 		},
 		{
 			post: &model.Post{
-				UserId:    th.BasicUser.Id,
+				UserId:    th.BasicUser.ClientId,
 				ChannelId: th.BasicChannel.Id,
 				CreateAt:  10090000,
 				Message:   "post2",
@@ -178,7 +178,7 @@ func TestCheckPendingNotifications(t *testing.T) {
 		timeout <- true
 	}()
 
-	if job.pendingNotifications[th.BasicUser.Id] != nil && len(job.pendingNotifications[th.BasicUser.Id]) != 0 {
+	if job.pendingNotifications[th.BasicUser.ClientId] != nil && len(job.pendingNotifications[th.BasicUser.ClientId]) != 0 {
 		t.Fatal("should've remove queued posts when sending messages")
 	}
 
@@ -211,15 +211,15 @@ func TestCheckPendingNotificationsDefaultInterval(t *testing.T) {
 	job := NewEmailBatchingJob(th.Server, 128)
 
 	// bypasses recent user activity check
-	channelMember, err := th.App.Srv.Store.Channel().GetMember(th.BasicChannel.Id, th.BasicUser.Id)
+	channelMember, err := th.App.Srv.Store.Channel().GetMember(th.BasicChannel.Id, th.BasicUser.ClientId)
 	require.Nil(t, err)
 	channelMember.LastViewedAt = 9999000
 	store.Must(th.App.Srv.Store.Channel().UpdateMember(channelMember))
 
-	job.pendingNotifications[th.BasicUser.Id] = []*batchedNotification{
+	job.pendingNotifications[th.BasicUser.ClientId] = []*batchedNotification{
 		{
 			post: &model.Post{
-				UserId:    th.BasicUser.Id,
+				UserId:    th.BasicUser.ClientId,
 				ChannelId: th.BasicChannel.Id,
 				CreateAt:  10000000,
 			},
@@ -229,13 +229,13 @@ func TestCheckPendingNotificationsDefaultInterval(t *testing.T) {
 
 	// notifications should not be sent 1s after post was created, because default batch interval is 15mins
 	job.checkPendingNotifications(time.Unix(10001, 0), func(string, []*batchedNotification) {})
-	if job.pendingNotifications[th.BasicUser.Id] == nil || len(job.pendingNotifications[th.BasicUser.Id]) != 1 {
+	if job.pendingNotifications[th.BasicUser.ClientId] == nil || len(job.pendingNotifications[th.BasicUser.ClientId]) != 1 {
 		t.Fatal("shouldn't have sent queued post")
 	}
 
 	// notifications should be sent 901s after post was created, because default batch interval is 15mins
 	job.checkPendingNotifications(time.Unix(10901, 0), func(string, []*batchedNotification) {})
-	if job.pendingNotifications[th.BasicUser.Id] != nil || len(job.pendingNotifications[th.BasicUser.Id]) != 0 {
+	if job.pendingNotifications[th.BasicUser.ClientId] != nil || len(job.pendingNotifications[th.BasicUser.ClientId]) != 0 {
 		t.Fatal("should have sent queued post")
 	}
 }
@@ -250,23 +250,23 @@ func TestCheckPendingNotificationsCantParseInterval(t *testing.T) {
 	job := NewEmailBatchingJob(th.Server, 128)
 
 	// bypasses recent user activity check
-	channelMember, err := th.App.Srv.Store.Channel().GetMember(th.BasicChannel.Id, th.BasicUser.Id)
+	channelMember, err := th.App.Srv.Store.Channel().GetMember(th.BasicChannel.Id, th.BasicUser.ClientId)
 	require.Nil(t, err)
 	channelMember.LastViewedAt = 9999000
 	store.Must(th.App.Srv.Store.Channel().UpdateMember(channelMember))
 
 	// preference value is not an integer, so we'll fall back to the default 15min value
 	store.Must(th.App.Srv.Store.Preference().Save(&model.Preferences{{
-		UserId:   th.BasicUser.Id,
+		UserId:   th.BasicUser.ClientId,
 		Category: model.PREFERENCE_CATEGORY_NOTIFICATIONS,
 		Name:     model.PREFERENCE_NAME_EMAIL_INTERVAL,
 		Value:    "notAnIntegerValue",
 	}}))
 
-	job.pendingNotifications[th.BasicUser.Id] = []*batchedNotification{
+	job.pendingNotifications[th.BasicUser.ClientId] = []*batchedNotification{
 		{
 			post: &model.Post{
-				UserId:    th.BasicUser.Id,
+				UserId:    th.BasicUser.ClientId,
 				ChannelId: th.BasicChannel.Id,
 				CreateAt:  10000000,
 			},
@@ -276,13 +276,13 @@ func TestCheckPendingNotificationsCantParseInterval(t *testing.T) {
 
 	// notifications should not be sent 1s after post was created, because default batch interval is 15mins
 	job.checkPendingNotifications(time.Unix(10001, 0), func(string, []*batchedNotification) {})
-	if job.pendingNotifications[th.BasicUser.Id] == nil || len(job.pendingNotifications[th.BasicUser.Id]) != 1 {
+	if job.pendingNotifications[th.BasicUser.ClientId] == nil || len(job.pendingNotifications[th.BasicUser.ClientId]) != 1 {
 		t.Fatal("shouldn't have sent queued post")
 	}
 
 	// notifications should be sent 901s after post was created, because default batch interval is 15mins
 	job.checkPendingNotifications(time.Unix(10901, 0), func(string, []*batchedNotification) {})
-	if job.pendingNotifications[th.BasicUser.Id] != nil || len(job.pendingNotifications[th.BasicUser.Id]) != 0 {
+	if job.pendingNotifications[th.BasicUser.ClientId] != nil || len(job.pendingNotifications[th.BasicUser.ClientId]) != 0 {
 		t.Fatal("should have sent queued post")
 	}
 }

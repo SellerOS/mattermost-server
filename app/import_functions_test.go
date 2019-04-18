@@ -1723,7 +1723,7 @@ func TestImportImportPost(t *testing.T) {
 		}
 
 		checkPreference(t, th.App, user.ClientId, model.PREFERENCE_CATEGORY_FLAGGED_POST, post.Id, "true")
-		checkPreference(t, th.App, user2.Id, model.PREFERENCE_CATEGORY_FLAGGED_POST, post.Id, "true")
+		checkPreference(t, th.App, user2.ClientId, model.PREFERENCE_CATEGORY_FLAGGED_POST, post.Id, "true")
 	}
 
 	// Post with reaction.
@@ -1808,7 +1808,7 @@ func TestImportImportPost(t *testing.T) {
 				t.Fatal("Unexpected number of posts found.")
 			}
 			reply := replies[0]
-			if reply.Message != *(*data.Replies)[0].Message || reply.CreateAt != *(*data.Replies)[0].CreateAt || reply.UserId != user2.Id {
+			if reply.Message != *(*data.Replies)[0].Message || reply.CreateAt != *(*data.Replies)[0].CreateAt || reply.UserId != user2.ClientId {
 				t.Fatal("Post properties not as expected")
 			}
 
@@ -1972,7 +1972,7 @@ func TestImportImportDirectChannel(t *testing.T) {
 	AssertChannelCount(t, th.App, model.CHANNEL_GROUP, groupChannelCount)
 
 	// Get the channel to check that the header was updated.
-	channel, err := th.App.GetOrCreateDirectChannel(th.BasicUser.Id, th.BasicUser2.Id)
+	channel, err := th.App.GetOrCreateDirectChannel(th.BasicUser.ClientId, th.BasicUser2.ClientId)
 	require.Nil(t, err)
 	require.Equal(t, channel.Header, *data.Header)
 
@@ -2023,11 +2023,11 @@ func TestImportImportDirectChannel(t *testing.T) {
 
 	// Get the channel to check that the header was updated.
 	userIds := []string{
-		th.BasicUser.Id,
-		th.BasicUser2.Id,
-		user3.Id,
+		th.BasicUser.ClientId,
+		th.BasicUser2.ClientId,
+		user3.ClientId,
 	}
-	channel, err = th.App.createGroupChannel(userIds, th.BasicUser.Id)
+	channel, err = th.App.createGroupChannel(userIds, th.BasicUser.ClientId)
 	require.Equal(t, err.Id, store.CHANNEL_EXISTS_ERROR)
 	require.Equal(t, channel.Header, *data.Header)
 
@@ -2043,10 +2043,10 @@ func TestImportImportDirectChannel(t *testing.T) {
 	err = th.App.ImportDirectChannel(&data, false)
 	require.Nil(t, err)
 
-	channel, err = th.App.GetOrCreateDirectChannel(th.BasicUser.Id, th.BasicUser2.Id)
+	channel, err = th.App.GetOrCreateDirectChannel(th.BasicUser.ClientId, th.BasicUser2.ClientId)
 	require.Nil(t, err)
-	checkPreference(t, th.App, th.BasicUser.Id, model.PREFERENCE_CATEGORY_FAVORITE_CHANNEL, channel.Id, "true")
-	checkPreference(t, th.App, th.BasicUser2.Id, model.PREFERENCE_CATEGORY_FAVORITE_CHANNEL, channel.Id, "true")
+	checkPreference(t, th.App, th.BasicUser.ClientId, model.PREFERENCE_CATEGORY_FAVORITE_CHANNEL, channel.Id, "true")
+	checkPreference(t, th.App, th.BasicUser2.ClientId, model.PREFERENCE_CATEGORY_FAVORITE_CHANNEL, channel.Id, "true")
 }
 
 func TestImportImportDirectPost(t *testing.T) {
@@ -2065,7 +2065,7 @@ func TestImportImportDirectPost(t *testing.T) {
 
 	// Get the channel.
 	var directChannel *model.Channel
-	channel, err := th.App.GetOrCreateDirectChannel(th.BasicUser.Id, th.BasicUser2.Id)
+	channel, err := th.App.GetOrCreateDirectChannel(th.BasicUser.ClientId, th.BasicUser2.ClientId)
 	require.Nil(t, err)
 	require.NotEmpty(t, channel)
 	directChannel = channel
@@ -2140,7 +2140,7 @@ func TestImportImportDirectPost(t *testing.T) {
 	post := posts[0]
 	require.Equal(t, post.Message, *data.Message)
 	require.Equal(t, post.CreateAt, *data.CreateAt)
-	require.Equal(t, post.UserId, th.BasicUser.Id)
+	require.Equal(t, post.UserId, th.BasicUser.ClientId)
 
 	// Import the post again.
 	err = th.App.ImportDirectPost(data, false)
@@ -2157,7 +2157,7 @@ func TestImportImportDirectPost(t *testing.T) {
 	post = posts[0]
 	require.Equal(t, post.Message, *data.Message)
 	require.Equal(t, post.CreateAt, *data.CreateAt)
-	require.Equal(t, post.UserId, th.BasicUser.Id)
+	require.Equal(t, post.UserId, th.BasicUser.ClientId)
 
 	// Save the post with a different time.
 	data.CreateAt = ptrInt64(*data.CreateAt + 1)
@@ -2187,7 +2187,7 @@ func TestImportImportDirectPost(t *testing.T) {
 	post = posts[0]
 	require.Equal(t, post.Message, *data.Message)
 	require.Equal(t, post.CreateAt, *data.CreateAt)
-	require.Equal(t, post.UserId, th.BasicUser.Id)
+	require.Equal(t, post.UserId, th.BasicUser.ClientId)
 	require.Equal(t, post.Hashtags, "#hashtagmashupcity")
 
 	// Test with some flags.
@@ -2216,8 +2216,8 @@ func TestImportImportDirectPost(t *testing.T) {
 	require.Equal(t, len(posts), 1)
 
 	post = posts[0]
-	checkPreference(t, th.App, th.BasicUser.Id, model.PREFERENCE_CATEGORY_FLAGGED_POST, post.Id, "true")
-	checkPreference(t, th.App, th.BasicUser2.Id, model.PREFERENCE_CATEGORY_FLAGGED_POST, post.Id, "true")
+	checkPreference(t, th.App, th.BasicUser.ClientId, model.PREFERENCE_CATEGORY_FLAGGED_POST, post.Id, "true")
+	checkPreference(t, th.App, th.BasicUser2.ClientId, model.PREFERENCE_CATEGORY_FLAGGED_POST, post.Id, "true")
 
 	// ------------------ Group Channel -------------------------
 
@@ -2236,11 +2236,11 @@ func TestImportImportDirectPost(t *testing.T) {
 	// Get the channel.
 	var groupChannel *model.Channel
 	userIds := []string{
-		th.BasicUser.Id,
-		th.BasicUser2.Id,
-		user3.Id,
+		th.BasicUser.ClientId,
+		th.BasicUser2.ClientId,
+		user3.ClientId,
 	}
-	channel, err = th.App.createGroupChannel(userIds, th.BasicUser.Id)
+	channel, err = th.App.createGroupChannel(userIds, th.BasicUser.ClientId)
 	require.Equal(t, err.Id, store.CHANNEL_EXISTS_ERROR)
 	groupChannel = channel
 
@@ -2319,7 +2319,7 @@ func TestImportImportDirectPost(t *testing.T) {
 	post = posts[0]
 	require.Equal(t, post.Message, *data.Message)
 	require.Equal(t, post.CreateAt, *data.CreateAt)
-	require.Equal(t, post.UserId, th.BasicUser.Id)
+	require.Equal(t, post.UserId, th.BasicUser.ClientId)
 
 	// Import the post again.
 	err = th.App.ImportDirectPost(data, false)
@@ -2336,7 +2336,7 @@ func TestImportImportDirectPost(t *testing.T) {
 	post = posts[0]
 	require.Equal(t, post.Message, *data.Message)
 	require.Equal(t, post.CreateAt, *data.CreateAt)
-	require.Equal(t, post.UserId, th.BasicUser.Id)
+	require.Equal(t, post.UserId, th.BasicUser.ClientId)
 
 	// Save the post with a different time.
 	data.CreateAt = ptrInt64(*data.CreateAt + 1)
@@ -2366,7 +2366,7 @@ func TestImportImportDirectPost(t *testing.T) {
 	post = posts[0]
 	require.Equal(t, post.Message, *data.Message)
 	require.Equal(t, post.CreateAt, *data.CreateAt)
-	require.Equal(t, post.UserId, th.BasicUser.Id)
+	require.Equal(t, post.UserId, th.BasicUser.ClientId)
 	require.Equal(t, post.Hashtags, "#hashtagmashupcity")
 
 	// Test with some flags.
@@ -2396,8 +2396,8 @@ func TestImportImportDirectPost(t *testing.T) {
 	require.Equal(t, len(posts), 1)
 
 	post = posts[0]
-	checkPreference(t, th.App, th.BasicUser.Id, model.PREFERENCE_CATEGORY_FLAGGED_POST, post.Id, "true")
-	checkPreference(t, th.App, th.BasicUser2.Id, model.PREFERENCE_CATEGORY_FLAGGED_POST, post.Id, "true")
+	checkPreference(t, th.App, th.BasicUser.ClientId, model.PREFERENCE_CATEGORY_FLAGGED_POST, post.Id, "true")
+	checkPreference(t, th.App, th.BasicUser2.ClientId, model.PREFERENCE_CATEGORY_FLAGGED_POST, post.Id, "true")
 
 }
 
@@ -2538,13 +2538,13 @@ func TestImportPostAndRepliesWithAttachments(t *testing.T) {
 	err = th.App.ImportPost(data, false)
 	assert.Nil(t, err)
 
-	attachments := GetAttachments(user3.Id, th, t)
+	attachments := GetAttachments(user3.ClientId, th, t)
 	assert.Equal(t, len(attachments), 2)
 	assert.Contains(t, attachments[0].Path, team.Id)
 	assert.Contains(t, attachments[1].Path, team.Id)
 	AssertFileIdsInPost(attachments, th, t)
 
-	attachments = GetAttachments(user4.Id, th, t)
+	attachments = GetAttachments(user4.ClientId, th, t)
 	assert.Equal(t, len(attachments), 1)
 	assert.Contains(t, attachments[0].Path, team.Id)
 	AssertFileIdsInPost(attachments, th, t)
@@ -2594,7 +2594,7 @@ func TestImportPostAndRepliesWithAttachments(t *testing.T) {
 		t.Fatalf("Expected success.")
 	}
 
-	attachments = GetAttachments(user4.Id, th, t)
+	attachments = GetAttachments(user4.ClientId, th, t)
 	assert.Equal(t, len(attachments), 1)
 	assert.Contains(t, attachments[0].Path, "noteam")
 	AssertFileIdsInPost(attachments, th, t)
@@ -2646,7 +2646,7 @@ func TestImportDirectPostWithAttachments(t *testing.T) {
 		t.Fatalf("Expected success.")
 	}
 
-	attachments := GetAttachments(user1.Id, th, t)
+	attachments := GetAttachments(user1.ClientId, th, t)
 	assert.Equal(t, len(attachments), 1)
 	assert.Contains(t, attachments[0].Path, "noteam")
 	AssertFileIdsInPost(attachments, th, t)

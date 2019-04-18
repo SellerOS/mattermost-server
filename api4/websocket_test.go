@@ -205,7 +205,7 @@ func TestCreateDirectChannelWithSocket(t *testing.T) {
 
 	for _, user := range users {
 		time.Sleep(100 * time.Millisecond)
-		if _, resp := Client.CreateDirectChannel(th.BasicUser.Id, user.ClientId); resp.Error != nil {
+		if _, resp := Client.CreateDirectChannel(th.BasicUser.ClientId, user.ClientId); resp.Error != nil {
 			t.Fatal("failed to create DM channel")
 		}
 	}
@@ -309,7 +309,7 @@ func TestWebSocketStatuses(t *testing.T) {
 	user2 := model.User{Email: strings.ToLower(model.NewId()) + "success+test@simulator.amazonses.com", Nickname: "Corey Hulen", Password: "passwd1"}
 	ruser2 := Client.Must(Client.CreateUser(&user2)).(*model.User)
 	th.LinkUserToTeam(ruser2, rteam)
-	store.Must(th.App.Srv.Store.User().VerifyEmail(ruser2.Id, ruser2.Email))
+	store.Must(th.App.Srv.Store.User().VerifyEmail(ruser2.ClientId, ruser2.Email))
 
 	Client.Login(user.Email, user.Password)
 
@@ -336,7 +336,7 @@ func TestWebSocketStatuses(t *testing.T) {
 			}
 		}
 
-		if status, ok := resp.Data[th.BasicUser2.Id]; !ok {
+		if status, ok := resp.Data[th.BasicUser2.ClientId]; !ok {
 			t.Log(resp.Data)
 			t.Fatal("should have had user status")
 		} else if status != model.STATUS_ONLINE {
@@ -345,7 +345,7 @@ func TestWebSocketStatuses(t *testing.T) {
 		}
 	}
 
-	WebSocketClient.GetStatusesByIds([]string{th.BasicUser2.Id})
+	WebSocketClient.GetStatusesByIds([]string{th.BasicUser2.ClientId})
 	if resp := <-WebSocketClient.ResponseChannel; resp.Error != nil {
 		t.Fatal(resp.Error)
 	} else {
@@ -359,7 +359,7 @@ func TestWebSocketStatuses(t *testing.T) {
 			}
 		}
 
-		if status, ok := resp.Data[th.BasicUser2.Id]; !ok {
+		if status, ok := resp.Data[th.BasicUser2.ClientId]; !ok {
 			t.Log(len(resp.Data))
 			t.Fatal("should have had user status")
 		} else if status != model.STATUS_ONLINE {
@@ -370,7 +370,7 @@ func TestWebSocketStatuses(t *testing.T) {
 		}
 	}
 
-	WebSocketClient.GetStatusesByIds([]string{ruser2.Id, "junk"})
+	WebSocketClient.GetStatusesByIds([]string{ruser2.ClientId, "junk"})
 	if resp := <-WebSocketClient.ResponseChannel; resp.Error != nil {
 		t.Fatal(resp.Error)
 	} else {
@@ -393,7 +393,7 @@ func TestWebSocketStatuses(t *testing.T) {
 
 	WebSocketClient2.Close()
 
-	th.App.SetStatusAwayIfNeeded(th.BasicUser.Id, false)
+	th.App.SetStatusAwayIfNeeded(th.BasicUser.ClientId, false)
 
 	awayTimeout := *th.App.Config().TeamSettings.UserStatusAwayTimeout
 	defer func() {
@@ -403,8 +403,8 @@ func TestWebSocketStatuses(t *testing.T) {
 
 	time.Sleep(1500 * time.Millisecond)
 
-	th.App.SetStatusAwayIfNeeded(th.BasicUser.Id, false)
-	th.App.SetStatusOnline(th.BasicUser.Id, false)
+	th.App.SetStatusAwayIfNeeded(th.BasicUser.ClientId, false)
+	th.App.SetStatusOnline(th.BasicUser.ClientId, false)
 
 	time.Sleep(1500 * time.Millisecond)
 
@@ -416,7 +416,7 @@ func TestWebSocketStatuses(t *testing.T) {
 			t.Fatal("bad sequence number")
 		}
 
-		if _, ok := resp.Data[th.BasicUser2.Id]; ok {
+		if _, ok := resp.Data[th.BasicUser2.ClientId]; ok {
 			t.Fatal("should not have had user status")
 		}
 	}
@@ -429,7 +429,7 @@ func TestWebSocketStatuses(t *testing.T) {
 		for {
 			select {
 			case resp := <-WebSocketClient.EventChannel:
-				if resp.Event == model.WEBSOCKET_EVENT_STATUS_CHANGE && resp.Data["user_id"].(string) == th.BasicUser.Id {
+				if resp.Event == model.WEBSOCKET_EVENT_STATUS_CHANGE && resp.Data["user_id"].(string) == th.BasicUser.ClientId {
 					status := resp.Data["status"].(string)
 					if status == model.STATUS_ONLINE {
 						onlineHit = true

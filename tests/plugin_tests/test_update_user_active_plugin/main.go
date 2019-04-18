@@ -13,7 +13,7 @@ type MyPlugin struct {
 }
 
 func (p *MyPlugin) MessageWillBePosted(c *plugin.Context, post *model.Post) (*model.Post, string) {
-	uid := "{{.BasicUser.Id}}"
+	uid := "{{.BasicUser.ClientId}}"
 	if err := p.API.UpdateUserActive(uid, true); err != nil {
 		return nil, err.Error()
 	}

@@ -31,13 +31,13 @@ func TestUserDeepCopy(t *testing.T) {
 	mapKey := "key"
 	mapValue := "key"
 
-	user := &User{Id: id, AuthData: NewString(authData), Props: map[string]string{}, NotifyProps: map[string]string{}, Timezone: map[string]string{}}
+	user := &User{ClientId: id, AuthData: NewString(authData), Props: map[string]string{}, NotifyProps: map[string]string{}, Timezone: map[string]string{}}
 	user.Props[mapKey] = mapValue
 	user.NotifyProps[mapKey] = mapValue
 	user.Timezone[mapKey] = mapValue
 
 	copyUser := user.DeepCopy()
-	copyUser.Id = "someid"
+	copyUser.ClientId = "someid"
 	*copyUser.AuthData = "changed"
 	copyUser.Props[mapKey] = "changed"
 	copyUser.NotifyProps[mapKey] = "changed"
@@ -49,14 +49,14 @@ func TestUserDeepCopy(t *testing.T) {
 	assert.Equal(t, mapValue, user.NotifyProps[mapKey])
 	assert.Equal(t, mapValue, user.Timezone[mapKey])
 
-	user = &User{Id: id}
+	user = &User{ClientId: id}
 	copyUser = user.DeepCopy()
 
-	assert.Equal(t, id, copyUser.Id)
+	assert.Equal(t, id, copyUser.ClientId)
 }
 
 func TestUserJson(t *testing.T) {
-	user := User{Id: NewId(), Username: NewId()}
+	user := User{ClientId: NewId(), Username: NewId()}
 	json := user.ToJson()
 	ruser := UserFromJson(strings.NewReader(json))
 

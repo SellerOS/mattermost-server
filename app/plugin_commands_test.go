@@ -18,7 +18,7 @@ func TestPluginCommand(t *testing.T) {
 	args := &model.CommandArgs{}
 	args.TeamId = th.BasicTeam.Id
 	args.ChannelId = th.BasicChannel.Id
-	args.UserId = th.BasicUser.Id
+	args.UserId = th.BasicUser.ClientId
 	args.Command = "/plugin"
 
 	t.Run("error before plugin command registered", func(t *testing.T) {

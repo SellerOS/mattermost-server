@@ -137,11 +137,11 @@ func TestPreparePostForClient(t *testing.T) {
 		th := setup()
 		defer th.TearDown()
 
-		fileInfo, err := th.App.DoUploadFile(time.Now(), th.BasicTeam.Id, th.BasicChannel.Id, th.BasicUser.Id, "test.txt", []byte("test"))
+		fileInfo, err := th.App.DoUploadFile(time.Now(), th.BasicTeam.Id, th.BasicChannel.Id, th.BasicUser.ClientId, "test.txt", []byte("test"))
 		require.Nil(t, err)
 
 		post, err := th.App.CreatePost(&model.Post{
-			UserId:    th.BasicUser.Id,
+			UserId:    th.BasicUser.ClientId,
 			ChannelId: th.BasicChannel.Id,
 			FileIds:   []string{fileInfo.Id},
 		}, th.BasicChannel, false)
@@ -165,7 +165,7 @@ func TestPreparePostForClient(t *testing.T) {
 		emoji := th.CreateEmoji()
 
 		post, err := th.App.CreatePost(&model.Post{
-			UserId:    th.BasicUser.Id,
+			UserId:    th.BasicUser.ClientId,
 			ChannelId: th.BasicChannel.Id,
 			Message:   ":" + emoji.Name + ": :taco:",
 			Props: map[string]interface{}{
@@ -209,7 +209,7 @@ func TestPreparePostForClient(t *testing.T) {
 		emoji4 := th.CreateEmoji()
 
 		post, err := th.App.CreatePost(&model.Post{
-			UserId:    th.BasicUser.Id,
+			UserId:    th.BasicUser.ClientId,
 			ChannelId: th.BasicChannel.Id,
 			Message:   ":" + emoji3.Name + ": :taco:",
 			Props: map[string]interface{}{
@@ -245,7 +245,7 @@ func TestPreparePostForClient(t *testing.T) {
 		defer th.TearDown()
 
 		post, err := th.App.CreatePost(&model.Post{
-			UserId:    th.BasicUser.Id,
+			UserId:    th.BasicUser.ClientId,
 			ChannelId: th.BasicChannel.Id,
 			Message:   "This is ![our logo](https://github.com/hmhealey/test-files/raw/master/logoVertical.png) and ![our icon](https://github.com/hmhealey/test-files/raw/master/icon.png)",
 		}, th.BasicChannel, false)
@@ -286,7 +286,7 @@ func TestPreparePostForClient(t *testing.T) {
 		defer th.TearDown()
 
 		post, err := th.App.CreatePost(&model.Post{
-			UserId:    th.BasicUser.Id,
+			UserId:    th.BasicUser.ClientId,
 			ChannelId: th.BasicChannel.Id,
 			Message: `This is our logo: https://github.com/hmhealey/test-files/raw/master/logoVertical.png
 	And this is our icon: https://github.com/hmhealey/test-files/raw/master/icon.png`,
@@ -321,7 +321,7 @@ func TestPreparePostForClient(t *testing.T) {
 		defer th.TearDown()
 
 		post, err := th.App.CreatePost(&model.Post{
-			UserId:    th.BasicUser.Id,
+			UserId:    th.BasicUser.ClientId,
 			ChannelId: th.BasicChannel.Id,
 			Message:   `This is our web page: https://github.com/hmhealey/test-files`,
 		}, th.BasicChannel, false)
@@ -365,7 +365,7 @@ func TestPreparePostForClient(t *testing.T) {
 		defer th.TearDown()
 
 		post, err := th.App.CreatePost(&model.Post{
-			UserId:    th.BasicUser.Id,
+			UserId:    th.BasicUser.ClientId,
 			ChannelId: th.BasicChannel.Id,
 			Props: map[string]interface{}{
 				"attachments": []interface{}{
@@ -454,7 +454,7 @@ func testProxyLinkedImage(t *testing.T, th *TestHelper, shouldProxy bool) {
 	proxiedImageURL := "https://127.0.0.1/f8dace906d23689e8d5b12c3cefbedbf7b9b72f5/687474703a2f2f6d79646f6d61696e2e636f6d2f6d79696d616765"
 
 	post := &model.Post{
-		UserId:    th.BasicUser.Id,
+		UserId:    th.BasicUser.ClientId,
 		ChannelId: th.BasicChannel.Id,
 		Message:   fmt.Sprintf(postTemplate, imageURL),
 	}
@@ -471,7 +471,7 @@ func testProxyLinkedImage(t *testing.T, th *TestHelper, shouldProxy bool) {
 
 func testProxyOpenGraphImage(t *testing.T, th *TestHelper, shouldProxy bool) {
 	post, err := th.App.CreatePost(&model.Post{
-		UserId:    th.BasicUser.Id,
+		UserId:    th.BasicUser.ClientId,
 		ChannelId: th.BasicChannel.Id,
 		Message:   `This is our web page: https://github.com/hmhealey/test-files`,
 	}, th.BasicChannel, false)
@@ -1025,7 +1025,7 @@ func TestGetCustomEmojisForPost(t *testing.T) {
 	t.Run("from different parts of the post", func(t *testing.T) {
 		reactions := []*model.Reaction{
 			{
-				UserId:    th.BasicUser.Id,
+				UserId:    th.BasicUser.ClientId,
 				EmojiName: emojis[0].Name,
 			},
 		}

@@ -89,12 +89,12 @@ func TestCreateDefaultMemberships(t *testing.T) {
 	singer1 := th.BasicUser
 	scientist1 := th.BasicUser2
 
-	_, err = th.App.CreateOrRestoreGroupMember(gleeGroup.Id, singer1.Id)
+	_, err = th.App.CreateOrRestoreGroupMember(gleeGroup.Id, singer1.ClientId)
 	if err != nil {
 		t.Errorf("test groupmember not created: %s", err.Error())
 	}
 
-	scientistGroupMember, err := th.App.CreateOrRestoreGroupMember(scienceGroup.Id, scientist1.Id)
+	scientistGroupMember, err := th.App.CreateOrRestoreGroupMember(scienceGroup.Id, scientist1.ClientId)
 	if err != nil {
 		t.Errorf("test groupmember not created: %s", err.Error())
 	}
@@ -105,11 +105,11 @@ func TestCreateDefaultMemberships(t *testing.T) {
 	}
 
 	// Singer should be in team and channel
-	_, err = th.App.GetTeamMember(singersTeam.Id, singer1.Id)
+	_, err = th.App.GetTeamMember(singersTeam.Id, singer1.ClientId)
 	if err != nil {
 		t.Errorf("error retrieving team member: %s", err.Error())
 	}
-	_, err = th.App.GetChannelMember(practiceChannel.Id, singer1.Id)
+	_, err = th.App.GetChannelMember(practiceChannel.Id, singer1.ClientId)
 	if err != nil {
 		t.Errorf("error retrieving channel member: %s", err.Error())
 	}
@@ -133,12 +133,12 @@ func TestCreateDefaultMemberships(t *testing.T) {
 	}
 
 	// Scientist should not be in team or channel
-	_, err = th.App.GetTeamMember(nerdsTeam.Id, scientist1.Id)
+	_, err = th.App.GetTeamMember(nerdsTeam.Id, scientist1.ClientId)
 	if err.Id != "store.sql_team.get_member.missing.app_error" {
 		t.Errorf("wrong error: %s", err.Id)
 	}
 
-	_, err = th.App.GetChannelMember(experimentsChannel.Id, scientist1.Id)
+	_, err = th.App.GetChannelMember(experimentsChannel.Id, scientist1.ClientId)
 	if err.Id != "store.sql_channel.get_member.missing.app_error" {
 		t.Errorf("wrong error: %s", err.Id)
 	}
@@ -175,12 +175,12 @@ func TestCreateDefaultMemberships(t *testing.T) {
 	}
 
 	// Scientist should be in team but not the channel
-	_, err = th.App.GetTeamMember(nerdsTeam.Id, scientist1.Id)
+	_, err = th.App.GetTeamMember(nerdsTeam.Id, scientist1.ClientId)
 	if err != nil {
 		t.Errorf("error retrieving team member: %s", err.Error())
 	}
 
-	_, err = th.App.GetChannelMember(experimentsChannel.Id, scientist1.Id)
+	_, err = th.App.GetChannelMember(experimentsChannel.Id, scientist1.ClientId)
 	if err.Id != "store.sql_channel.get_member.missing.app_error" {
 		t.Errorf("wrong error: %s", err.Id)
 	}
@@ -227,7 +227,7 @@ func TestCreateDefaultMemberships(t *testing.T) {
 	}
 
 	// singer leaves team and channel
-	err = th.App.LeaveChannel(practiceChannel.Id, singer1.Id)
+	err = th.App.LeaveChannel(practiceChannel.Id, singer1.ClientId)
 	if err != nil {
 		t.Errorf("error leaving channel: %s", err.Error())
 	}
@@ -243,7 +243,7 @@ func TestCreateDefaultMemberships(t *testing.T) {
 	}
 
 	// Singer should not be in team or channel
-	tMember, err := th.App.GetTeamMember(singersTeam.Id, singer1.Id)
+	tMember, err := th.App.GetTeamMember(singersTeam.Id, singer1.ClientId)
 	if err != nil {
 		t.Errorf("error retrieving team member: %s", err.Error())
 	}
@@ -251,23 +251,23 @@ func TestCreateDefaultMemberships(t *testing.T) {
 		t.Error("expected team member to remain deleted")
 	}
 
-	_, err = th.App.GetChannelMember(practiceChannel.Id, singer1.Id)
+	_, err = th.App.GetChannelMember(practiceChannel.Id, singer1.ClientId)
 	if err == nil {
 		t.Error("Expected channel member to remain deleted")
 	}
 
 	// Ensure members are in channel
-	_, err = th.App.AddChannelMember(scientist1.Id, experimentsChannel, "", "", "")
+	_, err = th.App.AddChannelMember(scientist1.ClientId, experimentsChannel, "", "", "")
 	if err != nil {
 		t.Errorf("unable to add user to channel: %s", err.Error())
 	}
 
 	// Add other user so that user can leave channel
-	_, err = th.App.AddTeamMember(singersTeam.Id, singer1.Id)
+	_, err = th.App.AddTeamMember(singersTeam.Id, singer1.ClientId)
 	if err != nil {
 		t.Errorf("unable to add user to team: %s", err.Error())
 	}
-	_, err = th.App.AddChannelMember(singer1.Id, experimentsChannel, "", "", "")
+	_, err = th.App.AddChannelMember(singer1.ClientId, experimentsChannel, "", "", "")
 	if err != nil {
 		t.Errorf("unable to add user to channel: %s", err.Error())
 	}
@@ -286,7 +286,7 @@ func TestCreateDefaultMemberships(t *testing.T) {
 	timeBeforeLeaving := model.GetMillis()
 
 	// User leaves channel
-	err = th.App.LeaveChannel(experimentsChannel.Id, scientist1.Id)
+	err = th.App.LeaveChannel(experimentsChannel.Id, scientist1.ClientId)
 	if err != nil {
 		t.Errorf("unable to add user to channel: %s", err.Error())
 	}
@@ -304,7 +304,7 @@ func TestCreateDefaultMemberships(t *testing.T) {
 		t.Errorf("failed to populate syncables: %s", pErr.Error())
 	}
 
-	_, err = th.App.GetChannelMember(experimentsChannel.Id, scientist1.Id)
+	_, err = th.App.GetChannelMember(experimentsChannel.Id, scientist1.ClientId)
 	if err == nil {
 		t.Error("Expected channel member to remain deleted")
 	}
@@ -321,7 +321,7 @@ func TestCreateDefaultMemberships(t *testing.T) {
 	}
 
 	// Channel member is re-added.
-	_, err = th.App.GetChannelMember(experimentsChannel.Id, scientist1.Id)
+	_, err = th.App.GetChannelMember(experimentsChannel.Id, scientist1.ClientId)
 	if err != nil {
 		t.Errorf("expected channel member: %s", err.Error())
 	}
@@ -333,7 +333,7 @@ func TestDeleteGroupMemberships(t *testing.T) {
 
 	group := th.CreateGroup()
 
-	userIDs := []string{th.BasicUser.Id, th.BasicUser2.Id, th.SystemAdminUser.Id}
+	userIDs := []string{th.BasicUser.ClientId, th.BasicUser2.ClientId, th.SystemAdminUser.ClientId}
 
 	var err *model.AppError
 	// add users to teams and channels
@@ -375,7 +375,7 @@ func TestDeleteGroupMemberships(t *testing.T) {
 	require.Equal(t, 3, int(cmemberCount))
 
 	// add a user to the group
-	_, err = th.App.CreateOrRestoreGroupMember(group.Id, th.SystemAdminUser.Id)
+	_, err = th.App.CreateOrRestoreGroupMember(group.Id, th.SystemAdminUser.ClientId)
 	require.Nil(t, err)
 
 	// run the delete
@@ -386,10 +386,10 @@ func TestDeleteGroupMemberships(t *testing.T) {
 	tmembers, err = th.App.GetTeamMembers(th.BasicTeam.Id, 0, 100)
 	require.Nil(t, err)
 	require.Len(t, tmembers, 1)
-	require.Equal(t, th.SystemAdminUser.Id, tmembers[0].UserId)
+	require.Equal(t, th.SystemAdminUser.ClientId, tmembers[0].UserId)
 
 	cmembers, err := th.App.GetChannelMembersPage(channel.Id, 0, 99)
 	require.Nil(t, err)
 	require.Len(t, (*cmembers), 1)
-	require.Equal(t, th.SystemAdminUser.Id, (*cmembers)[0].UserId)
+	require.Equal(t, th.SystemAdminUser.ClientId, (*cmembers)[0].UserId)
 }

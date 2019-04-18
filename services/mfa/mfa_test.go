@@ -18,7 +18,7 @@ import (
 )
 
 func TestGenerateSecret(t *testing.T) {
-	user := &model.User{Id: model.NewId(), Roles: "system_user"}
+	user := &model.User{ClientId: model.NewId(), Roles: "system_user"}
 
 	config := model.Config{}
 	config.SetDefaults()

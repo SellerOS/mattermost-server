@@ -74,7 +74,7 @@ func testUserStoreSave(t *testing.T, ss store.Store) {
 	maxUsersPerTeam := 50
 
 	u1 := model.User{
-		Email:    MakeEmail(),
+		Email:    "fadfsafs@sina.com",
 		Username: model.NewId(),
 	}
 
@@ -117,6 +117,7 @@ func testUserStoreSave(t *testing.T, ss store.Store) {
 			t.Fatal("couldn't save item", err)
 		}
 		defer func() { store.Must(ss.User().PermanentDelete(u.ClientId)) }()
+
 
 		store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u.ClientId}, maxUsersPerTeam))
 	}

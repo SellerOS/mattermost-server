@@ -13,13 +13,13 @@ type MyPlugin struct {
 }
 
 func (p *MyPlugin) MessageWillBePosted(c *plugin.Context, post *model.Post) (*model.Post, string) {
-	channelMembers, err := p.API.GetChannelMembersForUser("{{.BasicTeam.Id}}", "{{.BasicUser.Id}}", 0, 10)
+	channelMembers, err := p.API.GetChannelMembersForUser("{{.BasicTeam.Id}}", "{{.BasicUser.ClientId}}", 0, 10)
 
 	if err != nil {
 		return nil, err.Error() + "failed to get channel members"
 	} else if len(channelMembers) != 3 {
 		return nil, "Invalid number of channel members"
-	} else if channelMembers[0].UserId != "{{.BasicUser.Id}}" {
+	} else if channelMembers[0].UserId != "{{.BasicUser.ClientId}}" {
 		return nil, "Invalid user id returned"
 	}
 

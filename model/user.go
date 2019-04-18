@@ -86,6 +86,24 @@ type User struct {
 	TermsOfServiceCreateAt int64     `db:"-" json:"terms_of_service_create_at,omitempty"`
 }
 
+type UserLogin struct {
+	ClientId      		   string    `json:"clientId"`
+	Email                  string    `json:"email"`
+	PasswordOld            string    `json:"passwordOld"`
+	PasswordEncryption	   string    `json:"passwordEncryption"`
+	HashMethod			   string    `json:"hashMethod"`
+	Salt				   string    `json:"salt"`
+	Sign				   string    `json:"sign"`
+	Status				   string    `json:"status"`
+}
+
+type UserInfo struct {
+	ClientId      		   string    `json:"clientId"`
+	Email                  string    `json:"email"`
+	EmailActive            bool      `json:"emailActive"`
+	LoginCount			   int       `json:"loginCount"`
+}
+
 type UserPatch struct {
 	Username    *string   `json:"username"`
 	Password    *string   `json:"password,omitempty"`
@@ -138,10 +156,10 @@ func (u *User) DeepCopy() *User {
 // IsValid validates the user and returns an error if it isn't configured
 // correctly.
 func (u *User) IsValid() *AppError {
-
-	if len(u.ClientId) != 26 {
-		return InvalidUserError("id", "")
-	}
+	//
+	//if len(u.ClientId) != 26 {
+	//	return InvalidUserError("id", "")
+	//}
 
 	if u.CreateAt == 0 {
 		return InvalidUserError("create_at", u.ClientId)
@@ -150,18 +168,18 @@ func (u *User) IsValid() *AppError {
 	if u.UpdateAt == 0 {
 		return InvalidUserError("update_at", u.ClientId)
 	}
-
-	if !IsValidUsername(u.Username) {
-		return InvalidUserError("username", u.ClientId)
-	}
-
-	if len(u.Email) > USER_EMAIL_MAX_LENGTH || len(u.Email) == 0 || !IsValidEmail(u.Email) {
-		return InvalidUserError("email", u.ClientId)
-	}
-
-	if utf8.RuneCountInString(u.Nickname) > USER_NICKNAME_MAX_RUNES {
-		return InvalidUserError("nickname", u.ClientId)
-	}
+	//
+	//if !IsValidUsername(u.Username) {
+	//	return InvalidUserError("username", u.ClientId)
+	//}
+	//
+	//if len(u.Email) > USER_EMAIL_MAX_LENGTH || len(u.Email) == 0 || !IsValidEmail(u.Email) {
+	//	return InvalidUserError("email", u.ClientId)
+	//}
+	//
+	//if utf8.RuneCountInString(u.Nickname) > USER_NICKNAME_MAX_RUNES {
+	//	return InvalidUserError("nickname", u.ClientId)
+	//}
 
 	if utf8.RuneCountInString(u.Position) > USER_POSITION_MAX_RUNES {
 		return InvalidUserError("position", u.ClientId)
@@ -186,10 +204,10 @@ func (u *User) IsValid() *AppError {
 	if len(u.Password) > 0 && u.AuthData != nil && len(*u.AuthData) > 0 {
 		return InvalidUserError("auth_data_pwd", u.ClientId)
 	}
-
-	if len(u.Password) > USER_PASSWORD_MAX_LENGTH {
-		return InvalidUserError("password_limit", u.ClientId)
-	}
+	//
+	//if len(u.Password) > USER_PASSWORD_MAX_LENGTH {
+	//	return InvalidUserError("password_limit", u.ClientId)
+	//}
 
 	if !IsValidLocale(u.Locale) {
 		return InvalidUserError("locale", u.ClientId)
@@ -219,25 +237,25 @@ func NormalizeEmail(email string) string {
 // in the CreateAt, UpdateAt times.  It will also hash the password.  It should
 // be run before saving the user to the db.
 func (u *User) PreSave() {
-	if u.ClientId == "" {
-		u.ClientId = NewId()
-	}
-
-	if u.Username == "" {
-		u.Username = NewId()
-	}
+	//if u.ClientId == "" {
+	//	u.ClientId = NewId()
+	//}
+	//
+	//if u.Username == "" {
+	//	u.Username = NewId()
+	//}
 
 	if u.AuthData != nil && *u.AuthData == "" {
 		u.AuthData = nil
 	}
-
-	u.Username = NormalizeUsername(u.Username)
-	u.Email = NormalizeEmail(u.Email)
+	//
+	//u.Username = NormalizeUsername(u.Username)
+	//u.Email = NormalizeEmail(u.Email)
 
 	u.CreateAt = GetMillis()
 	u.UpdateAt = u.CreateAt
 
-	u.LastPasswordUpdate = u.CreateAt
+	//u.LastPasswordUpdate = u.CreateAt
 
 	u.MfaActive = false
 
@@ -256,18 +274,18 @@ func (u *User) PreSave() {
 	if u.Timezone == nil {
 		u.Timezone = timezones.DefaultUserTimezone()
 	}
-	if u.Salt == "" {
-		u.Salt = NewId()
-	}
-	if len(u.Password) > 0 {
-		u.Password = HashPassword(u.Password, u.Salt)
-	}
+	//if u.Salt == "" {
+	//	u.Salt = NewId()
+	//}
+	//if len(u.Password) > 0 {
+	//	u.Password = HashPassword(u.Password, u.Salt)
+	//}
 }
 
 // PreUpdate should be run before updating the user in the db.
 func (u *User) PreUpdate() {
-	u.Username = NormalizeUsername(u.Username)
-	u.Email = NormalizeEmail(u.Email)
+	//u.Username = NormalizeUsername(u.Username)
+	//u.Email = NormalizeEmail(u.Email)
 	u.UpdateAt = GetMillis()
 
 	if u.AuthData != nil && *u.AuthData == "" {

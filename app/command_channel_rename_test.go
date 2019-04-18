@@ -21,7 +21,7 @@ func TestRenameProviderDoCommand(t *testing.T) {
 	args := &model.CommandArgs{
 		T:         func(s string, args ...interface{}) string { return s },
 		ChannelId: th.BasicChannel.Id,
-		Session:   model.Session{UserId: th.BasicUser.Id, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: model.TEAM_USER_ROLE_ID}}},
+		Session:   model.Session{UserId: th.BasicUser.ClientId, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: model.TEAM_USER_ROLE_ID}}},
 	}
 
 	// Blank text is a success
@@ -42,7 +42,7 @@ func TestRenameProviderDoCommand(t *testing.T) {
 	args = &model.CommandArgs{
 		T:         func(s string, args ...interface{}) string { return s },
 		ChannelId: th.BasicChannel.Id,
-		Session:   model.Session{UserId: th.BasicUser.Id, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: model.TEAM_USER_ROLE_ID}}},
+		Session:   model.Session{UserId: th.BasicUser.ClientId, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: model.TEAM_USER_ROLE_ID}}},
 	}
 
 	actual := rp.DoCommand(th.App, args, "hello").Text
@@ -56,7 +56,7 @@ func TestRenameProviderDoCommand(t *testing.T) {
 	args = &model.CommandArgs{
 		T:         func(s string, args ...interface{}) string { return s },
 		ChannelId: privateChannel.Id,
-		Session:   model.Session{UserId: th.BasicUser.Id, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: model.TEAM_USER_ROLE_ID}}},
+		Session:   model.Session{UserId: th.BasicUser.ClientId, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: model.TEAM_USER_ROLE_ID}}},
 	}
 
 	actual = rp.DoCommand(th.App, args, "hello").Text
@@ -68,7 +68,7 @@ func TestRenameProviderDoCommand(t *testing.T) {
 	args = &model.CommandArgs{
 		T:         func(s string, args ...interface{}) string { return s },
 		ChannelId: privateChannel.Id,
-		Session:   model.Session{UserId: th.BasicUser.Id, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: model.TEAM_USER_ROLE_ID}}},
+		Session:   model.Session{UserId: th.BasicUser.ClientId, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: model.TEAM_USER_ROLE_ID}}},
 	}
 
 	actual = rp.DoCommand(th.App, args, "hello").Text
@@ -83,7 +83,7 @@ func TestRenameProviderDoCommand(t *testing.T) {
 	args = &model.CommandArgs{
 		T:         func(s string, args ...interface{}) string { return s },
 		ChannelId: groupChannel.Id,
-		Session:   model.Session{UserId: th.BasicUser.Id, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: model.TEAM_USER_ROLE_ID}}},
+		Session:   model.Session{UserId: th.BasicUser.ClientId, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: model.TEAM_USER_ROLE_ID}}},
 	}
 
 	actual = rp.DoCommand(th.App, args, "hello").Text
@@ -95,7 +95,7 @@ func TestRenameProviderDoCommand(t *testing.T) {
 	args = &model.CommandArgs{
 		T:         func(s string, args ...interface{}) string { return s },
 		ChannelId: directChannel.Id,
-		Session:   model.Session{UserId: th.BasicUser.Id, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: model.TEAM_USER_ROLE_ID}}},
+		Session:   model.Session{UserId: th.BasicUser.ClientId, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: model.TEAM_USER_ROLE_ID}}},
 	}
 
 	actual = rp.DoCommand(th.App, args, "hello").Text

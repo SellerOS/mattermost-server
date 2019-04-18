@@ -18,7 +18,7 @@ func TestInviteProvider(t *testing.T) {
 	channel := th.createChannel(th.BasicTeam, model.CHANNEL_OPEN)
 	privateChannel := th.createChannel(th.BasicTeam, model.CHANNEL_PRIVATE)
 	dmChannel := th.CreateDmChannel(th.BasicUser2)
-	privateChannel2 := th.createChannelWithAnotherUser(th.BasicTeam, model.CHANNEL_PRIVATE, th.BasicUser2.Id)
+	privateChannel2 := th.createChannelWithAnotherUser(th.BasicTeam, model.CHANNEL_PRIVATE, th.BasicUser2.ClientId)
 
 	basicUser3 := th.CreateUser()
 	th.LinkUserToTeam(basicUser3, th.BasicTeam)
@@ -31,7 +31,7 @@ func TestInviteProvider(t *testing.T) {
 		T:         func(s string, args ...interface{}) string { return s },
 		ChannelId: th.BasicChannel.Id,
 		TeamId:    th.BasicTeam.Id,
-		Session:   model.Session{UserId: th.BasicUser.Id, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: model.TEAM_USER_ROLE_ID}}},
+		Session:   model.Session{UserId: th.BasicUser.ClientId, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: model.TEAM_USER_ROLE_ID}}},
 	}
 
 	userAndWrongChannel := "@" + th.BasicUser2.Username + " wrongchannel1"

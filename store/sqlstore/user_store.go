@@ -74,15 +74,11 @@ func NewSqlUserStore(sqlStore SqlStore, metrics einterfaces.MetricsInterface) st
 		LeftJoin("Bots b ON ( b.UserId = u.ClientId )")
 
 	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(model.User{}, "UserIms").SetKeys(false, "Id")
+		table := db.AddTableWithName(model.User{}, "UserIms").SetKeys(true, "Id")
 		table.ColMap("Id").SetMaxSize(26)
-		table.ColMap("Username").SetMaxSize(64).SetUnique(true)
-		table.ColMap("Password").SetMaxSize(128)
-		table.ColMap("Salt").SetMaxSize(26)
+		table.ColMap("ClientId").SetMaxSize(64).SetUnique(true)
 		table.ColMap("AuthData").SetMaxSize(128).SetUnique(true)
 		table.ColMap("AuthService").SetMaxSize(32)
-		table.ColMap("Email").SetMaxSize(128).SetUnique(true)
-		table.ColMap("Nickname").SetMaxSize(64)
 		table.ColMap("FirstName").SetMaxSize(64)
 		table.ColMap("LastName").SetMaxSize(64)
 		table.ColMap("Roles").SetMaxSize(256)
@@ -92,6 +88,24 @@ func NewSqlUserStore(sqlStore SqlStore, metrics einterfaces.MetricsInterface) st
 		table.ColMap("MfaSecret").SetMaxSize(128)
 		table.ColMap("Position").SetMaxSize(128)
 		table.ColMap("Timezone").SetMaxSize(256)
+
+		tableUser := db.AddTableWithName(model.UserInfo{}, "user").SetKeys(false, "Id")
+		tableUser.ColMap("Id").SetMaxSize(26)
+		tableUser.ColMap("ClientId").SetMaxSize(64).SetUnique(true)
+		tableUser.ColMap("Email").SetMaxSize(128).SetUnique(true)
+		tableUser.ColMap("EmailVerified").SetMaxSize(1)
+		tableUser.ColMap("LoginCount").SetMaxSize(16)
+
+		tableUserLogin := db.AddTableWithName(model.UserLogin{}, "user_login").SetKeys(true, "Id")
+		tableUserLogin.ColMap("Id").SetMaxSize(26)
+		tableUserLogin.ColMap("ClientId").SetMaxSize(64).SetUnique(true)
+		tableUserLogin.ColMap("Email").SetMaxSize(128).SetUnique(true)
+		tableUserLogin.ColMap("PasswordOld").SetMaxSize(64)
+		tableUserLogin.ColMap("PasswordEncryption").SetMaxSize(64)
+		tableUserLogin.ColMap("HashMethod").SetMaxSize(64)
+		tableUserLogin.ColMap("Salt").SetMaxSize(256)
+		tableUserLogin.ColMap("Sign").SetMaxSize(4000)
+		tableUserLogin.ColMap("Status").SetMaxSize(2000)
 	}
 
 	return us
@@ -103,13 +117,13 @@ func (us SqlUserStore) CreateIndexesIfNotExists() {
 	us.CreateIndexIfNotExists("idx_users_create_at", "UserIms", "CreateAt")
 	us.CreateIndexIfNotExists("idx_users_delete_at", "UserIms", "DeleteAt")
 
-	if us.DriverName() == model.DATABASE_DRIVER_POSTGRES {
-		us.CreateIndexIfNotExists("idx_users_email_lower_textpattern", "UserIms", "lower(Email) text_pattern_ops")
-		us.CreateIndexIfNotExists("idx_users_username_lower_textpattern", "UserIms", "lower(Username) text_pattern_ops")
-		us.CreateIndexIfNotExists("idx_users_nickname_lower_textpattern", "UserIms", "lower(Nickname) text_pattern_ops")
-		us.CreateIndexIfNotExists("idx_users_firstname_lower_textpattern", "UserIms", "lower(FirstName) text_pattern_ops")
-		us.CreateIndexIfNotExists("idx_users_lastname_lower_textpattern", "UserIms", "lower(LastName) text_pattern_ops")
-	}
+	//if us.DriverName() == model.DATABASE_DRIVER_POSTGRES {
+	//	us.CreateIndexIfNotExists("idx_users_email_lower_textpattern", "UserIms", "lower(Email) text_pattern_ops")
+	//	us.CreateIndexIfNotExists("idx_users_username_lower_textpattern", "UserIms", "lower(Username) text_pattern_ops")
+	//	us.CreateIndexIfNotExists("idx_users_nickname_lower_textpattern", "UserIms", "lower(Nickname) text_pattern_ops")
+	//	us.CreateIndexIfNotExists("idx_users_firstname_lower_textpattern", "UserIms", "lower(FirstName) text_pattern_ops")
+	//	us.CreateIndexIfNotExists("idx_users_lastname_lower_textpattern", "UserIms", "lower(LastName) text_pattern_ops")
+	//}
 
 	us.CreateFullTextIndexIfNotExists("idx_users_all_txt", "UserIms", strings.Join(USER_SEARCH_TYPE_ALL, ", "))
 	us.CreateFullTextIndexIfNotExists("idx_users_all_no_full_name_txt", "UserIms", strings.Join(USER_SEARCH_TYPE_ALL_NO_FULL_NAME, ", "))
@@ -119,7 +133,7 @@ func (us SqlUserStore) CreateIndexesIfNotExists() {
 
 func (us SqlUserStore) Save(user *model.User) store.StoreChannel {
 	return store.Do(func(result *store.StoreResult) {
-		if len(user.ClientId) > 0 {
+		if len(user.ClientId) == 0 {
 			result.Err = model.NewAppError("SqlUserStore.Save", "store.sql_user.save.existing.app_error", nil, "user_id="+user.ClientId, http.StatusBadRequest)
 			return
 		}
@@ -130,13 +144,13 @@ func (us SqlUserStore) Save(user *model.User) store.StoreChannel {
 		}
 
 		if err := us.GetMaster().Insert(user); err != nil {
-			if IsUniqueConstraintError(err, []string{"Email", "users_email_key", "idx_users_email_unique"}) {
-				result.Err = model.NewAppError("SqlUserStore.Save", "store.sql_user.save.email_exists.app_error", nil, "user_id="+user.ClientId+", "+err.Error(), http.StatusBadRequest)
-			} else if IsUniqueConstraintError(err, []string{"Username", "users_username_key", "idx_users_username_unique"}) {
-				result.Err = model.NewAppError("SqlUserStore.Save", "store.sql_user.save.username_exists.app_error", nil, "user_id="+user.ClientId+", "+err.Error(), http.StatusBadRequest)
-			} else {
+			//if IsUniqueConstraintError(err, []string{"Email", "users_email_key", "idx_users_email_unique"}) {
+			//	result.Err = model.NewAppError("SqlUserStore.Save", "store.sql_user.save.email_exists.app_error", nil, "user_id="+user.ClientId+", "+err.Error(), http.StatusBadRequest)
+			//} else if IsUniqueConstraintError(err, []string{"Username", "users_username_key", "idx_users_username_unique"}) {
+			//	result.Err = model.NewAppError("SqlUserStore.Save", "store.sql_user.save.username_exists.app_error", nil, "user_id="+user.ClientId+", "+err.Error(), http.StatusBadRequest)
+			//} else {
 				result.Err = model.NewAppError("SqlUserStore.Save", "store.sql_user.save.app_error", nil, "user_id="+user.ClientId+", "+err.Error(), http.StatusInternalServerError)
-			}
+			//}
 		} else {
 			result.Data = user
 		}
@@ -160,12 +174,12 @@ func (us SqlUserStore) Update(user *model.User, trustedUpdateData bool) store.St
 			user.CreateAt = oldUser.CreateAt
 			user.AuthData = oldUser.AuthData
 			user.AuthService = oldUser.AuthService
-			user.Password = oldUser.Password
-			user.Salt = oldUser.Salt
-			user.LastPasswordUpdate = oldUser.LastPasswordUpdate
-			user.LastPictureUpdate = oldUser.LastPictureUpdate
-			user.EmailVerified = oldUser.EmailVerified
-			user.FailedAttempts = oldUser.FailedAttempts
+			//user.Password = oldUser.Password
+			//user.Salt = oldUser.Salt
+			//user.LastPasswordUpdate = oldUser.LastPasswordUpdate
+			//user.LastPictureUpdate = oldUser.LastPictureUpdate
+			//user.EmailVerified = oldUser.EmailVerified
+			//user.FailedAttempts = oldUser.FailedAttempts
 			user.MfaSecret = oldUser.MfaSecret
 			user.MfaActive = oldUser.MfaActive
 
@@ -329,7 +343,7 @@ func (us SqlUserStore) UpdateMfaActive(userId string, active bool) store.StoreCh
 }
 
 func (us SqlUserStore) Get(id string) (*model.User, *model.AppError) {
-	query := us.usersQuery.Where("Id = ?", id)
+	query := us.usersQuery.Where("ClientId = ?", id)
 
 	queryString, args, err := query.ToSql()
 	if err != nil {

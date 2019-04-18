@@ -27,8 +27,8 @@ func TestInvitePeopleProvider(t *testing.T) {
 		T:         func(s string, args ...interface{}) string { return s },
 		ChannelId: th.BasicChannel.Id,
 		TeamId:    th.BasicTeam.Id,
-		UserId:    th.BasicUser.Id,
-		Session:   model.Session{UserId: th.BasicUser.Id, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: ""}}},
+		UserId:    th.BasicUser.ClientId,
+		Session:   model.Session{UserId: th.BasicUser.ClientId, TeamMembers: []*model.TeamMember{{TeamId: th.BasicTeam.Id, Roles: ""}}},
 	}
 
 	actual := cmd.DoCommand(th.App, args, model.NewId()+"@simulator.amazonses.com")

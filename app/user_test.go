@@ -558,7 +558,7 @@ func TestCreateUserWithToken(t *testing.T) {
 	th := Setup(t).InitBasic()
 	defer th.TearDown()
 
-	user := model.User{Email: strings.ToLower(model.NewId()) + "success+test@example.com", Nickname: "Darth Vader", Username: "vader" + model.NewId(), Password: "passwd1", AuthService: ""}
+	user := model.User{ClientId:model.NewId(), Email: strings.ToLower(model.NewId()) + "success+test@example.com", Nickname: "Darth Vader", Username: "vader" + model.NewId(), Password: "passwd1", AuthService: ""}
 
 	t.Run("invalid token", func(t *testing.T) {
 		if _, err := th.App.CreateUserWithToken(&user, "123"); err == nil {

@@ -147,6 +147,7 @@ func (me *TestHelper) CreateUser() *model.User {
 	id := model.NewId()
 
 	user := &model.User{
+		ClientId:      model.NewId(),
 		Email:         "success+" + id + "@simulator.amazonses.com",
 		Username:      "un_" + id,
 		Nickname:      "nn_" + id,

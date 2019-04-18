@@ -552,13 +552,13 @@ func (s SqlTeamStore) SaveMember(member *model.TeamMember, maxUsersPerTeam int) 
 				FROM
 					TeamMembers
 				INNER JOIN
-					Users
+					UserIms
 				ON
-					TeamMembers.UserId = Users.Id
+					TeamMembers.UserId = UserIms.ClientId
 				WHERE
 					TeamId = :TeamId
 					AND TeamMembers.DeleteAt = 0
-					AND Users.DeleteAt = 0`, map[string]interface{}{"TeamId": member.TeamId})
+					AND UserIms.DeleteAt = 0`, map[string]interface{}{"TeamId": member.TeamId})
 
 			if err != nil {
 				result.Err = model.NewAppError("SqlUserStore.Save", "store.sql_user.save.member_count.app_error", nil, "teamId="+member.TeamId+", "+err.Error(), http.StatusInternalServerError)

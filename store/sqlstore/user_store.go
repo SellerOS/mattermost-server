@@ -89,7 +89,7 @@ func NewSqlUserStore(sqlStore SqlStore, metrics einterfaces.MetricsInterface) st
 		table.ColMap("Position").SetMaxSize(128)
 		table.ColMap("Timezone").SetMaxSize(256)
 
-		tableUser := db.AddTableWithName(model.UserInfo{}, "user").SetKeys(false, "Id")
+		tableUser := db.AddTableWithName(model.UserInfo{}, "user").SetKeys(true, "Id")
 		tableUser.ColMap("Id").SetMaxSize(26)
 		tableUser.ColMap("ClientId").SetMaxSize(64).SetUnique(true)
 		tableUser.ColMap("Email").SetMaxSize(128).SetUnique(true)

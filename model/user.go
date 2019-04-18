@@ -54,6 +54,7 @@ const (
 )
 
 type User struct {
+	Id					   int		 `json:"id""`
 	ClientId      		   string    `json:"client_id"`
 	CreateAt               int64     `json:"create_at,omitempty"`
 	UpdateAt               int64     `json:"update_at,omitempty"`
@@ -87,6 +88,7 @@ type User struct {
 }
 
 type UserLogin struct {
+	Id					   int		 `json:"id""`
 	ClientId      		   string    `json:"clientId"`
 	Email                  string    `json:"email"`
 	PasswordOld            string    `json:"passwordOld"`
@@ -98,9 +100,10 @@ type UserLogin struct {
 }
 
 type UserInfo struct {
+	Id					   int		 `json:"id""`
 	ClientId      		   string    `json:"clientId"`
 	Email                  string    `json:"email"`
-	EmailActive            bool      `json:"emailActive"`
+	EmailVerified          bool      `json:"emailActive"`
 	LoginCount			   int       `json:"loginCount"`
 }
 

@@ -511,7 +511,7 @@ func (_m *Store) UnlockFromMaster() {
 	_m.Called()
 }
 
-// User provides a mock function with given fields:
+// UserIms provides a mock function with given fields:
 func (_m *Store) User() store.UserStore {
 	ret := _m.Called()
 

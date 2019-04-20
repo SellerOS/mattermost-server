@@ -24,7 +24,7 @@ func TestMuteCommandNoChannel(t *testing.T) {
 	channel1M, channel1MError := th.App.GetChannelMember(channel1.Id, th.BasicUser.ClientId)
 
 	if channel1MError != nil {
-		t.Fatal("User is not a member of channel 1")
+		t.Fatal("UserIms is not a member of channel 1")
 	}
 
 	if channel1M.NotifyProps[model.MARK_UNREAD_NOTIFY_PROP] == model.CHANNEL_NOTIFY_MENTION {

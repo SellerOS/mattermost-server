@@ -163,7 +163,7 @@ func UpgradeDatabaseToVersion32(sqlStore SqlStore) {
 }
 
 func themeMigrationFailed(err error) {
-	mlog.Critical(fmt.Sprintf("Failed to migrate User.ThemeProps to Preferences table %v", err))
+	mlog.Critical(fmt.Sprintf("Failed to migrate UserIms.ThemeProps to Preferences table %v", err))
 	time.Sleep(time.Second)
 	os.Exit(EXIT_THEME_MIGRATION)
 }

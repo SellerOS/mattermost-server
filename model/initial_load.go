@@ -9,7 +9,7 @@ import (
 )
 
 type InitialLoad struct {
-	User        *User             `json:"user"`
+	User        *UserIms          `json:"user"`
 	TeamMembers []*TeamMember     `json:"team_members"`
 	Teams       []*Team           `json:"teams"`
 	Preferences Preferences       `json:"preferences"`

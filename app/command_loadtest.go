@@ -180,7 +180,7 @@ func (me *LoadTestProvider) SetupCommand(a *App, args *model.CommandArgs, messag
 			mlog.Info("Testing environment created")
 			for i := 0; i < len(environment.Teams); i++ {
 				mlog.Info("Team CreateAt: " + environment.Teams[i].Name)
-				mlog.Info("\t User to login: " + environment.Environments[i].Users[0].Email + ", " + USER_PASSWORD)
+				mlog.Info("\t UserIms to login: " + environment.Environments[i].Users[0].Email + ", " + USER_PASSWORD)
 			}
 		}
 	} else {
@@ -290,7 +290,7 @@ func (me *LoadTestProvider) PostsCommand(a *App, args *model.CommandArgs, messag
 	var usernames []string
 	options := &model.UserGetOptions{InTeamId: args.TeamId, Page: 0, PerPage: 1000}
 	if result := <-a.Srv.Store.User().GetProfiles(options); result.Err == nil {
-		profileUsers := result.Data.([]*model.User)
+		profileUsers := result.Data.([]*model.UserIms)
 		usernames = make([]string, len(profileUsers))
 		i := 0
 		for _, userprof := range profileUsers {

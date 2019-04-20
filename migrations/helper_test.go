@@ -18,12 +18,12 @@ type TestHelper struct {
 	App          *app.App
 	Server       *app.Server
 	BasicTeam    *model.Team
-	BasicUser    *model.User
-	BasicUser2   *model.User
+	BasicUser    *model.UserIms
+	BasicUser2   *model.UserIms
 	BasicChannel *model.Channel
 	BasicPost    *model.Post
 
-	SystemAdminUser *model.User
+	SystemAdminUser *model.UserIms
 
 	tempWorkspace string
 }
@@ -128,15 +128,15 @@ func (me *TestHelper) CreateTeam() *model.Team {
 	return team
 }
 
-func (me *TestHelper) CreateUser() *model.User {
+func (me *TestHelper) CreateUser() *model.UserIms {
 	id := model.NewId()
 
-	user := &model.User{
+	user := &model.UserIms{
 		Email:         "success+" + id + "@simulator.amazonses.com",
 		Username:      "un_" + id,
-		Nickname:      "nn_" + id,
-		Password:      "Password1",
-		EmailVerified: true,
+		//Nickname:      "nn_" + id,
+		//Password:      "Password1",
+		//EmailVerified: true,
 	}
 
 	utils.DisableDebugLogForTest()
@@ -178,7 +178,7 @@ func (me *TestHelper) createChannel(team *model.Team, channelType string) *model
 	return channel
 }
 
-func (me *TestHelper) CreateDmChannel(user *model.User) *model.Channel {
+func (me *TestHelper) CreateDmChannel(user *model.UserIms) *model.Channel {
 	utils.DisableDebugLogForTest()
 	var err *model.AppError
 	var channel *model.Channel
@@ -214,7 +214,7 @@ func (me *TestHelper) CreatePost(channel *model.Channel) *model.Post {
 	return post
 }
 
-func (me *TestHelper) LinkUserToTeam(user *model.User, team *model.Team) {
+func (me *TestHelper) LinkUserToTeam(user *model.UserIms, team *model.Team) {
 	utils.DisableDebugLogForTest()
 
 	err := me.App.JoinUserToTeam(team, user, "")
@@ -228,7 +228,7 @@ func (me *TestHelper) LinkUserToTeam(user *model.User, team *model.Team) {
 	utils.EnableDebugLogForTest()
 }
 
-func (me *TestHelper) AddUserToChannel(user *model.User, channel *model.Channel) *model.ChannelMember {
+func (me *TestHelper) AddUserToChannel(user *model.UserIms, channel *model.Channel) *model.ChannelMember {
 	utils.DisableDebugLogForTest()
 
 	member, err := me.App.AddUserToChannel(user, channel)

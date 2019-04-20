@@ -88,7 +88,7 @@ func (a *App) isTeamEmailAddressAllowed(email string, allowedDomains string) boo
 	return true
 }
 
-func (a *App) isTeamEmailAllowed(user *model.User, team *model.Team) bool {
+func (a *App) isTeamEmailAllowed(user *model.UserIms, team *model.Team) bool {
 	email := strings.ToLower(user.Email)
 	return a.isTeamEmailAddressAllowed(email, team.AllowedDomains)
 }
@@ -345,7 +345,7 @@ func (a *App) AddUserToTeam(teamId string, userId string, userRequestorId string
 	if result.Err != nil {
 		return nil, result.Err
 	}
-	user := result.Data.(*model.User)
+	user := result.Data.(*model.UserIms)
 
 	if err := a.JoinUserToTeam(team, user, userRequestorId); err != nil {
 		return nil, err
@@ -354,7 +354,7 @@ func (a *App) AddUserToTeam(teamId string, userId string, userRequestorId string
 	return team, nil
 }
 
-func (a *App) AddUserToTeamByTeamId(teamId string, user *model.User) *model.AppError {
+func (a *App) AddUserToTeamByTeamId(teamId string, user *model.UserIms) *model.AppError {
 	result := <-a.Srv.Store.Team().Get(teamId)
 	if result.Err != nil {
 		return result.Err
@@ -398,7 +398,7 @@ func (a *App) AddUserToTeamByToken(userId string, tokenId string) (*model.Team, 
 	if result.Err != nil {
 		return nil, result.Err
 	}
-	user := result.Data.(*model.User)
+	user := result.Data.(*model.UserIms)
 
 	if err := a.JoinUserToTeam(team, user, ""); err != nil {
 		return nil, err
@@ -430,7 +430,7 @@ func (a *App) AddUserToTeamByInviteId(inviteId string, userId string) (*model.Te
 	if result.Err != nil {
 		return nil, result.Err
 	}
-	user := result.Data.(*model.User)
+	user := result.Data.(*model.UserIms)
 
 	if err := a.JoinUserToTeam(team, user, ""); err != nil {
 		return nil, err
@@ -443,7 +443,7 @@ func (a *App) AddUserToTeamByInviteId(inviteId string, userId string) (*model.Te
 // 1. a pointer to the team member, if successful
 // 2. a boolean: true if the user has a non-deleted team member for that team already, otherwise false.
 // 3. a pointer to an AppError if something went wrong.
-func (a *App) joinUserToTeam(team *model.Team, user *model.User) (*model.TeamMember, bool, *model.AppError) {
+func (a *App) joinUserToTeam(team *model.Team, user *model.UserIms) (*model.TeamMember, bool, *model.AppError) {
 	tm := &model.TeamMember{
 		TeamId:     team.Id,
 		UserId:     user.ClientId,
@@ -489,7 +489,7 @@ func (a *App) joinUserToTeam(team *model.Team, user *model.User) (*model.TeamMem
 	return tmr.Data.(*model.TeamMember), false, nil
 }
 
-func (a *App) JoinUserToTeam(team *model.Team, user *model.User, userRequestorId string) *model.AppError {
+func (a *App) JoinUserToTeam(team *model.Team, user *model.UserIms, userRequestorId string) *model.AppError {
 	if !a.isTeamEmailAllowed(user, team) {
 		return model.NewAppError("JoinUserToTeam", "api.team.join_user_to_team.allowed_domains.app_error", nil, "", http.StatusBadRequest)
 	}
@@ -502,7 +502,7 @@ func (a *App) JoinUserToTeam(team *model.Team, user *model.User, userRequestorId
 	}
 
 	if pluginsEnvironment := a.GetPluginsEnvironment(); pluginsEnvironment != nil {
-		var actor *model.User
+		var actor *model.UserIms
 		if userRequestorId != "" {
 			actor, _ = a.GetUser(userRequestorId)
 		}
@@ -794,7 +794,7 @@ func (a *App) RemoveUserFromTeam(teamId string, userId string, requestorId strin
 	if result.Err != nil {
 		return result.Err
 	}
-	user := result.Data.(*model.User)
+	user := result.Data.(*model.UserIms)
 
 	if err := a.LeaveTeam(team, user, requestorId); err != nil {
 		return err
@@ -803,7 +803,7 @@ func (a *App) RemoveUserFromTeam(teamId string, userId string, requestorId strin
 	return nil
 }
 
-func (a *App) LeaveTeam(team *model.Team, user *model.User, requestorId string) *model.AppError {
+func (a *App) LeaveTeam(team *model.Team, user *model.UserIms, requestorId string) *model.AppError {
 	teamMember, err := a.GetTeamMember(team.Id, user.ClientId)
 	if err != nil {
 		return model.NewAppError("LeaveTeam", "api.team.remove_user_from_team.missing.app_error", nil, err.Error(), http.StatusBadRequest)
@@ -862,7 +862,7 @@ func (a *App) LeaveTeam(team *model.Team, user *model.User, requestorId string) 
 	}
 
 	if pluginsEnvironment := a.GetPluginsEnvironment(); pluginsEnvironment != nil {
-		var actor *model.User
+		var actor *model.UserIms
 		if requestorId != "" {
 			actor, _ = a.GetUser(requestorId)
 		}
@@ -900,7 +900,7 @@ func (a *App) LeaveTeam(team *model.Team, user *model.User, requestorId string) 
 	return nil
 }
 
-func (a *App) postLeaveTeamMessage(user *model.User, channel *model.Channel) *model.AppError {
+func (a *App) postLeaveTeamMessage(user *model.UserIms, channel *model.Channel) *model.AppError {
 	post := &model.Post{
 		ChannelId: channel.Id,
 		Message:   fmt.Sprintf(utils.T("api.team.leave.left"), user.Username),
@@ -918,7 +918,7 @@ func (a *App) postLeaveTeamMessage(user *model.User, channel *model.Channel) *mo
 	return nil
 }
 
-func (a *App) postRemoveFromTeamMessage(user *model.User, channel *model.Channel) *model.AppError {
+func (a *App) postRemoveFromTeamMessage(user *model.UserIms, channel *model.Channel) *model.AppError {
 	post := &model.Post{
 		ChannelId: channel.Id,
 		Message:   fmt.Sprintf(utils.T("api.team.remove_user_from_team.removed"), user.Username),
@@ -964,7 +964,7 @@ func (a *App) InviteNewUsersToTeam(emailList []string, teamId, senderId string) 
 	if result.Err != nil {
 		return result.Err
 	}
-	user := result.Data.(*model.User)
+	user := result.Data.(*model.UserIms)
 
 	var invalidEmailList []string
 

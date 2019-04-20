@@ -15,7 +15,7 @@ type MattermostTransport struct {
 }
 
 func (t *MattermostTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Set("User-Agent", defaultUserAgent)
+	req.Header.Set("UserIms-Agent", defaultUserAgent)
 
 	return t.Transport.RoundTrip(req)
 }

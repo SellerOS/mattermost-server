@@ -254,7 +254,7 @@ func removeChannelUsersCmdF(command *cobra.Command, args []string) error {
 	return nil
 }
 
-func removeUserFromChannel(a *app.App, channel *model.Channel, user *model.User, userArg string) {
+func removeUserFromChannel(a *app.App, channel *model.Channel, user *model.UserIms, userArg string) {
 	if user == nil {
 		CommandPrintErrorln("Can't find user '" + userArg + "'")
 		return
@@ -290,7 +290,7 @@ func addChannelUsersCmdF(command *cobra.Command, args []string) error {
 	return nil
 }
 
-func addUserToChannel(a *app.App, channel *model.Channel, user *model.User, userArg string) {
+func addUserToChannel(a *app.App, channel *model.Channel, user *model.UserIms, userArg string) {
 	if user == nil {
 		CommandPrintErrorln("Can't find user '" + userArg + "'")
 		return
@@ -395,7 +395,7 @@ func moveChannelsCmdF(command *cobra.Command, args []string) error {
 	return nil
 }
 
-func moveChannel(a *app.App, team *model.Team, channel *model.Channel, user *model.User, removeDeactivatedMembers bool) *model.AppError {
+func moveChannel(a *app.App, team *model.Team, channel *model.Channel, user *model.UserIms, removeDeactivatedMembers bool) *model.AppError {
 	oldTeamId := channel.TeamId
 
 	if err := a.MoveChannel(team, channel, user, removeDeactivatedMembers); err != nil {

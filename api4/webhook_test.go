@@ -630,9 +630,10 @@ func TestUpdateIncomingHook(t *testing.T) {
 
 	team := th.CreateTeamWithClient(Client)
 	user := th.CreateUserWithClient(Client)
+	userLogin := th.CreateUserLoginWithClient(Client,user.Email)
 	th.LinkUserToTeam(user, team)
 	Client.Logout()
-	Client.Login(user.ClientId, user.Password)
+	Client.Login(user.ClientId, userLogin.PasswordOld)
 	t.Run("UpdateToADifferentTeam", func(t *testing.T) {
 		_, resp := Client.UpdateIncomingWebhook(createdHook)
 		CheckUnauthorizedStatus(t, resp)
@@ -825,9 +826,10 @@ func TestUpdateOutgoingHook(t *testing.T) {
 
 	team := th.CreateTeamWithClient(Client)
 	user := th.CreateUserWithClient(Client)
+	userLogin := th.CreateUserLoginWithClient(Client,user.Email)
 	th.LinkUserToTeam(user, team)
 	Client.Logout()
-	Client.Login(user.ClientId, user.Password)
+	Client.Login(user.ClientId, userLogin.PasswordOld)
 	t.Run("UpdateToADifferentTeam", func(t *testing.T) {
 		_, resp := Client.UpdateOutgoingWebhook(createdHook)
 		CheckUnauthorizedStatus(t, resp)

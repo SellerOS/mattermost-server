@@ -24,7 +24,7 @@ const (
 	MaxIntegrationResponseSize = 1024 * 1024 // Posts can be <100KB at most, so this is likely more than enough
 )
 
-func (a *App) handleWebhookEvents(post *model.Post, team *model.Team, channel *model.Channel, user *model.User) *model.AppError {
+func (a *App) handleWebhookEvents(post *model.Post, team *model.Team, channel *model.Channel, user *model.UserIms) *model.AppError {
 	if !*a.Config().ServiceSettings.EnableOutgoingWebhooks {
 		return nil
 	}
@@ -639,7 +639,7 @@ func (a *App) HandleIncomingWebhook(hookId string, req *model.IncomingWebhookReq
 			if result := <-a.Srv.Store.User().GetByUsername(channelName[1:]); result.Err != nil {
 				return model.NewAppError("HandleIncomingWebhook", "web.incoming_webhook.user.app_error", nil, "err="+result.Err.Message, http.StatusBadRequest)
 			} else {
-				if ch, err := a.GetOrCreateDirectChannel(hook.UserId, result.Data.(*model.User).ClientId); err != nil {
+				if ch, err := a.GetOrCreateDirectChannel(hook.UserId, result.Data.(*model.UserIms).ClientId); err != nil {
 					return err
 				} else {
 					channel = ch
@@ -667,11 +667,11 @@ func (a *App) HandleIncomingWebhook(hookId string, req *model.IncomingWebhookReq
 		return model.NewAppError("HandleIncomingWebhook", "web.incoming_webhook.channel_locked.app_error", nil, "", http.StatusForbidden)
 	}
 
-	var user *model.User
+	var user *model.UserIms
 	if result := <-uchan; result.Err != nil {
 		return model.NewAppError("HandleIncomingWebhook", "web.incoming_webhook.user.app_error", nil, "err="+result.Err.Message, http.StatusForbidden)
 	} else {
-		user = result.Data.(*model.User)
+		user = result.Data.(*model.UserIms)
 	}
 
 	if a.License() != nil && *a.Config().TeamSettings.ExperimentalTownSquareIsReadOnly &&

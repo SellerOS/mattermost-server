@@ -58,7 +58,7 @@ func (me *InviteProvider) DoCommand(a *App, args *model.CommandArgs, message str
 		}
 	}
 
-	userProfile := result.Data.(*model.User)
+	userProfile := result.Data.(*model.UserIms)
 	if userProfile.DeleteAt != 0 {
 		return &model.CommandResponse{
 			Text:         args.T("api.command_invite.missing_user.app_error"),
@@ -68,7 +68,7 @@ func (me *InviteProvider) DoCommand(a *App, args *model.CommandArgs, message str
 
 	var channelToJoin *model.Channel
 	var err *model.AppError
-	// User set a channel to add the invited user
+	// UserIms set a channel to add the invited user
 	if len(splitMessage) > 1 && splitMessage[1] != "" {
 		targetChannelName := strings.TrimPrefix(strings.TrimSpace(splitMessage[1]), "~")
 
@@ -96,7 +96,7 @@ func (me *InviteProvider) DoCommand(a *App, args *model.CommandArgs, message str
 		if !a.SessionHasPermissionToChannel(args.Session, channelToJoin.Id, model.PERMISSION_MANAGE_PUBLIC_CHANNEL_MEMBERS) {
 			return &model.CommandResponse{
 				Text: args.T("api.command_invite.permission.app_error", map[string]interface{}{
-					"User":    userProfile.Username,
+					"UserIms":    userProfile.Username,
 					"Channel": channelToJoin.Name,
 				}),
 				ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL,
@@ -105,16 +105,16 @@ func (me *InviteProvider) DoCommand(a *App, args *model.CommandArgs, message str
 	case model.CHANNEL_PRIVATE:
 		if !a.SessionHasPermissionToChannel(args.Session, channelToJoin.Id, model.PERMISSION_MANAGE_PRIVATE_CHANNEL_MEMBERS) {
 			if _, err = a.GetChannelMember(channelToJoin.Id, args.UserId); err == nil {
-				// User doing the inviting is a member of the channel.
+				// UserIms doing the inviting is a member of the channel.
 				return &model.CommandResponse{
 					Text: args.T("api.command_invite.permission.app_error", map[string]interface{}{
-						"User":    userProfile.Username,
+						"UserIms":    userProfile.Username,
 						"Channel": channelToJoin.Name,
 					}),
 					ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL,
 				}
 			} else {
-				// User doing the inviting is *not* a member of the channel.
+				// UserIms doing the inviting is *not* a member of the channel.
 				return &model.CommandResponse{
 					Text: args.T("api.command_invite.private_channel.app_error", map[string]interface{}{
 						"Channel": channelToJoin.Name,
@@ -135,7 +135,7 @@ func (me *InviteProvider) DoCommand(a *App, args *model.CommandArgs, message str
 	if err == nil {
 		return &model.CommandResponse{
 			Text: args.T("api.command_invite.user_already_in_channel.app_error", map[string]interface{}{
-				"User": userProfile.Username,
+				"UserIms": userProfile.Username,
 			}),
 			ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL,
 		}
@@ -151,7 +151,7 @@ func (me *InviteProvider) DoCommand(a *App, args *model.CommandArgs, message str
 	if args.ChannelId != channelToJoin.Id {
 		return &model.CommandResponse{
 			Text: args.T("api.command_invite.success", map[string]interface{}{
-				"User":    userProfile.Username,
+				"UserIms":    userProfile.Username,
 				"Channel": channelToJoin.Name,
 			}),
 			ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL,

@@ -675,12 +675,12 @@ func TestGetMentionKeywords(t *testing.T) {
 	defer th.TearDown()
 
 	// user with username or custom mentions enabled
-	user1 := &model.User{
+	user1 := &model.UserIms{
 		ClientId:        model.NewId(),
 		FirstName: "First",
-		Username:  "User",
+		Username:  "UserIms",
 		NotifyProps: map[string]string{
-			"mention_keys": "User,@User,MENTION",
+			"mention_keys": "UserIms,@UserIms,MENTION",
 		},
 	}
 
@@ -690,7 +690,7 @@ func TestGetMentionKeywords(t *testing.T) {
 		},
 	}
 
-	profiles := map[string]*model.User{user1.ClientId: user1}
+	profiles := map[string]*model.UserIms{user1.ClientId: user1}
 	mentions := th.App.GetMentionKeywordsInChannel(profiles, true, channelMemberNotifyPropsMap1Off)
 	if len(mentions) != 3 {
 		t.Fatal("should've returned three mention keywords")
@@ -703,10 +703,10 @@ func TestGetMentionKeywords(t *testing.T) {
 	}
 
 	// user with first name mention enabled
-	user2 := &model.User{
+	user2 := &model.UserIms{
 		ClientId:        model.NewId(),
 		FirstName: "First",
-		Username:  "User",
+		Username:  "UserIms",
 		NotifyProps: map[string]string{
 			"first_name": "true",
 		},
@@ -718,7 +718,7 @@ func TestGetMentionKeywords(t *testing.T) {
 		},
 	}
 
-	profiles = map[string]*model.User{user2.ClientId: user2}
+	profiles = map[string]*model.UserIms{user2.ClientId: user2}
 	mentions = th.App.GetMentionKeywordsInChannel(profiles, true, channelMemberNotifyPropsMap2Off)
 	if len(mentions) != 2 {
 		t.Fatal("should've returned two mention keyword")
@@ -727,10 +727,10 @@ func TestGetMentionKeywords(t *testing.T) {
 	}
 
 	// user with @channel/@all mentions enabled
-	user3 := &model.User{
+	user3 := &model.UserIms{
 		ClientId:        model.NewId(),
 		FirstName: "First",
-		Username:  "User",
+		Username:  "UserIms",
 		NotifyProps: map[string]string{
 			"channel": "true",
 		},
@@ -742,7 +742,7 @@ func TestGetMentionKeywords(t *testing.T) {
 			"ignore_channel_mentions": model.IGNORE_CHANNEL_MENTIONS_OFF,
 		},
 	}
-	profiles = map[string]*model.User{user3.ClientId: user3}
+	profiles = map[string]*model.UserIms{user3.ClientId: user3}
 	mentions = th.App.GetMentionKeywordsInChannel(profiles, true, channelMemberNotifyPropsMap3Off)
 	if len(mentions) != 3 {
 		t.Fatal("should've returned three mention keywords")
@@ -758,7 +758,7 @@ func TestGetMentionKeywords(t *testing.T) {
 			"ignore_channel_mentions": model.IGNORE_CHANNEL_MENTIONS_DEFAULT,
 		},
 	}
-	profiles = map[string]*model.User{user3.ClientId: user3}
+	profiles = map[string]*model.UserIms{user3.ClientId: user3}
 	mentions = th.App.GetMentionKeywordsInChannel(profiles, true, channelMemberNotifyPropsMapDefault)
 	if len(mentions) != 3 {
 		t.Fatal("should've returned three mention keywords")
@@ -770,7 +770,7 @@ func TestGetMentionKeywords(t *testing.T) {
 
 	// Channel member notify props is empty
 	channelMemberNotifyPropsMapEmpty := map[string]model.StringMap{}
-	profiles = map[string]*model.User{user3.ClientId: user3}
+	profiles = map[string]*model.UserIms{user3.ClientId: user3}
 	mentions = th.App.GetMentionKeywordsInChannel(profiles, true, channelMemberNotifyPropsMapEmpty)
 	if len(mentions) != 3 {
 		t.Fatal("should've returned three mention keywords")
@@ -792,12 +792,12 @@ func TestGetMentionKeywords(t *testing.T) {
 	}
 
 	// user with all types of mentions enabled
-	user4 := &model.User{
+	user4 := &model.UserIms{
 		ClientId:        model.NewId(),
 		FirstName: "First",
-		Username:  "User",
+		Username:  "UserIms",
 		NotifyProps: map[string]string{
-			"mention_keys": "User,@User,MENTION",
+			"mention_keys": "UserIms,@UserIms,MENTION",
 			"first_name":   "true",
 			"channel":      "true",
 		},
@@ -810,7 +810,7 @@ func TestGetMentionKeywords(t *testing.T) {
 		},
 	}
 
-	profiles = map[string]*model.User{user4.ClientId: user4}
+	profiles = map[string]*model.UserIms{user4.ClientId: user4}
 	mentions = th.App.GetMentionKeywordsInChannel(profiles, true, channelMemberNotifyPropsMap4Off)
 	if len(mentions) != 6 {
 		t.Fatal("should've returned six mention keywords")
@@ -867,7 +867,7 @@ func TestGetMentionKeywords(t *testing.T) {
 
 	// multiple users but no more than MaxNotificationsPerChannel
 	th.App.UpdateConfig(func(cfg *model.Config) { *cfg.TeamSettings.MaxNotificationsPerChannel = 4 })
-	profiles = map[string]*model.User{
+	profiles = map[string]*model.UserIms{
 		user1.ClientId: user1,
 		user2.ClientId: user2,
 		user3.ClientId: user3,
@@ -919,7 +919,7 @@ func TestGetMentionKeywords(t *testing.T) {
 	}
 
 	// no special mentions
-	profiles = map[string]*model.User{
+	profiles = map[string]*model.UserIms{
 		user1.ClientId: user1,
 	}
 	mentions = th.App.GetMentionKeywordsInChannel(profiles, false, channelMemberNotifyPropsMap4Off)
@@ -976,10 +976,10 @@ func TestGetMentionsEnabledFields(t *testing.T) {
 }
 
 func TestPostNotificationGetChannelName(t *testing.T) {
-	sender := &model.User{ClientId: model.NewId(), Username: "sender", FirstName: "Sender", LastName: "Sender", Nickname: "Sender"}
-	recipient := &model.User{ClientId: model.NewId(), Username: "recipient", FirstName: "Recipient", LastName: "Recipient", Nickname: "Recipient"}
-	otherUser := &model.User{ClientId: model.NewId(), Username: "other", FirstName: "Other", LastName: "Other", Nickname: "Other"}
-	profileMap := map[string]*model.User{
+	sender := &model.UserIms{ClientId: model.NewId(), Username: "sender", FirstName: "Sender", LastName: "Sender"}
+	recipient := &model.UserIms{ClientId: model.NewId(), Username: "recipient", FirstName: "Recipient", LastName: "Recipient"}
+	otherUser := &model.UserIms{ClientId: model.NewId(), Username: "other", FirstName: "Other", LastName: "Other"}
+	profileMap := map[string]*model.UserIms{
 		sender.ClientId:    sender,
 		recipient.ClientId: recipient,
 		otherUser.ClientId: otherUser,
@@ -1063,7 +1063,7 @@ func TestPostNotificationGetSenderName(t *testing.T) {
 
 	defaultChannel := &model.Channel{Type: model.CHANNEL_OPEN}
 	defaultPost := &model.Post{Props: model.StringInterface{}}
-	sender := &model.User{ClientId: model.NewId(), Username: "sender", FirstName: "Sender", LastName: "Sender", Nickname: "Sender"}
+	sender := &model.UserIms{ClientId: model.NewId(), Username: "sender", FirstName: "Sender", LastName: "Sender"}
 
 	overriddenPost := &model.Post{
 		Props: model.StringInterface{
@@ -1092,7 +1092,6 @@ func TestPostNotificationGetSenderName(t *testing.T) {
 		},
 		"name format nickname": {
 			nameFormat: model.SHOW_NICKNAME_FULLNAME,
-			expected:   sender.Nickname,
 		},
 		"system message": {
 			post:     &model.Post{Type: model.POST_SYSTEM_MESSAGE_PREFIX + "custom"},

@@ -285,7 +285,7 @@ func TestCreateDefaultMemberships(t *testing.T) {
 
 	timeBeforeLeaving := model.GetMillis()
 
-	// User leaves channel
+	// UserIms leaves channel
 	err = th.App.LeaveChannel(experimentsChannel.Id, scientist1.ClientId)
 	if err != nil {
 		t.Errorf("unable to add user to channel: %s", err.Error())

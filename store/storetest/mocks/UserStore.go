@@ -99,15 +99,65 @@ func (_m *UserStore) Count(options model.UserCountOptions) store.StoreChannel {
 }
 
 // Get provides a mock function with given fields: id
-func (_m *UserStore) Get(id string) (*model.User, *model.AppError) {
+func (_m *UserStore) Get(id string) (*model.UserIms, *model.AppError) {
 	ret := _m.Called(id)
 
-	var r0 *model.User
-	if rf, ok := ret.Get(0).(func(string) *model.User); ok {
+	var r0 *model.UserIms
+	if rf, ok := ret.Get(0).(func(string) *model.UserIms); ok {
 		r0 = rf(id)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*model.User)
+			r0 = ret.Get(0).(*model.UserIms)
+		}
+	}
+
+	var r1 *model.AppError
+	if rf, ok := ret.Get(1).(func(string) *model.AppError); ok {
+		r1 = rf(id)
+	} else {
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).(*model.AppError)
+		}
+	}
+
+	return r0, r1
+}
+
+// GetUserInfo provides a mock function with given fields: id
+func (_m *UserStore) GetUserInfo(id string) (*model.UserInfo, *model.AppError) {
+	ret := _m.Called(id)
+
+	var r0 *model.UserInfo
+	if rf, ok := ret.Get(0).(func(string) *model.UserInfo); ok {
+		r0 = rf(id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*model.UserInfo)
+		}
+	}
+
+	var r1 *model.AppError
+	if rf, ok := ret.Get(1).(func(string) *model.AppError); ok {
+		r1 = rf(id)
+	} else {
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).(*model.AppError)
+		}
+	}
+
+	return r0, r1
+}
+
+// GetUserLogin provides a mock function with given fields: id
+func (_m *UserStore) GetUserLogin(id string) (*model.UserLogin, *model.AppError) {
+	ret := _m.Called(id)
+
+	var r0 *model.UserLogin
+	if rf, ok := ret.Get(0).(func(string) *model.UserLogin); ok {
+		r0 = rf(id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*model.UserLogin)
 		}
 	}
 
@@ -237,6 +287,22 @@ func (_m *UserStore) GetByAuth(authData *string, authService string) store.Store
 
 // GetByEmail provides a mock function with given fields: email
 func (_m *UserStore) GetByEmail(email string) store.StoreChannel {
+	ret := _m.Called(email)
+
+	var r0 store.StoreChannel
+	if rf, ok := ret.Get(0).(func(string) store.StoreChannel); ok {
+		r0 = rf(email)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(store.StoreChannel)
+		}
+	}
+
+	return r0
+}
+
+// GetUserLoginByEmail provides a mock function with given fields: email
+func (_m *UserStore) GetUserLoginByEmail(email string) store.StoreChannel {
 	ret := _m.Called(email)
 
 	var r0 store.StoreChannel
@@ -619,11 +685,11 @@ func (_m *UserStore) ResetLastPictureUpdate(userId string) store.StoreChannel {
 }
 
 // Save provides a mock function with given fields: user
-func (_m *UserStore) Save(user *model.User) store.StoreChannel {
+func (_m *UserStore) Save(user *model.UserIms) store.StoreChannel {
 	ret := _m.Called(user)
 
 	var r0 store.StoreChannel
-	if rf, ok := ret.Get(0).(func(*model.User) store.StoreChannel); ok {
+	if rf, ok := ret.Get(0).(func(*model.UserIms) store.StoreChannel); ok {
 		r0 = rf(user)
 	} else {
 		if ret.Get(0) != nil {
@@ -715,11 +781,11 @@ func (_m *UserStore) SearchWithoutTeam(term string, options *model.UserSearchOpt
 }
 
 // Update provides a mock function with given fields: user, allowRoleUpdate
-func (_m *UserStore) Update(user *model.User, allowRoleUpdate bool) store.StoreChannel {
+func (_m *UserStore) Update(user *model.UserIms, allowRoleUpdate bool) store.StoreChannel {
 	ret := _m.Called(user, allowRoleUpdate)
 
 	var r0 store.StoreChannel
-	if rf, ok := ret.Get(0).(func(*model.User, bool) store.StoreChannel); ok {
+	if rf, ok := ret.Get(0).(func(*model.UserIms, bool) store.StoreChannel); ok {
 		r0 = rf(user, allowRoleUpdate)
 	} else {
 		if ret.Get(0) != nil {

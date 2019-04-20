@@ -31,7 +31,7 @@ func TestUserDeepCopy(t *testing.T) {
 	mapKey := "key"
 	mapValue := "key"
 
-	user := &User{ClientId: id, AuthData: NewString(authData), Props: map[string]string{}, NotifyProps: map[string]string{}, Timezone: map[string]string{}}
+	user := &UserIms{ClientId: id, AuthData: NewString(authData), Props: map[string]string{}, NotifyProps: map[string]string{}, Timezone: map[string]string{}}
 	user.Props[mapKey] = mapValue
 	user.NotifyProps[mapKey] = mapValue
 	user.Timezone[mapKey] = mapValue
@@ -49,14 +49,14 @@ func TestUserDeepCopy(t *testing.T) {
 	assert.Equal(t, mapValue, user.NotifyProps[mapKey])
 	assert.Equal(t, mapValue, user.Timezone[mapKey])
 
-	user = &User{ClientId: id}
+	user = &UserIms{ClientId: id}
 	copyUser = user.DeepCopy()
 
 	assert.Equal(t, id, copyUser.ClientId)
 }
 
 func TestUserJson(t *testing.T) {
-	user := User{ClientId: NewId(), Username: NewId()}
+	user := UserIms{ClientId: NewId(), Username: NewId()}
 	json := user.ToJson()
 	ruser := UserFromJson(strings.NewReader(json))
 
@@ -66,7 +66,7 @@ func TestUserJson(t *testing.T) {
 }
 
 func TestUserPreSave(t *testing.T) {
-	user := User{Password: "test"}
+	user := UserIms{Username: "test"}
 	user.PreSave()
 	user.Etag(true, true)
 	if user.Timezone == nil {
@@ -79,12 +79,12 @@ func TestUserPreSave(t *testing.T) {
 }
 
 func TestUserPreUpdate(t *testing.T) {
-	user := User{Password: "test"}
+	user := UserIms{Username: "test"}
 	user.PreUpdate()
 }
 
 func TestUserUpdateMentionKeysFromUsername(t *testing.T) {
-	user := User{Username: "user"}
+	user := UserIms{Username: "user"}
 	user.SetDefaultNotifications()
 
 	if user.NotifyProps["mention_keys"] != "user,@user" {
@@ -111,7 +111,7 @@ func TestUserUpdateMentionKeysFromUsername(t *testing.T) {
 }
 
 func TestUserIsValid(t *testing.T) {
-	user := User{}
+	user := UserIms{}
 
 	if err := user.IsValid(); !HasExpectedUserIsValidError(err, "id", "") {
 		t.Fatal(err)
@@ -143,14 +143,14 @@ func TestUserIsValid(t *testing.T) {
 
 	user.Email = "user@example.com"
 
-	user.Nickname = strings.Repeat("a", 65)
-	err = user.IsValid()
-	require.True(t, HasExpectedUserIsValidError(err, "nickname", user.ClientId), "expected user is valid error: %s", err.Error())
-
-	user.Nickname = strings.Repeat("a", 64)
-	if err := user.IsValid(); err != nil {
-		t.Fatal(err)
-	}
+	//user.Nickname = strings.Repeat("a", 65)
+	//err = user.IsValid()
+	//require.True(t, HasExpectedUserIsValidError(err, "nickname", user.ClientId), "expected user is valid error: %s", err.Error())
+	//
+	//user.Nickname = strings.Repeat("a", 64)
+	//if err := user.IsValid(); err != nil {
+	//	t.Fatal(err)
+	//}
 
 	user.FirstName = ""
 	user.LastName = ""
@@ -186,14 +186,14 @@ func HasExpectedUserIsValidError(err *AppError, fieldName string, userId string)
 		return false
 	}
 
-	return err.Where == "User.IsValid" &&
+	return err.Where == "UserIms.IsValid" &&
 		err.Id == fmt.Sprintf("model.user.is_valid.%s.app_error", fieldName) &&
 		err.StatusCode == http.StatusBadRequest &&
 		(userId == "" || err.DetailedError == "user_id="+userId)
 }
 
 func TestUserGetFullName(t *testing.T) {
-	user := User{}
+	user := UserIms{}
 
 	if fullName := user.GetFullName(); fullName != "" {
 		t.Fatal("Full name should be blank")
@@ -217,7 +217,7 @@ func TestUserGetFullName(t *testing.T) {
 }
 
 func TestUserGetDisplayName(t *testing.T) {
-	user := User{Username: "username"}
+	user := UserIms{Username: "username"}
 
 	if displayName := user.GetDisplayName(SHOW_FULLNAME); displayName != "username" {
 		t.Fatal("Display name should be username")
@@ -246,10 +246,10 @@ func TestUserGetDisplayName(t *testing.T) {
 		t.Fatal("Display name should be username")
 	}
 
-	user.Nickname = "nickname"
-	if displayName := user.GetDisplayName(SHOW_NICKNAME_FULLNAME); displayName != "nickname" {
-		t.Fatal("Display name should be nickname")
-	}
+	//user.Nickname = "nickname"
+	//if displayName := user.GetDisplayName(SHOW_NICKNAME_FULLNAME); displayName != "nickname" {
+	//	t.Fatal("Display name should be nickname")
+	//}
 }
 
 var usernames = []struct {
@@ -361,7 +361,7 @@ func TestIsValidLocale(t *testing.T) {
 		},
 
 		// Note that the following cases are all valid language tags, but they're considered invalid here because of
-		// the max length of the User.Locale field.
+		// the max length of the UserIms.Locale field.
 		{
 			Name:     "locale with extended language subtag",
 			Locale:   "zh-yue-HK", // Chinese, Cantonese, as used in Hong Kong

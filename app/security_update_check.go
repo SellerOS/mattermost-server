@@ -95,7 +95,7 @@ func (s *Server) DoSecurityUpdateCheck() {
 								mlog.Error("Failed to get system admins for security update information from Mattermost.")
 								return
 							}
-							users := results.Data.(map[string]*model.User)
+							users := results.Data.(map[string]*model.UserIms)
 
 							resBody, err := http.Get(SECURITY_URL + "/bulletins/" + bulletin.Id)
 							if err != nil {

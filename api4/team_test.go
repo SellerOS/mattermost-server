@@ -1250,7 +1250,8 @@ func TestGetTeamMembersForUser(t *testing.T) {
 	CheckUnauthorizedStatus(t, resp)
 
 	user := th.CreateUser()
-	Client.Login(user.Email, user.Password)
+	userLogin := th.CreateUserLogin(user.Email)
+	Client.Login(user.Email, userLogin.PasswordOld)
 	_, resp = Client.GetTeamMembersForUser(th.BasicUser.ClientId, "")
 	CheckForbiddenStatus(t, resp)
 
@@ -1396,7 +1397,8 @@ func TestAddTeamMember(t *testing.T) {
 	CheckNoError(t, resp)
 
 	// by token
-	Client.Login(otherUser.Email, otherUser.Password)
+	userLogin := th.CreateUserLogin(otherUser.Email)
+	Client.Login(otherUser.Email, userLogin.PasswordOld)
 
 	token := model.NewToken(
 		app.TOKEN_TYPE_TEAM_INVITATION,
@@ -1452,7 +1454,7 @@ func TestAddTeamMember(t *testing.T) {
 	th.App.DeleteToken(token)
 
 	// by invite_id
-	Client.Login(otherUser.Email, otherUser.Password)
+	Client.Login(otherUser.Email, userLogin.PasswordOld)
 
 	tm, resp = Client.AddTeamMemberFromInvite("", team.InviteId)
 	CheckNoError(t, resp)
@@ -1481,7 +1483,7 @@ func TestAddTeamMember(t *testing.T) {
 	_, err := th.App.UpdateTeam(team)
 	require.Nil(t, err)
 
-	// User is not in associated groups so shouldn't be allowed
+	// UserIms is not in associated groups so shouldn't be allowed
 	_, resp = th.SystemAdminClient.AddTeamMember(team.Id, otherUser.ClientId)
 	CheckErrorMessage(t, resp, "api.team.add_members.user_denied")
 
@@ -1696,7 +1698,7 @@ func TestAddTeamMembers(t *testing.T) {
 	_, err := th.App.UpdateTeam(team)
 	require.Nil(t, err)
 
-	// User is not in associated groups so shouldn't be allowed
+	// UserIms is not in associated groups so shouldn't be allowed
 	_, resp = Client.AddTeamMembers(team.Id, userList)
 	CheckErrorMessage(t, resp, "api.team.add_members.user_denied")
 
@@ -1807,7 +1809,8 @@ func TestGetTeamStats(t *testing.T) {
 
 	// login with different user and test if forbidden
 	user := th.CreateUser()
-	Client.Login(user.Email, user.Password)
+	userLogin := th.CreateUserLogin(user.Email)
+	Client.Login(user.Email, userLogin.PasswordOld)
 	_, resp = Client.GetTeamStats(th.BasicTeam.Id, "")
 	CheckForbiddenStatus(t, resp)
 
@@ -1975,7 +1978,8 @@ func TestGetMyTeamsUnread(t *testing.T) {
 	Client := th.Client
 
 	user := th.BasicUser
-	Client.Login(user.Email, user.Password)
+	userLogin := th.CreateUserLogin(user.Email)
+	Client.Login(user.Email, userLogin.PasswordOld)
 
 	teams, resp := Client.GetTeamsUnreadForUser(user.ClientId, "")
 	CheckNoError(t, resp)

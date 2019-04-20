@@ -1371,7 +1371,7 @@ func (s *SqlPostStore) GetRepliesForExport(parentId string) store.StoreChannel {
 func (s *SqlPostStore) GetDirectPostParentsForExportAfter(limit int, afterId string) store.StoreChannel {
 	return store.Do(func(result *store.StoreResult) {
 		query := s.getQueryBuilder().
-			Select("p.*", "Users.Username as User").
+			Select("p.*", "Users.Username as UserIms").
 			From("Posts p").
 			Join("Channels ON p.ChannelId = Channels.Id").
 			Join("Users ON p.UserId = Users.Id").

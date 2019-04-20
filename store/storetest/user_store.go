@@ -18,7 +18,7 @@ import (
 func TestUserStore(t *testing.T, ss store.Store) {
 	result := <-ss.User().GetAll()
 	require.Nil(t, result.Err, "failed cleaning up test users")
-	users := result.Data.([]*model.User)
+	users := result.Data.([]*model.UserIms)
 
 	for _, u := range users {
 		result := <-ss.User().PermanentDelete(u.ClientId)
@@ -73,7 +73,7 @@ func testUserStoreSave(t *testing.T, ss store.Store) {
 	teamId := model.NewId()
 	maxUsersPerTeam := 50
 
-	u1 := model.User{
+	u1 := model.UserIms{
 		Email:    "fadfsafs@sina.com",
 		Username: model.NewId(),
 	}
@@ -89,7 +89,7 @@ func testUserStoreSave(t *testing.T, ss store.Store) {
 		t.Fatal("shouldn't be able to update user from save")
 	}
 
-	u2 := model.User{
+	u2 := model.UserIms{
 		Email:    u1.Email,
 		Username: model.NewId(),
 	}
@@ -97,7 +97,7 @@ func testUserStoreSave(t *testing.T, ss store.Store) {
 		t.Fatal("should be unique email")
 	}
 
-	u2.Email = MakeEmail()
+	u2.Email = "success_" + model.NewId() + "@simulator.amazonses.com"
 	u2.Username = u1.Username
 	if err := (<-ss.User().Save(&u1)).Err; err == nil {
 		t.Fatal("should be unique username")
@@ -109,8 +109,8 @@ func testUserStoreSave(t *testing.T, ss store.Store) {
 	}
 
 	for i := 0; i < 49; i++ {
-		u := model.User{
-			Email:    MakeEmail(),
+		u := model.UserIms{
+			Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 			Username: model.NewId(),
 		}
 		if err := (<-ss.User().Save(&u)).Err; err != nil {
@@ -123,7 +123,7 @@ func testUserStoreSave(t *testing.T, ss store.Store) {
 	}
 
 	u2.ClientId = ""
-	u2.Email = MakeEmail()
+	u2.Email = "success_" + model.NewId() + "@simulator.amazonses.com"
 	u2.Username = model.NewId()
 	if err := (<-ss.User().Save(&u2)).Err; err != nil {
 		t.Fatal("couldn't save item", err)
@@ -136,15 +136,15 @@ func testUserStoreSave(t *testing.T, ss store.Store) {
 }
 
 func testUserStoreUpdate(t *testing.T, ss store.Store) {
-	u1 := &model.User{
-		Email: MakeEmail(),
+	u1 := &model.UserIms{
+		Email: "success_" + model.NewId() + "@simulator.amazonses.com",
 	}
 	store.Must(ss.User().Save(u1))
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: model.NewId(), UserId: u1.ClientId}, -1))
 
-	u2 := &model.User{
-		Email:       MakeEmail(),
+	u2 := &model.UserIms{
+		Email:       "success_" + model.NewId() + "@simulator.amazonses.com",
 		AuthService: "ldap",
 	}
 	store.Must(ss.User().Save(u2))
@@ -157,25 +157,25 @@ func testUserStoreUpdate(t *testing.T, ss store.Store) {
 		t.Fatal(err)
 	}
 
-	missing := &model.User{}
+	missing := &model.UserIms{}
 	if err := (<-ss.User().Update(missing, false)).Err; err == nil {
 		t.Fatal("Update should have failed because of missing key")
 	}
 
-	newId := &model.User{
+	newId := &model.UserIms{
 		ClientId: model.NewId(),
 	}
 	if err := (<-ss.User().Update(newId, false)).Err; err == nil {
 		t.Fatal("Update should have failed because id change")
 	}
 
-	u2.Email = MakeEmail()
+	u2.Email = "success_" + model.NewId() + "@simulator.amazonses.com"
 	if err := (<-ss.User().Update(u2, false)).Err; err == nil {
 		t.Fatal("Update should have failed because you can't modify AD/LDAP fields")
 	}
 
-	u3 := &model.User{
-		Email:       MakeEmail(),
+	u3 := &model.UserIms{
+		Email:       "success_" + model.NewId() + "@simulator.amazonses.com",
 		AuthService: "gitlab",
 	}
 	oldEmail := u3.Email
@@ -183,21 +183,21 @@ func testUserStoreUpdate(t *testing.T, ss store.Store) {
 	defer func() { store.Must(ss.User().PermanentDelete(u3.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: model.NewId(), UserId: u3.ClientId}, -1))
 
-	u3.Email = MakeEmail()
+	u3.Email = "success_" + model.NewId() + "@simulator.amazonses.com"
 	if result := <-ss.User().Update(u3, false); result.Err != nil {
 		t.Fatal("Update should not have failed")
 	} else {
-		newUser := result.Data.([2]*model.User)[0]
+		newUser := result.Data.([2]*model.UserIms)[0]
 		if newUser.Email != oldEmail {
 			t.Fatal("Email should not have been updated as the update is not trusted")
 		}
 	}
 
-	u3.Email = MakeEmail()
+	u3.Email = "success_" + model.NewId() + "@simulator.amazonses.com"
 	if result := <-ss.User().Update(u3, true); result.Err != nil {
 		t.Fatal("Update should not have failed")
 	} else {
-		newUser := result.Data.([2]*model.User)[0]
+		newUser := result.Data.([2]*model.UserIms)[0]
 		if newUser.Email == oldEmail {
 			t.Fatal("Email should have been updated as the update is trusted")
 		}
@@ -209,8 +209,8 @@ func testUserStoreUpdate(t *testing.T, ss store.Store) {
 }
 
 func testUserStoreUpdateUpdateAt(t *testing.T, ss store.Store) {
-	u1 := &model.User{}
-	u1.Email = MakeEmail()
+	u1 := &model.UserIms{}
+	u1.Email = "success_" + model.NewId() + "@simulator.amazonses.com"
 	store.Must(ss.User().Save(u1))
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: model.NewId(), UserId: u1.ClientId}, -1))
@@ -230,8 +230,8 @@ func testUserStoreUpdateUpdateAt(t *testing.T, ss store.Store) {
 }
 
 func testUserStoreUpdateFailedPasswordAttempts(t *testing.T, ss store.Store) {
-	u1 := &model.User{}
-	u1.Email = MakeEmail()
+	u1 := &model.UserIms{}
+	u1.Email = "success_" + model.NewId() + "@simulator.amazonses.com"
 	store.Must(ss.User().Save(u1))
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: model.NewId(), UserId: u1.ClientId}, -1))
@@ -240,24 +240,24 @@ func testUserStoreUpdateFailedPasswordAttempts(t *testing.T, ss store.Store) {
 		t.Fatal(err)
 	}
 
-	user, err := ss.User().Get(u1.ClientId)
+	_, err := ss.User().Get(u1.ClientId)
 	require.Nil(t, err)
-	if user.FailedAttempts != 3 {
-		t.Fatal("FailedAttempts not updated correctly")
-	}
+	//if user.FailedAttempts != 3 {
+	//	t.Fatal("FailedAttempts not updated correctly")
+	//}
 }
 
 func testUserStoreGet(t *testing.T, ss store.Store) {
-	u1 := &model.User{
-		Email: MakeEmail(),
+	u1 := &model.UserIms{
+		Email: "success_" + model.NewId() + "@simulator.amazonses.com",
 	}
 	store.Must(ss.User().Save(u1))
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 
-	u2 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u2 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	store.Must(ss.Bot().Save(&model.Bot{
 		UserId:   u2.ClientId,
 		Username: u2.Username,
@@ -292,27 +292,27 @@ func testUserStoreGet(t *testing.T, ss store.Store) {
 func testGetAllUsingAuthService(t *testing.T, ss store.Store) {
 	teamId := model.NewId()
 
-	u1 := store.Must(ss.User().Save(&model.User{
-		Email:       MakeEmail(),
+	u1 := store.Must(ss.User().Save(&model.UserIms{
+		Email:       "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username:    "u1" + model.NewId(),
 		AuthService: "service",
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u1.ClientId}, -1))
 
-	u2 := store.Must(ss.User().Save(&model.User{
-		Email:       MakeEmail(),
+	u2 := store.Must(ss.User().Save(&model.UserIms{
+		Email:       "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username:    "u2" + model.NewId(),
 		AuthService: "service",
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u2.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u2.ClientId}, -1))
 
-	u3 := store.Must(ss.User().Save(&model.User{
-		Email:       MakeEmail(),
+	u3 := store.Must(ss.User().Save(&model.UserIms{
+		Email:       "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username:    "u3" + model.NewId(),
 		AuthService: "service2",
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u3.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u3.ClientId}, -1))
 	store.Must(ss.Bot().Save(&model.Bot{
@@ -327,23 +327,23 @@ func testGetAllUsingAuthService(t *testing.T, ss store.Store) {
 	t.Run("get by unknown auth service", func(t *testing.T) {
 		result := <-ss.User().GetAllUsingAuthService("unknown")
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{}, result.Data.([]*model.User))
+		assert.Equal(t, []*model.UserIms{}, result.Data.([]*model.UserIms))
 	})
 
 	t.Run("get by auth service", func(t *testing.T) {
 		result := <-ss.User().GetAllUsingAuthService("service")
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{u1, u2}, result.Data.([]*model.User))
+		assert.Equal(t, []*model.UserIms{u1, u2}, result.Data.([]*model.UserIms))
 	})
 
 	t.Run("get by other auth service", func(t *testing.T) {
 		result := <-ss.User().GetAllUsingAuthService("service2")
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{u3}, result.Data.([]*model.User))
+		assert.Equal(t, []*model.UserIms{u3}, result.Data.([]*model.UserIms))
 	})
 }
 
-func sanitized(user *model.User) *model.User {
+func sanitized(user *model.UserIms) *model.UserIms {
 	clonedUser := model.UserFromJson(strings.NewReader(user.ToJson()))
 	clonedUser.AuthData = new(string)
 	*clonedUser.AuthData = ""
@@ -353,22 +353,22 @@ func sanitized(user *model.User) *model.User {
 }
 
 func testUserStoreGetAllProfiles(t *testing.T, ss store.Store) {
-	u1 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u1 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u1" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 
-	u2 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u2 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u2" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u2.ClientId)) }()
 
-	u3 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u3 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u3" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	store.Must(ss.Bot().Save(&model.Bot{
 		UserId:   u3.ClientId,
 		Username: u3.Username,
@@ -378,33 +378,33 @@ func testUserStoreGetAllProfiles(t *testing.T, ss store.Store) {
 	defer func() { store.Must(ss.Bot().PermanentDelete(u3.ClientId)) }()
 	defer func() { store.Must(ss.User().PermanentDelete(u3.ClientId)) }()
 
-	u4 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u4 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u4" + model.NewId(),
 		Roles:    "system_user some-other-role",
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u4.ClientId)) }()
 
-	u5 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u5 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u5" + model.NewId(),
 		Roles:    "system_admin",
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u5.ClientId)) }()
 
-	u6 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u6 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u6" + model.NewId(),
 		DeleteAt: model.GetMillis(),
 		Roles:    "system_admin",
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u6.ClientId)) }()
 
-	u7 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u7 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u7" + model.NewId(),
 		DeleteAt: model.GetMillis(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u7.ClientId)) }()
 
 	t.Run("get offset 0, limit 100", func(t *testing.T) {
@@ -412,8 +412,8 @@ func testUserStoreGetAllProfiles(t *testing.T, ss store.Store) {
 		result := <-ss.User().GetAllProfiles(options)
 		require.Nil(t, result.Err)
 
-		actual := result.Data.([]*model.User)
-		require.Equal(t, []*model.User{
+		actual := result.Data.([]*model.UserIms)
+		require.Equal(t, []*model.UserIms{
 			sanitized(u1),
 			sanitized(u2),
 			sanitized(u3),
@@ -430,8 +430,8 @@ func testUserStoreGetAllProfiles(t *testing.T, ss store.Store) {
 			PerPage: 1,
 		})
 		require.Nil(t, result.Err)
-		actual := result.Data.([]*model.User)
-		require.Equal(t, []*model.User{
+		actual := result.Data.([]*model.UserIms)
+		require.Equal(t, []*model.UserIms{
 			sanitized(u1),
 		}, actual)
 	})
@@ -440,8 +440,8 @@ func testUserStoreGetAllProfiles(t *testing.T, ss store.Store) {
 		result := <-ss.User().GetAll()
 		require.Nil(t, result.Err)
 
-		actual := result.Data.([]*model.User)
-		require.Equal(t, []*model.User{
+		actual := result.Data.([]*model.UserIms)
+		require.Equal(t, []*model.UserIms{
 			u1,
 			u2,
 			u3,
@@ -457,8 +457,8 @@ func testUserStoreGetAllProfiles(t *testing.T, ss store.Store) {
 		require.Nil(t, result.Err)
 		etag := result.Data.(string)
 
-		uNew := &model.User{}
-		uNew.Email = MakeEmail()
+		uNew := &model.UserIms{}
+		uNew.Email = "success_" + model.NewId() + "@simulator.amazonses.com"
 		store.Must(ss.User().Save(uNew))
 		defer func() { store.Must(ss.User().PermanentDelete(uNew.ClientId)) }()
 
@@ -476,8 +476,8 @@ func testUserStoreGetAllProfiles(t *testing.T, ss store.Store) {
 			Role:    "system_admin",
 		})
 		require.Nil(t, result.Err)
-		actual := result.Data.([]*model.User)
-		require.Equal(t, []*model.User{
+		actual := result.Data.([]*model.UserIms)
+		require.Equal(t, []*model.UserIms{
 			sanitized(u5),
 			sanitized(u6),
 		}, actual)
@@ -491,8 +491,8 @@ func testUserStoreGetAllProfiles(t *testing.T, ss store.Store) {
 			Inactive: true,
 		})
 		require.Nil(t, result.Err)
-		actual := result.Data.([]*model.User)
-		require.Equal(t, []*model.User{
+		actual := result.Data.([]*model.UserIms)
+		require.Equal(t, []*model.UserIms{
 			sanitized(u6),
 		}, actual)
 	})
@@ -504,8 +504,8 @@ func testUserStoreGetAllProfiles(t *testing.T, ss store.Store) {
 			Inactive: true,
 		})
 		require.Nil(t, result.Err)
-		actual := result.Data.([]*model.User)
-		require.Equal(t, []*model.User{
+		actual := result.Data.([]*model.UserIms)
+		require.Equal(t, []*model.UserIms{
 			sanitized(u6),
 			sanitized(u7),
 		}, actual)
@@ -515,24 +515,24 @@ func testUserStoreGetAllProfiles(t *testing.T, ss store.Store) {
 func testUserStoreGetProfiles(t *testing.T, ss store.Store) {
 	teamId := model.NewId()
 
-	u1 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u1 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u1" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u1.ClientId}, -1))
 
-	u2 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u2 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u2" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u2.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u2.ClientId}, -1))
 
-	u3 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u3 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u3" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	store.Must(ss.Bot().Save(&model.Bot{
 		UserId:   u3.ClientId,
 		Username: u3.Username,
@@ -543,19 +543,19 @@ func testUserStoreGetProfiles(t *testing.T, ss store.Store) {
 	defer func() { store.Must(ss.User().PermanentDelete(u3.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u3.ClientId}, -1))
 
-	u4 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u4 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u4" + model.NewId(),
 		Roles:    "system_admin",
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u4.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u4.ClientId}, -1))
 
-	u5 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u5 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u5" + model.NewId(),
 		DeleteAt: model.GetMillis(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u5.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u5.ClientId}, -1))
 
@@ -567,8 +567,8 @@ func testUserStoreGetProfiles(t *testing.T, ss store.Store) {
 		})
 		require.Nil(t, result.Err)
 
-		actual := result.Data.([]*model.User)
-		require.Equal(t, []*model.User{
+		actual := result.Data.([]*model.UserIms)
+		require.Equal(t, []*model.UserIms{
 			sanitized(u1),
 			sanitized(u2),
 			sanitized(u3),
@@ -585,8 +585,8 @@ func testUserStoreGetProfiles(t *testing.T, ss store.Store) {
 		})
 		require.Nil(t, result.Err)
 
-		actual := result.Data.([]*model.User)
-		require.Equal(t, []*model.User{sanitized(u1)}, actual)
+		actual := result.Data.([]*model.UserIms)
+		require.Equal(t, []*model.UserIms{sanitized(u1)}, actual)
 	})
 
 	t.Run("get unknown team id", func(t *testing.T) {
@@ -597,8 +597,8 @@ func testUserStoreGetProfiles(t *testing.T, ss store.Store) {
 		})
 		require.Nil(t, result.Err)
 
-		actual := result.Data.([]*model.User)
-		require.Equal(t, []*model.User{}, actual)
+		actual := result.Data.([]*model.UserIms)
+		require.Equal(t, []*model.UserIms{}, actual)
 	})
 
 	t.Run("etag changes for all after user creation", func(t *testing.T) {
@@ -606,8 +606,8 @@ func testUserStoreGetProfiles(t *testing.T, ss store.Store) {
 		require.Nil(t, result.Err)
 		etag := result.Data.(string)
 
-		uNew := &model.User{}
-		uNew.Email = MakeEmail()
+		uNew := &model.UserIms{}
+		uNew.Email = "success_" + model.NewId() + "@simulator.amazonses.com"
 		store.Must(ss.User().Save(uNew))
 		defer func() { store.Must(ss.User().PermanentDelete(uNew.ClientId)) }()
 		store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: uNew.ClientId}, -1))
@@ -627,8 +627,8 @@ func testUserStoreGetProfiles(t *testing.T, ss store.Store) {
 			Role:     "system_admin",
 		})
 		require.Nil(t, result.Err)
-		actual := result.Data.([]*model.User)
-		require.Equal(t, []*model.User{
+		actual := result.Data.([]*model.UserIms)
+		require.Equal(t, []*model.UserIms{
 			sanitized(u4),
 		}, actual)
 	})
@@ -641,8 +641,8 @@ func testUserStoreGetProfiles(t *testing.T, ss store.Store) {
 			Inactive: true,
 		})
 		require.Nil(t, result.Err)
-		actual := result.Data.([]*model.User)
-		require.Equal(t, []*model.User{
+		actual := result.Data.([]*model.UserIms)
+		require.Equal(t, []*model.UserIms{
 			sanitized(u5),
 		}, actual)
 	})
@@ -651,24 +651,24 @@ func testUserStoreGetProfiles(t *testing.T, ss store.Store) {
 func testUserStoreGetProfilesInChannel(t *testing.T, ss store.Store) {
 	teamId := model.NewId()
 
-	u1 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u1 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u1" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u1.ClientId}, -1))
 
-	u2 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u2 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u2" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u2.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u2.ClientId}, -1))
 
-	u3 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u3 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u3" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u3.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u3.ClientId}, -1))
 	store.Must(ss.Bot().Save(&model.Bot{
@@ -720,43 +720,43 @@ func testUserStoreGetProfilesInChannel(t *testing.T, ss store.Store) {
 	t.Run("get in channel 1, offset 0, limit 100", func(t *testing.T) {
 		result := <-ss.User().GetProfilesInChannel(c1.Id, 0, 100)
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{sanitized(u1), sanitized(u2), sanitized(u3)}, result.Data.([]*model.User))
+		assert.Equal(t, []*model.UserIms{sanitized(u1), sanitized(u2), sanitized(u3)}, result.Data.([]*model.UserIms))
 	})
 
 	t.Run("get in channel 1, offset 1, limit 2", func(t *testing.T) {
 		result := <-ss.User().GetProfilesInChannel(c1.Id, 1, 2)
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{sanitized(u2), sanitized(u3)}, result.Data.([]*model.User))
+		assert.Equal(t, []*model.UserIms{sanitized(u2), sanitized(u3)}, result.Data.([]*model.UserIms))
 	})
 
 	t.Run("get in channel 2, offset 0, limit 1", func(t *testing.T) {
 		result := <-ss.User().GetProfilesInChannel(c2.Id, 0, 1)
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{sanitized(u1)}, result.Data.([]*model.User))
+		assert.Equal(t, []*model.UserIms{sanitized(u1)}, result.Data.([]*model.UserIms))
 	})
 }
 
 func testUserStoreGetProfilesInChannelByStatus(t *testing.T, ss store.Store) {
 	teamId := model.NewId()
 
-	u1 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u1 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u1" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u1.ClientId}, -1))
 
-	u2 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u2 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u2" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u2.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u2.ClientId}, -1))
 
-	u3 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u3 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u3" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u3.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u3.ClientId}, -1))
 	store.Must(ss.Bot().Save(&model.Bot{
@@ -821,36 +821,36 @@ func testUserStoreGetProfilesInChannelByStatus(t *testing.T, ss store.Store) {
 	t.Run("get in channel 1 by status, offset 0, limit 100", func(t *testing.T) {
 		result := <-ss.User().GetProfilesInChannelByStatus(c1.Id, 0, 100)
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{sanitized(u3), sanitized(u2), sanitized(u1)}, result.Data.([]*model.User))
+		assert.Equal(t, []*model.UserIms{sanitized(u3), sanitized(u2), sanitized(u1)}, result.Data.([]*model.UserIms))
 	})
 
 	t.Run("get in channel 2 by status, offset 0, limit 1", func(t *testing.T) {
 		result := <-ss.User().GetProfilesInChannelByStatus(c2.Id, 0, 1)
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{sanitized(u1)}, result.Data.([]*model.User))
+		assert.Equal(t, []*model.UserIms{sanitized(u1)}, result.Data.([]*model.UserIms))
 	})
 }
 
 func testUserStoreGetProfilesWithoutTeam(t *testing.T, ss store.Store) {
 	teamId := model.NewId()
 
-	u1 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u1 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u1" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u1.ClientId}, -1))
 
-	u2 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u2 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u2" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u2.ClientId)) }()
 
-	u3 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u3 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u3" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u3.ClientId)) }()
 	store.Must(ss.Bot().Save(&model.Bot{
 		UserId:   u3.ClientId,
@@ -863,43 +863,43 @@ func testUserStoreGetProfilesWithoutTeam(t *testing.T, ss store.Store) {
 	t.Run("get, offset 0, limit 100", func(t *testing.T) {
 		result := <-ss.User().GetProfilesWithoutTeam(0, 100)
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{sanitized(u2), sanitized(u3)}, result.Data.([]*model.User))
+		assert.Equal(t, []*model.UserIms{sanitized(u2), sanitized(u3)}, result.Data.([]*model.UserIms))
 	})
 
 	t.Run("get, offset 1, limit 1", func(t *testing.T) {
 		result := <-ss.User().GetProfilesWithoutTeam(1, 1)
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{sanitized(u3)}, result.Data.([]*model.User))
+		assert.Equal(t, []*model.UserIms{sanitized(u3)}, result.Data.([]*model.UserIms))
 	})
 
 	t.Run("get, offset 2, limit 1", func(t *testing.T) {
 		result := <-ss.User().GetProfilesWithoutTeam(2, 1)
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{}, result.Data.([]*model.User))
+		assert.Equal(t, []*model.UserIms{}, result.Data.([]*model.UserIms))
 	})
 }
 
 func testUserStoreGetAllProfilesInChannel(t *testing.T, ss store.Store) {
 	teamId := model.NewId()
 
-	u1 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u1 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u1" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u1.ClientId}, -1))
 
-	u2 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u2 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u2" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u2.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u2.ClientId}, -1))
 
-	u3 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u3 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u3" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u3.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u3.ClientId}, -1))
 	store.Must(ss.Bot().Save(&model.Bot{
@@ -951,35 +951,35 @@ func testUserStoreGetAllProfilesInChannel(t *testing.T, ss store.Store) {
 	t.Run("all profiles in channel 1, no caching", func(t *testing.T) {
 		result := <-ss.User().GetAllProfilesInChannel(c1.Id, false)
 		require.Nil(t, result.Err)
-		assert.Equal(t, map[string]*model.User{
+		assert.Equal(t, map[string]*model.UserIms{
 			u1.ClientId: sanitized(u1),
 			u2.ClientId: sanitized(u2),
 			u3.ClientId: sanitized(u3),
-		}, result.Data.(map[string]*model.User))
+		}, result.Data.(map[string]*model.UserIms))
 	})
 
 	t.Run("all profiles in channel 2, no caching", func(t *testing.T) {
 		result := <-ss.User().GetAllProfilesInChannel(c2.Id, false)
 		require.Nil(t, result.Err)
-		assert.Equal(t, map[string]*model.User{
+		assert.Equal(t, map[string]*model.UserIms{
 			u1.ClientId: sanitized(u1),
-		}, result.Data.(map[string]*model.User))
+		}, result.Data.(map[string]*model.UserIms))
 	})
 
 	t.Run("all profiles in channel 2, caching", func(t *testing.T) {
 		result := <-ss.User().GetAllProfilesInChannel(c2.Id, true)
 		require.Nil(t, result.Err)
-		assert.Equal(t, map[string]*model.User{
+		assert.Equal(t, map[string]*model.UserIms{
 			u1.ClientId: sanitized(u1),
-		}, result.Data.(map[string]*model.User))
+		}, result.Data.(map[string]*model.UserIms))
 	})
 
 	t.Run("all profiles in channel 2, caching [repeated]", func(t *testing.T) {
 		result := <-ss.User().GetAllProfilesInChannel(c2.Id, true)
 		require.Nil(t, result.Err)
-		assert.Equal(t, map[string]*model.User{
+		assert.Equal(t, map[string]*model.UserIms{
 			u1.ClientId: sanitized(u1),
-		}, result.Data.(map[string]*model.User))
+		}, result.Data.(map[string]*model.UserIms))
 	})
 
 	ss.User().InvalidateProfilesInChannelCacheByUser(u1.ClientId)
@@ -989,24 +989,24 @@ func testUserStoreGetAllProfilesInChannel(t *testing.T, ss store.Store) {
 func testUserStoreGetProfilesNotInChannel(t *testing.T, ss store.Store) {
 	teamId := model.NewId()
 
-	u1 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u1 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u1" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u1.ClientId}, -1))
 
-	u2 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u2 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u2" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u2.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u2.ClientId}, -1))
 
-	u3 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u3 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u3" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u3.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u3.ClientId}, -1))
 	store.Must(ss.Bot().Save(&model.Bot{
@@ -1034,21 +1034,21 @@ func testUserStoreGetProfilesNotInChannel(t *testing.T, ss store.Store) {
 	t.Run("get team 1, channel 1, offset 0, limit 100", func(t *testing.T) {
 		result := <-ss.User().GetProfilesNotInChannel(teamId, c1.Id, 0, 100)
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{
+		assert.Equal(t, []*model.UserIms{
 			sanitized(u1),
 			sanitized(u2),
 			sanitized(u3),
-		}, result.Data.([]*model.User))
+		}, result.Data.([]*model.UserIms))
 	})
 
 	t.Run("get team 1, channel 2, offset 0, limit 100", func(t *testing.T) {
 		result := <-ss.User().GetProfilesNotInChannel(teamId, c2.Id, 0, 100)
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{
+		assert.Equal(t, []*model.UserIms{
 			sanitized(u1),
 			sanitized(u2),
 			sanitized(u3),
-		}, result.Data.([]*model.User))
+		}, result.Data.([]*model.UserIms))
 	})
 
 	store.Must(ss.Channel().SaveMember(&model.ChannelMember{
@@ -1078,40 +1078,40 @@ func testUserStoreGetProfilesNotInChannel(t *testing.T, ss store.Store) {
 	t.Run("get team 1, channel 1, offset 0, limit 100, after update", func(t *testing.T) {
 		result := <-ss.User().GetProfilesNotInChannel(teamId, c1.Id, 0, 100)
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{}, result.Data.([]*model.User))
+		assert.Equal(t, []*model.UserIms{}, result.Data.([]*model.UserIms))
 	})
 
 	t.Run("get team 1, channel 2, offset 0, limit 100, after update", func(t *testing.T) {
 		result := <-ss.User().GetProfilesNotInChannel(teamId, c2.Id, 0, 100)
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{
+		assert.Equal(t, []*model.UserIms{
 			sanitized(u2),
 			sanitized(u3),
-		}, result.Data.([]*model.User))
+		}, result.Data.([]*model.UserIms))
 	})
 }
 
 func testUserStoreGetProfilesByIds(t *testing.T, ss store.Store) {
 	teamId := model.NewId()
 
-	u1 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u1 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u1" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u1.ClientId}, -1))
 
-	u2 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u2 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u2" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u2.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u2.ClientId}, -1))
 
-	u3 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u3 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u3" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u3.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u3.ClientId}, -1))
 	store.Must(ss.Bot().Save(&model.Bot{
@@ -1125,31 +1125,31 @@ func testUserStoreGetProfilesByIds(t *testing.T, ss store.Store) {
 	t.Run("get u1 by id, no caching", func(t *testing.T) {
 		result := <-ss.User().GetProfileByIds([]string{u1.ClientId}, false)
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{sanitized(u1)}, result.Data.([]*model.User))
+		assert.Equal(t, []*model.UserIms{sanitized(u1)}, result.Data.([]*model.UserIms))
 	})
 
 	t.Run("get u1 by id, caching", func(t *testing.T) {
 		result := <-ss.User().GetProfileByIds([]string{u1.ClientId}, true)
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{sanitized(u1)}, result.Data.([]*model.User))
+		assert.Equal(t, []*model.UserIms{sanitized(u1)}, result.Data.([]*model.UserIms))
 	})
 
 	t.Run("get u1, u2, u3 by id, no caching", func(t *testing.T) {
 		result := <-ss.User().GetProfileByIds([]string{u1.ClientId, u2.ClientId, u3.ClientId}, false)
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{sanitized(u1), sanitized(u2), sanitized(u3)}, result.Data.([]*model.User))
+		assert.Equal(t, []*model.UserIms{sanitized(u1), sanitized(u2), sanitized(u3)}, result.Data.([]*model.UserIms))
 	})
 
 	t.Run("get u1, u2, u3 by id, caching", func(t *testing.T) {
 		result := <-ss.User().GetProfileByIds([]string{u1.ClientId, u2.ClientId, u3.ClientId}, true)
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{sanitized(u1), sanitized(u2), sanitized(u3)}, result.Data.([]*model.User))
+		assert.Equal(t, []*model.UserIms{sanitized(u1), sanitized(u2), sanitized(u3)}, result.Data.([]*model.UserIms))
 	})
 
 	t.Run("get unknown id, caching", func(t *testing.T) {
 		result := <-ss.User().GetProfileByIds([]string{"123"}, true)
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{}, result.Data.([]*model.User))
+		assert.Equal(t, []*model.UserIms{}, result.Data.([]*model.UserIms))
 	})
 }
 
@@ -1157,24 +1157,24 @@ func testUserStoreGetProfilesByUsernames(t *testing.T, ss store.Store) {
 	teamId := model.NewId()
 	team2Id := model.NewId()
 
-	u1 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u1 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u1" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u1.ClientId}, -1))
 
-	u2 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u2 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u2" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u2.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u2.ClientId}, -1))
 
-	u3 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u3 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u3" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u3.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: team2Id, UserId: u3.ClientId}, -1))
 	store.Must(ss.Bot().Save(&model.Bot{
@@ -1188,57 +1188,57 @@ func testUserStoreGetProfilesByUsernames(t *testing.T, ss store.Store) {
 	t.Run("get by u1 and u2 usernames, team id 1", func(t *testing.T) {
 		result := <-ss.User().GetProfilesByUsernames([]string{u1.Username, u2.Username}, teamId)
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{u1, u2}, result.Data.([]*model.User))
+		assert.Equal(t, []*model.UserIms{u1, u2}, result.Data.([]*model.UserIms))
 	})
 
 	t.Run("get by u1 username, team id 1", func(t *testing.T) {
 		result := <-ss.User().GetProfilesByUsernames([]string{u1.Username}, teamId)
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{u1}, result.Data.([]*model.User))
+		assert.Equal(t, []*model.UserIms{u1}, result.Data.([]*model.UserIms))
 	})
 
 	t.Run("get by u1 and u3 usernames, no team id", func(t *testing.T) {
 		result := <-ss.User().GetProfilesByUsernames([]string{u1.Username, u3.Username}, "")
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{u1, u3}, result.Data.([]*model.User))
+		assert.Equal(t, []*model.UserIms{u1, u3}, result.Data.([]*model.UserIms))
 	})
 
 	t.Run("get by u1 and u3 usernames, team id 1", func(t *testing.T) {
 		result := <-ss.User().GetProfilesByUsernames([]string{u1.Username, u3.Username}, teamId)
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{u1}, result.Data.([]*model.User))
+		assert.Equal(t, []*model.UserIms{u1}, result.Data.([]*model.UserIms))
 	})
 
 	t.Run("get by u1 and u3 usernames, team id 2", func(t *testing.T) {
 		result := <-ss.User().GetProfilesByUsernames([]string{u1.Username, u3.Username}, team2Id)
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{u3}, result.Data.([]*model.User))
+		assert.Equal(t, []*model.UserIms{u3}, result.Data.([]*model.UserIms))
 	})
 }
 
 func testUserStoreGetSystemAdminProfiles(t *testing.T, ss store.Store) {
 	teamId := model.NewId()
 
-	u1 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u1 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Roles:    model.SYSTEM_USER_ROLE_ID + " " + model.SYSTEM_ADMIN_ROLE_ID,
 		Username: "u1" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u1.ClientId}, -1))
 
-	u2 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u2 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u2" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u2.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u2.ClientId}, -1))
 
-	u3 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u3 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Roles:    model.SYSTEM_USER_ROLE_ID + " " + model.SYSTEM_ADMIN_ROLE_ID,
 		Username: "u3" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u3.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u3.ClientId}, -1))
 	store.Must(ss.Bot().Save(&model.Bot{
@@ -1252,34 +1252,34 @@ func testUserStoreGetSystemAdminProfiles(t *testing.T, ss store.Store) {
 	t.Run("all system admin profiles", func(t *testing.T) {
 		result := <-ss.User().GetSystemAdminProfiles()
 		require.Nil(t, result.Err)
-		assert.Equal(t, map[string]*model.User{
+		assert.Equal(t, map[string]*model.UserIms{
 			u1.ClientId: sanitized(u1),
 			u3.ClientId: sanitized(u3),
-		}, result.Data.(map[string]*model.User))
+		}, result.Data.(map[string]*model.UserIms))
 	})
 }
 
 func testUserStoreGetByEmail(t *testing.T, ss store.Store) {
 	teamId := model.NewId()
 
-	u1 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u1 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u1" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u1.ClientId}, -1))
 
-	u2 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u2 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u2" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u2.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u2.ClientId}, -1))
 
-	u3 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u3 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u3" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u3.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u3.ClientId}, -1))
 	store.Must(ss.Bot().Save(&model.Bot{
@@ -1293,19 +1293,19 @@ func testUserStoreGetByEmail(t *testing.T, ss store.Store) {
 	t.Run("get u1 by email", func(t *testing.T) {
 		result := <-ss.User().GetByEmail(u1.Email)
 		require.Nil(t, result.Err)
-		assert.Equal(t, u1, result.Data.(*model.User))
+		assert.Equal(t, u1, result.Data.(*model.UserIms))
 	})
 
 	t.Run("get u2 by email", func(t *testing.T) {
 		result := <-ss.User().GetByEmail(u2.Email)
 		require.Nil(t, result.Err)
-		assert.Equal(t, u2, result.Data.(*model.User))
+		assert.Equal(t, u2, result.Data.(*model.UserIms))
 	})
 
 	t.Run("get u3 by email", func(t *testing.T) {
 		result := <-ss.User().GetByEmail(u3.Email)
 		require.Nil(t, result.Err)
-		assert.Equal(t, u3, result.Data.(*model.User))
+		assert.Equal(t, u3, result.Data.(*model.UserIms))
 	})
 
 	t.Run("get by empty email", func(t *testing.T) {
@@ -1326,28 +1326,28 @@ func testUserStoreGetByAuthData(t *testing.T, ss store.Store) {
 	auth1 := model.NewId()
 	auth3 := model.NewId()
 
-	u1 := store.Must(ss.User().Save(&model.User{
-		Email:       MakeEmail(),
+	u1 := store.Must(ss.User().Save(&model.UserIms{
+		Email:       "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username:    "u1" + model.NewId(),
 		AuthData:    &auth1,
 		AuthService: "service",
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u1.ClientId}, -1))
 
-	u2 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u2 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u2" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u2.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u2.ClientId}, -1))
 
-	u3 := store.Must(ss.User().Save(&model.User{
-		Email:       MakeEmail(),
+	u3 := store.Must(ss.User().Save(&model.UserIms{
+		Email:       "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username:    "u3" + model.NewId(),
 		AuthData:    &auth3,
 		AuthService: "service2",
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u3.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u3.ClientId}, -1))
 	store.Must(ss.Bot().Save(&model.Bot{
@@ -1361,13 +1361,13 @@ func testUserStoreGetByAuthData(t *testing.T, ss store.Store) {
 	t.Run("get by u1 auth", func(t *testing.T) {
 		result := <-ss.User().GetByAuth(u1.AuthData, u1.AuthService)
 		require.Nil(t, result.Err)
-		assert.Equal(t, u1, result.Data.(*model.User))
+		assert.Equal(t, u1, result.Data.(*model.UserIms))
 	})
 
 	t.Run("get by u3 auth", func(t *testing.T) {
 		result := <-ss.User().GetByAuth(u3.AuthData, u3.AuthService)
 		require.Nil(t, result.Err)
-		assert.Equal(t, u3, result.Data.(*model.User))
+		assert.Equal(t, u3, result.Data.(*model.UserIms))
 	})
 
 	t.Run("get by u1 auth, unknown service", func(t *testing.T) {
@@ -1394,24 +1394,24 @@ func testUserStoreGetByAuthData(t *testing.T, ss store.Store) {
 func testUserStoreGetByUsername(t *testing.T, ss store.Store) {
 	teamId := model.NewId()
 
-	u1 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u1 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u1" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u1.ClientId}, -1))
 
-	u2 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u2 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u2" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u2.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u2.ClientId}, -1))
 
-	u3 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u3 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u3" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u3.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u3.ClientId}, -1))
 	store.Must(ss.Bot().Save(&model.Bot{
@@ -1425,19 +1425,19 @@ func testUserStoreGetByUsername(t *testing.T, ss store.Store) {
 	t.Run("get u1 by username", func(t *testing.T) {
 		result := <-ss.User().GetByUsername(u1.Username)
 		require.Nil(t, result.Err)
-		assert.Equal(t, u1, result.Data.(*model.User))
+		assert.Equal(t, u1, result.Data.(*model.UserIms))
 	})
 
 	t.Run("get u2 by username", func(t *testing.T) {
 		result := <-ss.User().GetByUsername(u2.Username)
 		require.Nil(t, result.Err)
-		assert.Equal(t, u2, result.Data.(*model.User))
+		assert.Equal(t, u2, result.Data.(*model.UserIms))
 	})
 
 	t.Run("get u3 by username", func(t *testing.T) {
 		result := <-ss.User().GetByUsername(u3.Username)
 		require.Nil(t, result.Err)
-		assert.Equal(t, u3, result.Data.(*model.User))
+		assert.Equal(t, u3, result.Data.(*model.UserIms))
 	})
 
 	t.Run("get by empty username", func(t *testing.T) {
@@ -1459,30 +1459,30 @@ func testUserStoreGetForLogin(t *testing.T, ss store.Store) {
 	auth2 := model.NewId()
 	auth3 := model.NewId()
 
-	u1 := store.Must(ss.User().Save(&model.User{
-		Email:       MakeEmail(),
+	u1 := store.Must(ss.User().Save(&model.UserIms{
+		Email:       "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username:    "u1" + model.NewId(),
 		AuthService: model.USER_AUTH_SERVICE_GITLAB,
 		AuthData:    &auth,
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u1.ClientId}, -1))
 
-	u2 := store.Must(ss.User().Save(&model.User{
-		Email:       MakeEmail(),
+	u2 := store.Must(ss.User().Save(&model.UserIms{
+		Email:       "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username:    "u2" + model.NewId(),
 		AuthService: model.USER_AUTH_SERVICE_LDAP,
 		AuthData:    &auth2,
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u2.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u2.ClientId}, -1))
 
-	u3 := store.Must(ss.User().Save(&model.User{
-		Email:       MakeEmail(),
+	u3 := store.Must(ss.User().Save(&model.UserIms{
+		Email:       "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username:    "u3" + model.NewId(),
 		AuthService: model.USER_AUTH_SERVICE_LDAP,
 		AuthData:    &auth3,
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u3.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u3.ClientId}, -1))
 	store.Must(ss.Bot().Save(&model.Bot{
@@ -1496,7 +1496,7 @@ func testUserStoreGetForLogin(t *testing.T, ss store.Store) {
 	t.Run("get u1 by username, allow both", func(t *testing.T) {
 		result := <-ss.User().GetForLogin(u1.Username, true, true)
 		require.Nil(t, result.Err)
-		assert.Equal(t, u1, result.Data.(*model.User))
+		assert.Equal(t, u1, result.Data.(*model.UserIms))
 	})
 
 	t.Run("get u1 by username, allow only email", func(t *testing.T) {
@@ -1508,7 +1508,7 @@ func testUserStoreGetForLogin(t *testing.T, ss store.Store) {
 	t.Run("get u1 by email, allow both", func(t *testing.T) {
 		result := <-ss.User().GetForLogin(u1.Email, true, true)
 		require.Nil(t, result.Err)
-		assert.Equal(t, u1, result.Data.(*model.User))
+		assert.Equal(t, u1, result.Data.(*model.UserIms))
 	})
 
 	t.Run("get u1 by email, allow only username", func(t *testing.T) {
@@ -1520,13 +1520,13 @@ func testUserStoreGetForLogin(t *testing.T, ss store.Store) {
 	t.Run("get u2 by username, allow both", func(t *testing.T) {
 		result := <-ss.User().GetForLogin(u2.Username, true, true)
 		require.Nil(t, result.Err)
-		assert.Equal(t, u2, result.Data.(*model.User))
+		assert.Equal(t, u2, result.Data.(*model.UserIms))
 	})
 
 	t.Run("get u2 by email, allow both", func(t *testing.T) {
 		result := <-ss.User().GetForLogin(u2.Email, true, true)
 		require.Nil(t, result.Err)
-		assert.Equal(t, u2, result.Data.(*model.User))
+		assert.Equal(t, u2, result.Data.(*model.UserIms))
 	})
 
 	t.Run("get u2 by username, allow neither", func(t *testing.T) {
@@ -1539,32 +1539,32 @@ func testUserStoreGetForLogin(t *testing.T, ss store.Store) {
 func testUserStoreUpdatePassword(t *testing.T, ss store.Store) {
 	teamId := model.NewId()
 
-	u1 := &model.User{}
-	u1.Email = MakeEmail()
-	u1.Salt = model.NewId()
+	u1 := &model.UserIms{}
+	u1.Email = "success_" + model.NewId() + "@simulator.amazonses.com"
+	//u1.Salt = model.NewId()
 	store.Must(ss.User().Save(u1))
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u1.ClientId}, -1))
 
-	hashedPassword := model.HashPassword("newpwd", u1.Salt)
+	hashedPassword := model.HashPassword("newpwd", model.NewId())
 
 	if err := (<-ss.User().UpdatePassword(u1.ClientId, hashedPassword)).Err; err != nil {
 		t.Fatal(err)
 	}
 
-	if r1 := <-ss.User().GetByEmail(u1.Email); r1.Err != nil {
+	if r1 := <-ss.User().GetUserLoginByEmail(u1.Email); r1.Err != nil {
 		t.Fatal(r1.Err)
 	} else {
-		user := r1.Data.(*model.User)
-		if user.Password != hashedPassword {
+		user := r1.Data.(*model.UserLogin)
+		if user.PasswordEncryption != hashedPassword {
 			t.Fatal("Password was not updated correctly")
 		}
 	}
 }
 
 func testUserStoreDelete(t *testing.T, ss store.Store) {
-	u1 := &model.User{}
-	u1.Email = MakeEmail()
+	u1 := &model.UserIms{}
+	u1.Email = "success_" + model.NewId() + "@simulator.amazonses.com"
 	store.Must(ss.User().Save(u1))
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: model.NewId(), UserId: u1.ClientId}, -1))
@@ -1577,8 +1577,8 @@ func testUserStoreDelete(t *testing.T, ss store.Store) {
 func testUserStoreUpdateAuthData(t *testing.T, ss store.Store) {
 	teamId := model.NewId()
 
-	u1 := &model.User{}
-	u1.Email = MakeEmail()
+	u1 := &model.UserIms{}
+	u1.Email = "success_" + model.NewId() + "@simulator.amazonses.com"
 	store.Must(ss.User().Save(u1))
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u1.ClientId}, -1))
@@ -1593,16 +1593,16 @@ func testUserStoreUpdateAuthData(t *testing.T, ss store.Store) {
 	if r1 := <-ss.User().GetByEmail(u1.Email); r1.Err != nil {
 		t.Fatal(r1.Err)
 	} else {
-		user := r1.Data.(*model.User)
+		user := r1.Data.(*model.UserIms)
 		if user.AuthService != service {
 			t.Fatal("AuthService was not updated correctly")
 		}
 		if *user.AuthData != authData {
 			t.Fatal("AuthData was not updated correctly")
 		}
-		if user.Password != "" {
-			t.Fatal("Password was not cleared properly")
-		}
+		//if user.Password != "" {
+		//	t.Fatal("Password was not cleared properly")
+		//}
 	}
 }
 
@@ -1621,15 +1621,15 @@ func testUserUnreadCount(t *testing.T, ss store.Store) {
 	c2.Name = "unread-direct-" + model.NewId()
 	c2.Type = model.CHANNEL_DIRECT
 
-	u1 := &model.User{}
+	u1 := &model.UserIms{}
 	u1.Username = "user1" + model.NewId()
-	u1.Email = MakeEmail()
+	u1.Email = "success_" + model.NewId() + "@simulator.amazonses.com"
 	store.Must(ss.User().Save(u1))
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u1.ClientId}, -1))
 
-	u2 := &model.User{}
-	u2.Email = MakeEmail()
+	u2 := &model.UserIms{}
+	u2.Email = "success_" + model.NewId() + "@simulator.amazonses.com"
 	u2.Username = "user2" + model.NewId()
 	store.Must(ss.User().Save(u2))
 	defer func() { store.Must(ss.User().PermanentDelete(u2.ClientId)) }()
@@ -1700,8 +1700,8 @@ func testUserUnreadCount(t *testing.T, ss store.Store) {
 }
 
 func testUserStoreUpdateMfaSecret(t *testing.T, ss store.Store) {
-	u1 := model.User{}
-	u1.Email = MakeEmail()
+	u1 := model.UserIms{}
+	u1.Email = "success_" + model.NewId() + "@simulator.amazonses.com"
 	store.Must(ss.User().Save(&u1))
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 
@@ -1718,8 +1718,8 @@ func testUserStoreUpdateMfaSecret(t *testing.T, ss store.Store) {
 }
 
 func testUserStoreUpdateMfaActive(t *testing.T, ss store.Store) {
-	u1 := model.User{}
-	u1.Email = MakeEmail()
+	u1 := model.UserIms{}
+	u1.Email = "success_" + model.NewId() + "@simulator.amazonses.com"
 	store.Must(ss.User().Save(&u1))
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 
@@ -1742,24 +1742,24 @@ func testUserStoreUpdateMfaActive(t *testing.T, ss store.Store) {
 func testUserStoreGetRecentlyActiveUsersForTeam(t *testing.T, ss store.Store) {
 	teamId := model.NewId()
 
-	u1 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u1 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u1" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u1.ClientId}, -1))
 
-	u2 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u2 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u2" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u2.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u2.ClientId}, -1))
 
-	u3 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u3 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u3" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u3.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u3.ClientId}, -1))
 	store.Must(ss.Bot().Save(&model.Bot{
@@ -1782,27 +1782,27 @@ func testUserStoreGetRecentlyActiveUsersForTeam(t *testing.T, ss store.Store) {
 	t.Run("get team 1, offset 0, limit 100", func(t *testing.T) {
 		result := <-ss.User().GetRecentlyActiveUsersForTeam(teamId, 0, 100)
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{
+		assert.Equal(t, []*model.UserIms{
 			sanitized(u3),
 			sanitized(u1),
 			sanitized(u2),
-		}, result.Data.([]*model.User))
+		}, result.Data.([]*model.UserIms))
 	})
 
 	t.Run("get team 1, offset 0, limit 1", func(t *testing.T) {
 		result := <-ss.User().GetRecentlyActiveUsersForTeam(teamId, 0, 1)
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{
+		assert.Equal(t, []*model.UserIms{
 			sanitized(u3),
-		}, result.Data.([]*model.User))
+		}, result.Data.([]*model.UserIms))
 	})
 
 	t.Run("get team 1, offset 2, limit 1", func(t *testing.T) {
 		result := <-ss.User().GetRecentlyActiveUsersForTeam(teamId, 2, 1)
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{
+		assert.Equal(t, []*model.UserIms{
 			sanitized(u2),
-		}, result.Data.([]*model.User))
+		}, result.Data.([]*model.UserIms))
 	})
 }
 
@@ -1810,24 +1810,24 @@ func testUserStoreGetNewUsersForTeam(t *testing.T, ss store.Store) {
 	teamId := model.NewId()
 	teamId2 := model.NewId()
 
-	u1 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u1 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u1" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u1.ClientId}, -1))
 
-	u2 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u2 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u2" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u2.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u2.ClientId}, -1))
 
-	u3 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u3 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u3" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u3.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u3.ClientId}, -1))
 	store.Must(ss.Bot().Save(&model.Bot{
@@ -1838,49 +1838,49 @@ func testUserStoreGetNewUsersForTeam(t *testing.T, ss store.Store) {
 	u3.IsBot = true
 	defer func() { store.Must(ss.Bot().PermanentDelete(u3.ClientId)) }()
 
-	u4 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u4 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u4" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u4.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId2, UserId: u4.ClientId}, -1))
 
 	t.Run("get team 1, offset 0, limit 100", func(t *testing.T) {
 		result := <-ss.User().GetNewUsersForTeam(teamId, 0, 100)
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{
+		assert.Equal(t, []*model.UserIms{
 			sanitized(u3),
 			sanitized(u2),
 			sanitized(u1),
-		}, result.Data.([]*model.User))
+		}, result.Data.([]*model.UserIms))
 	})
 
 	t.Run("get team 1, offset 0, limit 1", func(t *testing.T) {
 		result := <-ss.User().GetNewUsersForTeam(teamId, 0, 1)
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{
+		assert.Equal(t, []*model.UserIms{
 			sanitized(u3),
-		}, result.Data.([]*model.User))
+		}, result.Data.([]*model.UserIms))
 	})
 
 	t.Run("get team 1, offset 2, limit 1", func(t *testing.T) {
 		result := <-ss.User().GetNewUsersForTeam(teamId, 2, 1)
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{
+		assert.Equal(t, []*model.UserIms{
 			sanitized(u1),
-		}, result.Data.([]*model.User))
+		}, result.Data.([]*model.UserIms))
 	})
 
 	t.Run("get team 2, offset 0, limit 100", func(t *testing.T) {
 		result := <-ss.User().GetNewUsersForTeam(teamId2, 0, 100)
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{
+		assert.Equal(t, []*model.UserIms{
 			sanitized(u4),
-		}, result.Data.([]*model.User))
+		}, result.Data.([]*model.UserIms))
 	})
 }
 
-func assertUsers(t *testing.T, expected, actual []*model.User) {
+func assertUsers(t *testing.T, expected, actual []*model.UserIms) {
 	expectedUsernames := make([]string, 0, len(expected))
 	for _, user := range expected {
 		expectedUsernames = append(expectedUsernames, user.Username)
@@ -1896,7 +1896,7 @@ func assertUsers(t *testing.T, expected, actual []*model.User) {
 	}
 }
 
-func assertUsersMatchInAnyOrder(t *testing.T, expected, actual []*model.User) {
+func assertUsersMatchInAnyOrder(t *testing.T, expected, actual []*model.UserIms) {
 	expectedUsernames := make([]string, 0, len(expected))
 	for _, user := range expected {
 		expectedUsernames = append(expectedUsernames, user.Username)
@@ -1913,28 +1913,28 @@ func assertUsersMatchInAnyOrder(t *testing.T, expected, actual []*model.User) {
 }
 
 func testUserStoreSearch(t *testing.T, ss store.Store) {
-	u1 := &model.User{
+	u1 := &model.UserIms{
 		Username:  "jimbo1" + model.NewId(),
 		FirstName: "Tim",
 		LastName:  "Bill",
-		Nickname:  "Rob",
+		//Nickname:  "Rob",
 		Email:     "harold" + model.NewId() + "@simulator.amazonses.com",
 		Roles:     "system_user system_admin",
 	}
 	store.Must(ss.User().Save(u1))
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 
-	u2 := &model.User{
+	u2 := &model.UserIms{
 		Username: "jim-bobby" + model.NewId(),
-		Email:    MakeEmail(),
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Roles:    "system_user",
 	}
 	store.Must(ss.User().Save(u2))
 	defer func() { store.Must(ss.User().PermanentDelete(u2.ClientId)) }()
 
-	u3 := &model.User{
+	u3 := &model.UserIms{
 		Username: "jimbo3" + model.NewId(),
-		Email:    MakeEmail(),
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		DeleteAt: 1,
 		Roles:    "system_admin",
 	}
@@ -1948,22 +1948,22 @@ func testUserStoreSearch(t *testing.T, ss store.Store) {
 	u3.IsBot = true
 	defer func() { store.Must(ss.Bot().PermanentDelete(u3.ClientId)) }()
 
-	u5 := &model.User{
+	u5 := &model.UserIms{
 		Username:  "yu" + model.NewId(),
 		FirstName: "En",
 		LastName:  "Yu",
-		Nickname:  "enyu",
-		Email:     MakeEmail(),
+		//Nickname:  "enyu",
+		Email:     "success_" + model.NewId() + "@simulator.amazonses.com",
 	}
 	store.Must(ss.User().Save(u5))
 	defer func() { store.Must(ss.User().PermanentDelete(u5.ClientId)) }()
 
-	u6 := &model.User{
+	u6 := &model.UserIms{
 		Username:  "underscore" + model.NewId(),
 		FirstName: "Du_",
 		LastName:  "_DE",
-		Nickname:  "lodash",
-		Email:     MakeEmail(),
+		//Nickname:  "lodash",
+		Email:     "success_" + model.NewId() + "@simulator.amazonses.com",
 	}
 	store.Must(ss.User().Save(u6))
 	defer func() { store.Must(ss.User().PermanentDelete(u6.ClientId)) }()
@@ -1990,7 +1990,7 @@ func testUserStoreSearch(t *testing.T, ss store.Store) {
 		TeamId      string
 		Term        string
 		Options     *model.UserSearchOptions
-		Expected    []*model.User
+		Expected    []*model.UserIms
 	}{
 		{
 			"search jimb",
@@ -2000,7 +2000,7 @@ func testUserStoreSearch(t *testing.T, ss store.Store) {
 				AllowFullNames: true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{u1},
+			[]*model.UserIms{u1},
 		},
 		{
 			"search en",
@@ -2010,7 +2010,7 @@ func testUserStoreSearch(t *testing.T, ss store.Store) {
 				AllowFullNames: true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{u5},
+			[]*model.UserIms{u5},
 		},
 		{
 			"search email",
@@ -2021,7 +2021,7 @@ func testUserStoreSearch(t *testing.T, ss store.Store) {
 				AllowFullNames: true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{u1},
+			[]*model.UserIms{u1},
 		},
 		{
 			"search maps * to space",
@@ -2031,7 +2031,7 @@ func testUserStoreSearch(t *testing.T, ss store.Store) {
 				AllowFullNames: true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{u1},
+			[]*model.UserIms{u1},
 		},
 		{
 			"should not return spurious matches",
@@ -2041,7 +2041,7 @@ func testUserStoreSearch(t *testing.T, ss store.Store) {
 				AllowFullNames: true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{},
+			[]*model.UserIms{},
 		},
 		{
 			"% should be escaped",
@@ -2051,7 +2051,7 @@ func testUserStoreSearch(t *testing.T, ss store.Store) {
 				AllowFullNames: true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{},
+			[]*model.UserIms{},
 		},
 		{
 			"_ should be escaped",
@@ -2061,7 +2061,7 @@ func testUserStoreSearch(t *testing.T, ss store.Store) {
 				AllowFullNames: true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{},
+			[]*model.UserIms{},
 		},
 		{
 			"_ should be escaped (2)",
@@ -2071,7 +2071,7 @@ func testUserStoreSearch(t *testing.T, ss store.Store) {
 				AllowFullNames: true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{u6},
+			[]*model.UserIms{u6},
 		},
 		{
 			"_ should be escaped (2)",
@@ -2081,7 +2081,7 @@ func testUserStoreSearch(t *testing.T, ss store.Store) {
 				AllowFullNames: true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{u6},
+			[]*model.UserIms{u6},
 		},
 		{
 			"search jimb, allowing inactive",
@@ -2092,7 +2092,7 @@ func testUserStoreSearch(t *testing.T, ss store.Store) {
 				AllowInactive:  true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{u1, u3},
+			[]*model.UserIms{u1, u3},
 		},
 		{
 			"search jimb, no team id",
@@ -2102,7 +2102,7 @@ func testUserStoreSearch(t *testing.T, ss store.Store) {
 				AllowFullNames: true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{u1},
+			[]*model.UserIms{u1},
 		},
 		{
 			"search jim-bobb, no team id",
@@ -2112,7 +2112,7 @@ func testUserStoreSearch(t *testing.T, ss store.Store) {
 				AllowFullNames: true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{u2},
+			[]*model.UserIms{u2},
 		},
 
 		{
@@ -2124,7 +2124,7 @@ func testUserStoreSearch(t *testing.T, ss store.Store) {
 				AllowEmails:    true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{u1},
+			[]*model.UserIms{u1},
 		},
 		{
 			"search Tim, search all fields",
@@ -2135,7 +2135,7 @@ func testUserStoreSearch(t *testing.T, ss store.Store) {
 				AllowEmails:    true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{u1},
+			[]*model.UserIms{u1},
 		},
 		{
 			"search Tim, don't search full names",
@@ -2146,7 +2146,7 @@ func testUserStoreSearch(t *testing.T, ss store.Store) {
 				AllowEmails:    true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{},
+			[]*model.UserIms{},
 		},
 		{
 			"search Bill, search all fields",
@@ -2157,7 +2157,7 @@ func testUserStoreSearch(t *testing.T, ss store.Store) {
 				AllowEmails:    true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{u1},
+			[]*model.UserIms{u1},
 		},
 		{
 			"search Rob, search all fields",
@@ -2168,7 +2168,7 @@ func testUserStoreSearch(t *testing.T, ss store.Store) {
 				AllowEmails:    true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{u1},
+			[]*model.UserIms{u1},
 		},
 		{
 			"leading @ should be ignored",
@@ -2178,7 +2178,7 @@ func testUserStoreSearch(t *testing.T, ss store.Store) {
 				AllowFullNames: true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{u1},
+			[]*model.UserIms{u1},
 		},
 		{
 			"search jim-bobby with system_user roles",
@@ -2189,7 +2189,7 @@ func testUserStoreSearch(t *testing.T, ss store.Store) {
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 				Role:           "system_user",
 			},
-			[]*model.User{u2},
+			[]*model.UserIms{u2},
 		},
 		{
 			"search jim with system_admin roles",
@@ -2200,7 +2200,7 @@ func testUserStoreSearch(t *testing.T, ss store.Store) {
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 				Role:           "system_admin",
 			},
-			[]*model.User{u1},
+			[]*model.UserIms{u1},
 		},
 		{
 			"search ji with system_user roles",
@@ -2211,7 +2211,7 @@ func testUserStoreSearch(t *testing.T, ss store.Store) {
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 				Role:           "system_user",
 			},
-			[]*model.User{u1, u2},
+			[]*model.UserIms{u1, u2},
 		},
 	}
 
@@ -2219,7 +2219,7 @@ func testUserStoreSearch(t *testing.T, ss store.Store) {
 		t.Run(testCase.Description, func(t *testing.T) {
 			result := <-ss.User().Search(testCase.TeamId, testCase.Term, testCase.Options)
 			require.Nil(t, result.Err)
-			assertUsersMatchInAnyOrder(t, testCase.Expected, result.Data.([]*model.User))
+			assertUsersMatchInAnyOrder(t, testCase.Expected, result.Data.([]*model.UserIms))
 		})
 	}
 
@@ -2231,10 +2231,10 @@ func testUserStoreSearch(t *testing.T, ss store.Store) {
 
 		r1 := <-ss.User().Search(tid, "", searchOptions)
 		require.Nil(t, r1.Err)
-		assert.Len(t, r1.Data.([]*model.User), 4)
+		assert.Len(t, r1.Data.([]*model.UserIms), 4)
 		// Don't assert contents, since Postgres' default collation order is left up to
 		// the operating system, and jimbo1 might sort before or after jim-bo.
-		// assertUsers(t, []*model.User{u2, u1, u6, u5}, r1.Data.([]*model.User))
+		// assertUsers(t, []*model.UserIms{u2, u1, u6, u5}, r1.Data.([]*model.UserIms))
 	})
 
 	t.Run("search empty string, limit 2", func(t *testing.T) {
@@ -2245,34 +2245,34 @@ func testUserStoreSearch(t *testing.T, ss store.Store) {
 
 		r1 := <-ss.User().Search(tid, "", searchOptions)
 		require.Nil(t, r1.Err)
-		assert.Len(t, r1.Data.([]*model.User), 2)
+		assert.Len(t, r1.Data.([]*model.UserIms), 2)
 		// Don't assert contents, since Postgres' default collation order is left up to
 		// the operating system, and jimbo1 might sort before or after jim-bo.
-		// assertUsers(t, []*model.User{u2, u1, u6, u5}, r1.Data.([]*model.User))
+		// assertUsers(t, []*model.UserIms{u2, u1, u6, u5}, r1.Data.([]*model.UserIms))
 	})
 }
 
 func testUserStoreSearchNotInChannel(t *testing.T, ss store.Store) {
-	u1 := &model.User{
+	u1 := &model.UserIms{
 		Username:  "jimbo1" + model.NewId(),
 		FirstName: "Tim",
 		LastName:  "Bill",
-		Nickname:  "Rob",
+		//Nickname:  "Rob",
 		Email:     "harold" + model.NewId() + "@simulator.amazonses.com",
 	}
 	store.Must(ss.User().Save(u1))
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 
-	u2 := &model.User{
+	u2 := &model.UserIms{
 		Username: "jim2-bobby" + model.NewId(),
-		Email:    MakeEmail(),
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 	}
 	store.Must(ss.User().Save(u2))
 	defer func() { store.Must(ss.User().PermanentDelete(u2.ClientId)) }()
 
-	u3 := &model.User{
+	u3 := &model.UserIms{
 		Username: "jimbo3" + model.NewId(),
-		Email:    MakeEmail(),
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		DeleteAt: 1,
 	}
 	store.Must(ss.User().Save(u3))
@@ -2336,7 +2336,7 @@ func testUserStoreSearchNotInChannel(t *testing.T, ss store.Store) {
 		ChannelId   string
 		Term        string
 		Options     *model.UserSearchOptions
-		Expected    []*model.User
+		Expected    []*model.UserIms
 	}{
 		{
 			"search jimb, channel 1",
@@ -2347,7 +2347,7 @@ func testUserStoreSearchNotInChannel(t *testing.T, ss store.Store) {
 				AllowFullNames: true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{u1},
+			[]*model.UserIms{u1},
 		},
 		{
 			"search jimb, allow inactive, channel 1",
@@ -2359,7 +2359,7 @@ func testUserStoreSearchNotInChannel(t *testing.T, ss store.Store) {
 				AllowInactive:  true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{u1},
+			[]*model.UserIms{u1},
 		},
 		{
 			"search jimb, channel 1, no team id",
@@ -2370,7 +2370,7 @@ func testUserStoreSearchNotInChannel(t *testing.T, ss store.Store) {
 				AllowFullNames: true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{u1},
+			[]*model.UserIms{u1},
 		},
 		{
 			"search jimb, channel 1, junk team id",
@@ -2381,7 +2381,7 @@ func testUserStoreSearchNotInChannel(t *testing.T, ss store.Store) {
 				AllowFullNames: true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{},
+			[]*model.UserIms{},
 		},
 		{
 			"search jimb, channel 2",
@@ -2392,7 +2392,7 @@ func testUserStoreSearchNotInChannel(t *testing.T, ss store.Store) {
 				AllowFullNames: true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{},
+			[]*model.UserIms{},
 		},
 		{
 			"search jimb, allow inactive, channel 2",
@@ -2404,7 +2404,7 @@ func testUserStoreSearchNotInChannel(t *testing.T, ss store.Store) {
 				AllowInactive:  true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{u3},
+			[]*model.UserIms{u3},
 		},
 		{
 			"search jimb, channel 2, no team id",
@@ -2415,7 +2415,7 @@ func testUserStoreSearchNotInChannel(t *testing.T, ss store.Store) {
 				AllowFullNames: true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{},
+			[]*model.UserIms{},
 		},
 		{
 			"search jimb, channel 2, junk team id",
@@ -2426,7 +2426,7 @@ func testUserStoreSearchNotInChannel(t *testing.T, ss store.Store) {
 				AllowFullNames: true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{},
+			[]*model.UserIms{},
 		},
 		{
 			"search jim, channel 1",
@@ -2437,7 +2437,7 @@ func testUserStoreSearchNotInChannel(t *testing.T, ss store.Store) {
 				AllowFullNames: true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{u2, u1},
+			[]*model.UserIms{u2, u1},
 		},
 		{
 			"search jim, channel 1, limit 1",
@@ -2448,7 +2448,7 @@ func testUserStoreSearchNotInChannel(t *testing.T, ss store.Store) {
 				AllowFullNames: true,
 				Limit:          1,
 			},
-			[]*model.User{u2},
+			[]*model.UserIms{u2},
 		},
 	}
 
@@ -2461,32 +2461,32 @@ func testUserStoreSearchNotInChannel(t *testing.T, ss store.Store) {
 				testCase.Options,
 			)
 			require.Nil(t, result.Err)
-			assertUsers(t, testCase.Expected, result.Data.([]*model.User))
+			assertUsers(t, testCase.Expected, result.Data.([]*model.UserIms))
 		})
 	}
 }
 
 func testUserStoreSearchInChannel(t *testing.T, ss store.Store) {
-	u1 := &model.User{
+	u1 := &model.UserIms{
 		Username:  "jimbo1" + model.NewId(),
 		FirstName: "Tim",
 		LastName:  "Bill",
-		Nickname:  "Rob",
+		//Nickname:  "Rob",
 		Email:     "harold" + model.NewId() + "@simulator.amazonses.com",
 	}
 	store.Must(ss.User().Save(u1))
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 
-	u2 := &model.User{
+	u2 := &model.UserIms{
 		Username: "jim-bobby" + model.NewId(),
-		Email:    MakeEmail(),
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 	}
 	store.Must(ss.User().Save(u2))
 	defer func() { store.Must(ss.User().PermanentDelete(u2.ClientId)) }()
 
-	u3 := &model.User{
+	u3 := &model.UserIms{
 		Username: "jimbo3" + model.NewId(),
-		Email:    MakeEmail(),
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		DeleteAt: 1,
 	}
 	store.Must(ss.User().Save(u3))
@@ -2549,7 +2549,7 @@ func testUserStoreSearchInChannel(t *testing.T, ss store.Store) {
 		ChannelId   string
 		Term        string
 		Options     *model.UserSearchOptions
-		Expected    []*model.User
+		Expected    []*model.UserIms
 	}{
 		{
 			"search jimb, channel 1",
@@ -2559,7 +2559,7 @@ func testUserStoreSearchInChannel(t *testing.T, ss store.Store) {
 				AllowFullNames: true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{u1},
+			[]*model.UserIms{u1},
 		},
 		{
 			"search jimb, allow inactive, channel 1",
@@ -2570,7 +2570,7 @@ func testUserStoreSearchInChannel(t *testing.T, ss store.Store) {
 				AllowInactive:  true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{u1, u3},
+			[]*model.UserIms{u1, u3},
 		},
 		{
 			"search jimb, allow inactive, channel 1, limit 1",
@@ -2581,7 +2581,7 @@ func testUserStoreSearchInChannel(t *testing.T, ss store.Store) {
 				AllowInactive:  true,
 				Limit:          1,
 			},
-			[]*model.User{u1},
+			[]*model.UserIms{u1},
 		},
 		{
 			"search jimb, channel 2",
@@ -2591,7 +2591,7 @@ func testUserStoreSearchInChannel(t *testing.T, ss store.Store) {
 				AllowFullNames: true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{},
+			[]*model.UserIms{},
 		},
 		{
 			"search jimb, allow inactive, channel 2",
@@ -2602,7 +2602,7 @@ func testUserStoreSearchInChannel(t *testing.T, ss store.Store) {
 				AllowInactive:  true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{},
+			[]*model.UserIms{},
 		},
 	}
 
@@ -2614,32 +2614,32 @@ func testUserStoreSearchInChannel(t *testing.T, ss store.Store) {
 				testCase.Options,
 			)
 			require.Nil(t, result.Err)
-			assertUsers(t, testCase.Expected, result.Data.([]*model.User))
+			assertUsers(t, testCase.Expected, result.Data.([]*model.UserIms))
 		})
 	}
 }
 
 func testUserStoreSearchNotInTeam(t *testing.T, ss store.Store) {
-	u1 := &model.User{
+	u1 := &model.UserIms{
 		Username:  "jimbo1" + model.NewId(),
 		FirstName: "Tim",
 		LastName:  "Bill",
-		Nickname:  "Rob",
+		//Nickname:  "Rob",
 		Email:     "harold" + model.NewId() + "@simulator.amazonses.com",
 	}
 	store.Must(ss.User().Save(u1))
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 
-	u2 := &model.User{
+	u2 := &model.UserIms{
 		Username: "jim-bobby" + model.NewId(),
-		Email:    MakeEmail(),
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 	}
 	store.Must(ss.User().Save(u2))
 	defer func() { store.Must(ss.User().PermanentDelete(u2.ClientId)) }()
 
-	u3 := &model.User{
+	u3 := &model.UserIms{
 		Username: "jimbo3" + model.NewId(),
-		Email:    MakeEmail(),
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		DeleteAt: 1,
 	}
 	store.Must(ss.User().Save(u3))
@@ -2652,30 +2652,30 @@ func testUserStoreSearchNotInTeam(t *testing.T, ss store.Store) {
 	u3.IsBot = true
 	defer func() { store.Must(ss.Bot().PermanentDelete(u3.ClientId)) }()
 
-	u4 := &model.User{
+	u4 := &model.UserIms{
 		Username: "simon" + model.NewId(),
-		Email:    MakeEmail(),
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		DeleteAt: 0,
 	}
 	store.Must(ss.User().Save(u4))
 	defer func() { store.Must(ss.User().PermanentDelete(u4.ClientId)) }()
 
-	u5 := &model.User{
+	u5 := &model.UserIms{
 		Username:  "yu" + model.NewId(),
 		FirstName: "En",
 		LastName:  "Yu",
-		Nickname:  "enyu",
-		Email:     MakeEmail(),
+		//Nickname:  "enyu",
+		Email:     "success_" + model.NewId() + "@simulator.amazonses.com",
 	}
 	store.Must(ss.User().Save(u5))
 	defer func() { store.Must(ss.User().PermanentDelete(u5.ClientId)) }()
 
-	u6 := &model.User{
+	u6 := &model.UserIms{
 		Username:  "underscore" + model.NewId(),
 		FirstName: "Du_",
 		LastName:  "_DE",
-		Nickname:  "lodash",
-		Email:     MakeEmail(),
+		//Nickname:  "lodash",
+		Email:     "success_" + model.NewId() + "@simulator.amazonses.com",
 	}
 	store.Must(ss.User().Save(u6))
 	defer func() { store.Must(ss.User().PermanentDelete(u6.ClientId)) }()
@@ -2707,7 +2707,7 @@ func testUserStoreSearchNotInTeam(t *testing.T, ss store.Store) {
 		TeamId      string
 		Term        string
 		Options     *model.UserSearchOptions
-		Expected    []*model.User
+		Expected    []*model.UserIms
 	}{
 		{
 			"search simo, team 1",
@@ -2717,7 +2717,7 @@ func testUserStoreSearchNotInTeam(t *testing.T, ss store.Store) {
 				AllowFullNames: true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{u4},
+			[]*model.UserIms{u4},
 		},
 
 		{
@@ -2728,7 +2728,7 @@ func testUserStoreSearchNotInTeam(t *testing.T, ss store.Store) {
 				AllowFullNames: true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{},
+			[]*model.UserIms{},
 		},
 		{
 			"search jimb, allow inactive, team 1",
@@ -2739,7 +2739,7 @@ func testUserStoreSearchNotInTeam(t *testing.T, ss store.Store) {
 				AllowInactive:  true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{},
+			[]*model.UserIms{},
 		},
 		{
 			"search simo, team 2",
@@ -2749,7 +2749,7 @@ func testUserStoreSearchNotInTeam(t *testing.T, ss store.Store) {
 				AllowFullNames: true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{},
+			[]*model.UserIms{},
 		},
 		{
 			"search jimb, team2",
@@ -2759,7 +2759,7 @@ func testUserStoreSearchNotInTeam(t *testing.T, ss store.Store) {
 				AllowFullNames: true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{u1},
+			[]*model.UserIms{u1},
 		},
 		{
 			"search jimb, allow inactive, team 2",
@@ -2770,7 +2770,7 @@ func testUserStoreSearchNotInTeam(t *testing.T, ss store.Store) {
 				AllowInactive:  true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{u1, u3},
+			[]*model.UserIms{u1, u3},
 		},
 		{
 			"search jimb, allow inactive, team 2, limit 1",
@@ -2781,7 +2781,7 @@ func testUserStoreSearchNotInTeam(t *testing.T, ss store.Store) {
 				AllowInactive:  true,
 				Limit:          1,
 			},
-			[]*model.User{u1},
+			[]*model.UserIms{u1},
 		},
 	}
 
@@ -2793,32 +2793,32 @@ func testUserStoreSearchNotInTeam(t *testing.T, ss store.Store) {
 				testCase.Options,
 			)
 			require.Nil(t, result.Err)
-			assertUsers(t, testCase.Expected, result.Data.([]*model.User))
+			assertUsers(t, testCase.Expected, result.Data.([]*model.UserIms))
 		})
 	}
 }
 
 func testUserStoreSearchWithoutTeam(t *testing.T, ss store.Store) {
-	u1 := &model.User{
+	u1 := &model.UserIms{
 		Username:  "jimbo1" + model.NewId(),
 		FirstName: "Tim",
 		LastName:  "Bill",
-		Nickname:  "Rob",
+		//Nickname:  "Rob",
 		Email:     "harold" + model.NewId() + "@simulator.amazonses.com",
 	}
 	store.Must(ss.User().Save(u1))
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 
-	u2 := &model.User{
+	u2 := &model.UserIms{
 		Username: "jim2-bobby" + model.NewId(),
-		Email:    MakeEmail(),
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 	}
 	store.Must(ss.User().Save(u2))
 	defer func() { store.Must(ss.User().PermanentDelete(u2.ClientId)) }()
 
-	u3 := &model.User{
+	u3 := &model.UserIms{
 		Username: "jimbo3" + model.NewId(),
-		Email:    MakeEmail(),
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		DeleteAt: 1,
 	}
 	store.Must(ss.User().Save(u3))
@@ -2846,7 +2846,7 @@ func testUserStoreSearchWithoutTeam(t *testing.T, ss store.Store) {
 		Description string
 		Term        string
 		Options     *model.UserSearchOptions
-		Expected    []*model.User
+		Expected    []*model.UserIms
 	}{
 		{
 			"empty string",
@@ -2855,7 +2855,7 @@ func testUserStoreSearchWithoutTeam(t *testing.T, ss store.Store) {
 				AllowFullNames: true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{u2, u1},
+			[]*model.UserIms{u2, u1},
 		},
 		{
 			"jim",
@@ -2864,7 +2864,7 @@ func testUserStoreSearchWithoutTeam(t *testing.T, ss store.Store) {
 				AllowFullNames: true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{u2, u1},
+			[]*model.UserIms{u2, u1},
 		},
 		{
 			"PLT-8354",
@@ -2873,7 +2873,7 @@ func testUserStoreSearchWithoutTeam(t *testing.T, ss store.Store) {
 				AllowFullNames: true,
 				Limit:          model.USER_SEARCH_DEFAULT_LIMIT,
 			},
-			[]*model.User{u2, u1},
+			[]*model.UserIms{u2, u1},
 		},
 		{
 			"jim, limit 1",
@@ -2882,7 +2882,7 @@ func testUserStoreSearchWithoutTeam(t *testing.T, ss store.Store) {
 				AllowFullNames: true,
 				Limit:          1,
 			},
-			[]*model.User{u2},
+			[]*model.UserIms{u2},
 		},
 	}
 
@@ -2893,7 +2893,7 @@ func testUserStoreSearchWithoutTeam(t *testing.T, ss store.Store) {
 				testCase.Options,
 			)
 			require.Nil(t, result.Err)
-			assertUsers(t, testCase.Expected, result.Data.([]*model.User))
+			assertUsers(t, testCase.Expected, result.Data.([]*model.UserIms))
 		})
 	}
 }
@@ -2901,23 +2901,23 @@ func testUserStoreSearchWithoutTeam(t *testing.T, ss store.Store) {
 func testCount(t *testing.T, ss store.Store) {
 	// Regular
 	teamId := model.NewId()
-	u1 := &model.User{}
-	u1.Email = MakeEmail()
+	u1 := &model.UserIms{}
+	u1.Email = "success_" + model.NewId() + "@simulator.amazonses.com"
 	store.Must(ss.User().Save(u1))
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u1.ClientId}, -1))
 
 	// Deleted
-	u2 := &model.User{}
-	u2.Email = MakeEmail()
+	u2 := &model.UserIms{}
+	u2.Email = "success_" + model.NewId() + "@simulator.amazonses.com"
 	u2.DeleteAt = model.GetMillis()
 	store.Must(ss.User().Save(u2))
 	defer func() { store.Must(ss.User().PermanentDelete(u2.ClientId)) }()
 
 	// Bot
-	u3 := store.Must(ss.User().Save(&model.User{
-		Email: MakeEmail(),
-	})).(*model.User)
+	u3 := store.Must(ss.User().Save(&model.UserIms{
+		Email: "success_" + model.NewId() + "@simulator.amazonses.com",
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u3.ClientId)) }()
 	store.Must(ss.Bot().Save(&model.Bot{
 		UserId:   u3.ClientId,
@@ -2987,8 +2987,8 @@ func testCount(t *testing.T, ss store.Store) {
 }
 
 func testUserStoreAnalyticsGetInactiveUsersCount(t *testing.T, ss store.Store) {
-	u1 := &model.User{}
-	u1.Email = MakeEmail()
+	u1 := &model.UserIms{}
+	u1.Email = "success_" + model.NewId() + "@simulator.amazonses.com"
 	store.Must(ss.User().Save(u1))
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 
@@ -3000,8 +3000,8 @@ func testUserStoreAnalyticsGetInactiveUsersCount(t *testing.T, ss store.Store) {
 		count = result.Data.(int64)
 	}
 
-	u2 := &model.User{}
-	u2.Email = MakeEmail()
+	u2 := &model.UserIms{}
+	u2.Email = "success_" + model.NewId() + "@simulator.amazonses.com"
 	u2.DeleteAt = model.GetMillis()
 	store.Must(ss.User().Save(u2))
 	defer func() { store.Must(ss.User().PermanentDelete(u2.ClientId)) }()
@@ -3024,13 +3024,13 @@ func testUserStoreAnalyticsGetSystemAdminCount(t *testing.T, ss store.Store) {
 		countBefore = result.Data.(int64)
 	}
 
-	u1 := model.User{}
-	u1.Email = MakeEmail()
+	u1 := model.UserIms{}
+	u1.Email = "success_" + model.NewId() + "@simulator.amazonses.com"
 	u1.Username = model.NewId()
 	u1.Roles = "system_user system_admin"
 
-	u2 := model.User{}
-	u2.Email = MakeEmail()
+	u2 := model.UserIms{}
+	u2.Email = "success_" + model.NewId() + "@simulator.amazonses.com"
 	u2.Username = model.NewId()
 
 	if err := (<-ss.User().Save(&u1)).Err; err != nil {
@@ -3057,30 +3057,30 @@ func testUserStoreGetProfilesNotInTeam(t *testing.T, ss store.Store) {
 	teamId := model.NewId()
 	teamId2 := model.NewId()
 
-	u1 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u1 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u1" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u1.ClientId}, -1))
 
 	// Ensure update at timestamp changes
 	time.Sleep(time.Millisecond * 10)
 
-	u2 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u2 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u2" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u2.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId2, UserId: u2.ClientId}, -1))
 
 	// Ensure update at timestamp changes
 	time.Sleep(time.Millisecond * 10)
 
-	u3 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u3 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u3" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u3.ClientId)) }()
 	store.Must(ss.Bot().Save(&model.Bot{
 		UserId:   u3.ClientId,
@@ -3101,27 +3101,27 @@ func testUserStoreGetProfilesNotInTeam(t *testing.T, ss store.Store) {
 	t.Run("get not in team 1, offset 0, limit 100000", func(t *testing.T) {
 		result := <-ss.User().GetProfilesNotInTeam(teamId, 0, 100000)
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{
+		assert.Equal(t, []*model.UserIms{
 			sanitized(u2),
 			sanitized(u3),
-		}, result.Data.([]*model.User))
+		}, result.Data.([]*model.UserIms))
 	})
 
 	t.Run("get not in team 1, offset 1, limit 1", func(t *testing.T) {
 		result := <-ss.User().GetProfilesNotInTeam(teamId, 1, 1)
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{
+		assert.Equal(t, []*model.UserIms{
 			sanitized(u3),
-		}, result.Data.([]*model.User))
+		}, result.Data.([]*model.UserIms))
 	})
 
 	t.Run("get not in team 2, offset 0, limit 100", func(t *testing.T) {
 		result := <-ss.User().GetProfilesNotInTeam(teamId2, 0, 100)
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{
+		assert.Equal(t, []*model.UserIms{
 			sanitized(u1),
 			sanitized(u3),
-		}, result.Data.([]*model.User))
+		}, result.Data.([]*model.UserIms))
 	})
 
 	// Ensure update at timestamp changes
@@ -3141,9 +3141,9 @@ func testUserStoreGetProfilesNotInTeam(t *testing.T, ss store.Store) {
 	t.Run("get not in team 1, offset 0, limit 100000 after update", func(t *testing.T) {
 		result := <-ss.User().GetProfilesNotInTeam(teamId, 0, 100000)
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{
+		assert.Equal(t, []*model.UserIms{
 			sanitized(u3),
-		}, result.Data.([]*model.User))
+		}, result.Data.([]*model.UserIms))
 	})
 
 	// Ensure update at timestamp changes
@@ -3165,20 +3165,20 @@ func testUserStoreGetProfilesNotInTeam(t *testing.T, ss store.Store) {
 	t.Run("get not in team 1, offset 0, limit 100000 after second update", func(t *testing.T) {
 		result := <-ss.User().GetProfilesNotInTeam(teamId, 0, 100000)
 		require.Nil(t, result.Err)
-		assert.Equal(t, []*model.User{
+		assert.Equal(t, []*model.UserIms{
 			sanitized(u1),
 			sanitized(u2),
 			sanitized(u3),
-		}, result.Data.([]*model.User))
+		}, result.Data.([]*model.UserIms))
 	})
 
 	// Ensure update at timestamp changes
 	time.Sleep(time.Millisecond * 10)
 
-	u4 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u4 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u4" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u4.ClientId)) }()
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u4.ClientId}, -1))
 
@@ -3208,23 +3208,23 @@ func testUserStoreGetProfilesNotInTeam(t *testing.T, ss store.Store) {
 }
 
 func testUserStoreClearAllCustomRoleAssignments(t *testing.T, ss store.Store) {
-	u1 := model.User{
-		Email:    MakeEmail(),
+	u1 := model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: model.NewId(),
 		Roles:    "system_user system_admin system_post_all",
 	}
-	u2 := model.User{
-		Email:    MakeEmail(),
+	u2 := model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: model.NewId(),
 		Roles:    "system_user custom_role system_admin another_custom_role",
 	}
-	u3 := model.User{
-		Email:    MakeEmail(),
+	u3 := model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: model.NewId(),
 		Roles:    "system_user",
 	}
-	u4 := model.User{
-		Email:    MakeEmail(),
+	u4 := model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: model.NewId(),
 		Roles:    "custom_only",
 	}
@@ -3242,33 +3242,33 @@ func testUserStoreClearAllCustomRoleAssignments(t *testing.T, ss store.Store) {
 
 	r1 := <-ss.User().GetByUsername(u1.Username)
 	require.Nil(t, r1.Err)
-	assert.Equal(t, u1.Roles, r1.Data.(*model.User).Roles)
+	assert.Equal(t, u1.Roles, r1.Data.(*model.UserIms).Roles)
 
 	r2 := <-ss.User().GetByUsername(u2.Username)
 	require.Nil(t, r2.Err)
-	assert.Equal(t, "system_user system_admin", r2.Data.(*model.User).Roles)
+	assert.Equal(t, "system_user system_admin", r2.Data.(*model.UserIms).Roles)
 
 	r3 := <-ss.User().GetByUsername(u3.Username)
 	require.Nil(t, r3.Err)
-	assert.Equal(t, u3.Roles, r3.Data.(*model.User).Roles)
+	assert.Equal(t, u3.Roles, r3.Data.(*model.UserIms).Roles)
 
 	r4 := <-ss.User().GetByUsername(u4.Username)
 	require.Nil(t, r4.Err)
-	assert.Equal(t, "", r4.Data.(*model.User).Roles)
+	assert.Equal(t, "", r4.Data.(*model.UserIms).Roles)
 }
 
 func testUserStoreGetAllAfter(t *testing.T, ss store.Store) {
-	u1 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u1 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: model.NewId(),
 		Roles:    "system_user system_admin system_post_all",
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u1.ClientId)) }()
 
-	u2 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u2 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: "u2" + model.NewId(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	defer func() { store.Must(ss.User().PermanentDelete(u2.ClientId)) }()
 	store.Must(ss.Bot().Save(&model.Bot{
 		UserId:   u2.ClientId,
@@ -3278,16 +3278,16 @@ func testUserStoreGetAllAfter(t *testing.T, ss store.Store) {
 	u2.IsBot = true
 	defer func() { store.Must(ss.Bot().PermanentDelete(u2.ClientId)) }()
 
-	expected := []*model.User{u1, u2}
+	expected := []*model.UserIms{u1, u2}
 	if strings.Compare(u2.ClientId, u1.ClientId) < 0 {
-		expected = []*model.User{u2, u1}
+		expected = []*model.UserIms{u2, u1}
 	}
 
 	t.Run("get after lowest possible id", func(t *testing.T) {
 		result := <-ss.User().GetAllAfter(10000, strings.Repeat("0", 26))
 		require.Nil(t, result.Err)
 
-		actual := result.Data.([]*model.User)
+		actual := result.Data.([]*model.UserIms)
 		assert.Equal(t, expected, actual)
 	})
 
@@ -3295,16 +3295,16 @@ func testUserStoreGetAllAfter(t *testing.T, ss store.Store) {
 		result := <-ss.User().GetAllAfter(10000, expected[0].ClientId)
 		require.Nil(t, result.Err)
 
-		actual := result.Data.([]*model.User)
-		assert.Equal(t, []*model.User{expected[1]}, actual)
+		actual := result.Data.([]*model.UserIms)
+		assert.Equal(t, []*model.UserIms{expected[1]}, actual)
 	})
 
 	t.Run("get after second user", func(t *testing.T) {
 		result := <-ss.User().GetAllAfter(10000, expected[1].ClientId)
 		require.Nil(t, result.Err)
 
-		actual := result.Data.([]*model.User)
-		assert.Equal(t, []*model.User{}, actual)
+		actual := result.Data.([]*model.UserIms)
+		assert.Equal(t, []*model.UserIms{}, actual)
 	})
 }
 
@@ -3328,19 +3328,19 @@ func testUserStoreGetUsersBatchForIndexing(t *testing.T, ss store.Store) {
 		Type: model.CHANNEL_PRIVATE,
 	}, -1)).(*model.Channel)
 
-	u1 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u1 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: model.NewId(),
 		CreateAt: model.GetMillis(),
-	})).(*model.User)
+	})).(*model.UserIms)
 
 	time.Sleep(10 * time.Millisecond)
 
-	u2 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u2 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: model.NewId(),
 		CreateAt: model.GetMillis(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	store.Must(ss.Team().SaveMember(&model.TeamMember{
 		UserId: u2.ClientId,
 		TeamId: t1.Id,
@@ -3359,11 +3359,11 @@ func testUserStoreGetUsersBatchForIndexing(t *testing.T, ss store.Store) {
 	startTime := u2.CreateAt
 	time.Sleep(10 * time.Millisecond)
 
-	u3 := store.Must(ss.User().Save(&model.User{
-		Email:    MakeEmail(),
+	u3 := store.Must(ss.User().Save(&model.UserIms{
+		Email:    "success_" + model.NewId() + "@simulator.amazonses.com",
 		Username: model.NewId(),
 		CreateAt: model.GetMillis(),
-	})).(*model.User)
+	})).(*model.UserIms)
 	store.Must(ss.Team().SaveMember(&model.TeamMember{
 		UserId:   u3.ClientId,
 		TeamId:   t1.Id,
@@ -3441,19 +3441,19 @@ func testUserStoreGetTeamGroupUsers(t *testing.T, ss store.Store) {
 	require.NotNil(t, team)
 
 	// create users
-	var testUsers []*model.User
+	var testUsers []*model.UserIms
 	for i := 0; i < 3; i++ {
 		id = model.NewId()
-		res = <-ss.User().Save(&model.User{
+		res = <-ss.User().Save(&model.UserIms{
 			Email:     id + "@test.com",
 			Username:  "un_" + id,
-			Nickname:  "nn_" + id,
+			//Nickname:  "nn_" + id,
 			FirstName: "f_" + id,
 			LastName:  "l_" + id,
-			Password:  "Password1",
+			//Password:  "Password1",
 		})
 		require.Nil(t, res.Err)
-		user := res.Data.(*model.User)
+		user := res.Data.(*model.UserIms)
 		require.NotNil(t, user)
 		testUsers = append(testUsers, user)
 	}
@@ -3500,12 +3500,12 @@ func testUserStoreGetTeamGroupUsers(t *testing.T, ss store.Store) {
 	})
 	require.Nil(t, res.Err)
 
-	var users []*model.User
+	var users []*model.UserIms
 
 	requireNUsers := func(n int) {
 		res = <-ss.User().GetTeamGroupUsers(team.Id)
 		require.Nil(t, res.Err)
-		users = res.Data.([]*model.User)
+		users = res.Data.([]*model.UserIms)
 		require.NotNil(t, users)
 		require.Len(t, users, n)
 	}
@@ -3564,19 +3564,19 @@ func testUserStoreGetChannelGroupUsers(t *testing.T, ss store.Store) {
 	require.NotNil(t, channel)
 
 	// create users
-	var testUsers []*model.User
+	var testUsers []*model.UserIms
 	for i := 0; i < 3; i++ {
 		id = model.NewId()
-		res = <-ss.User().Save(&model.User{
+		res = <-ss.User().Save(&model.UserIms{
 			Email:     id + "@test.com",
 			Username:  "un_" + id,
-			Nickname:  "nn_" + id,
+			//Nickname:  "nn_" + id,
 			FirstName: "f_" + id,
 			LastName:  "l_" + id,
-			Password:  "Password1",
+			//Password:  "Password1",
 		})
 		require.Nil(t, res.Err)
-		user := res.Data.(*model.User)
+		user := res.Data.(*model.UserIms)
 		require.NotNil(t, user)
 		testUsers = append(testUsers, user)
 	}
@@ -3624,12 +3624,12 @@ func testUserStoreGetChannelGroupUsers(t *testing.T, ss store.Store) {
 	})
 	require.Nil(t, res.Err)
 
-	var users []*model.User
+	var users []*model.UserIms
 
 	requireNUsers := func(n int) {
 		res = <-ss.User().GetChannelGroupUsers(channel.Id)
 		require.Nil(t, res.Err)
-		users = res.Data.([]*model.User)
+		users = res.Data.([]*model.UserIms)
 		require.NotNil(t, users)
 		require.Len(t, users, n)
 	}

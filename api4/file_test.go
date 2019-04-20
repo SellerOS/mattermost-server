@@ -921,7 +921,8 @@ func TestGetFileThumbnail(t *testing.T) {
 	CheckUnauthorizedStatus(t, resp)
 
 	otherUser := th.CreateUser()
-	Client.Login(otherUser.Email, otherUser.Password)
+	userLogin := th.CreateUserLogin(otherUser.Email)
+	Client.Login(otherUser.Email, userLogin.PasswordOld)
 	_, resp = Client.GetFileThumbnail(fileId)
 	CheckForbiddenStatus(t, resp)
 
@@ -985,7 +986,8 @@ func TestGetFileLink(t *testing.T) {
 	CheckUnauthorizedStatus(t, resp)
 
 	otherUser := th.CreateUser()
-	Client.Login(otherUser.Email, otherUser.Password)
+	userLogin := th.CreateUserLogin(otherUser.Email)
+	Client.Login(otherUser.Email, userLogin.PasswordOld)
 	_, resp = Client.GetFileLink(fileId)
 	CheckForbiddenStatus(t, resp)
 
@@ -1043,7 +1045,8 @@ func TestGetFilePreview(t *testing.T) {
 	CheckUnauthorizedStatus(t, resp)
 
 	otherUser := th.CreateUser()
-	Client.Login(otherUser.Email, otherUser.Password)
+	userLogin := th.CreateUserLogin(otherUser.Email)
+	Client.Login(otherUser.Email, userLogin.PasswordOld)
 	_, resp = Client.GetFilePreview(fileId)
 	CheckForbiddenStatus(t, resp)
 
@@ -1110,7 +1113,8 @@ func TestGetFileInfo(t *testing.T) {
 	CheckUnauthorizedStatus(t, resp)
 
 	otherUser := th.CreateUser()
-	Client.Login(otherUser.Email, otherUser.Password)
+	userLogin := th.CreateUserLogin(otherUser.Email)
+	Client.Login(otherUser.Email, userLogin.PasswordOld)
 	_, resp = Client.GetFileInfo(fileId)
 	CheckForbiddenStatus(t, resp)
 

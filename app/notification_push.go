@@ -33,7 +33,7 @@ type PushNotification struct {
 	userId             string
 	channelId          string
 	post               *model.Post
-	user               *model.User
+	user               *model.UserIms
 	channel            *model.Channel
 	senderName         string
 	channelName        string
@@ -49,7 +49,7 @@ func (hub *PushNotificationsHub) GetGoChannelFromUserId(userId string) chan Push
 	return hub.Channels[chanIdx]
 }
 
-func (a *App) sendPushNotificationSync(post *model.Post, user *model.User, channel *model.Channel, channelName string, senderName string,
+func (a *App) sendPushNotificationSync(post *model.Post, user *model.UserIms, channel *model.Channel, channelName string, senderName string,
 	explicitMention, channelWideMention bool, replyToThreadType string) *model.AppError {
 	cfg := a.Config()
 
@@ -118,7 +118,7 @@ func (a *App) sendPushNotificationSync(post *model.Post, user *model.User, chann
 	return nil
 }
 
-func (a *App) sendPushNotification(notification *postNotification, user *model.User, explicitMention, channelWideMention bool, replyToThreadType string) {
+func (a *App) sendPushNotification(notification *postNotification, user *model.UserIms, explicitMention, channelWideMention bool, replyToThreadType string) {
 	cfg := a.Config()
 	channel := notification.channel
 	post := notification.post
@@ -312,12 +312,12 @@ func (a *App) getMobileAppSessions(userId string) ([]*model.Session, *model.AppE
 	return result.Data.([]*model.Session), nil
 }
 
-func ShouldSendPushNotification(user *model.User, channelNotifyProps model.StringMap, wasMentioned bool, status *model.Status, post *model.Post) bool {
+func ShouldSendPushNotification(user *model.UserIms, channelNotifyProps model.StringMap, wasMentioned bool, status *model.Status, post *model.Post) bool {
 	return DoesNotifyPropsAllowPushNotification(user, channelNotifyProps, post, wasMentioned) &&
 		DoesStatusAllowPushNotification(user.NotifyProps, status, post.ChannelId)
 }
 
-func DoesNotifyPropsAllowPushNotification(user *model.User, channelNotifyProps model.StringMap, post *model.Post, wasMentioned bool) bool {
+func DoesNotifyPropsAllowPushNotification(user *model.UserIms, channelNotifyProps model.StringMap, post *model.Post, wasMentioned bool) bool {
 	userNotifyProps := user.NotifyProps
 	userNotify := userNotifyProps[model.PUSH_NOTIFY_PROP]
 	channelNotify, _ := channelNotifyProps[model.PUSH_NOTIFY_PROP]
@@ -360,7 +360,7 @@ func DoesNotifyPropsAllowPushNotification(user *model.User, channelNotifyProps m
 }
 
 func DoesStatusAllowPushNotification(userNotifyProps model.StringMap, status *model.Status, channelId string) bool {
-	// If User status is DND or OOO return false right away
+	// If UserIms status is DND or OOO return false right away
 	if status.Status == model.STATUS_DND || status.Status == model.STATUS_OUT_OF_OFFICE {
 		return false
 	}

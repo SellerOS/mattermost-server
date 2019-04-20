@@ -30,7 +30,7 @@ func TestHandleNewNotifications(t *testing.T) {
 		t.Fatal("shouldn't have added any pending notifications")
 	}
 
-	job.Add(&model.User{ClientId: id1}, &model.Post{UserId: id1, Message: "test"}, &model.Team{Name: "team"})
+	job.Add(&model.UserIms{ClientId: id1}, &model.Post{UserId: id1, Message: "test"}, &model.Team{Name: "team"})
 	if len(job.pendingNotifications) != 0 {
 		t.Fatal("shouldn't have added any pending notifications")
 	}
@@ -42,7 +42,7 @@ func TestHandleNewNotifications(t *testing.T) {
 		t.Fatal("should have received 1 post for user")
 	}
 
-	job.Add(&model.User{ClientId: id1}, &model.Post{UserId: id1, Message: "test"}, &model.Team{Name: "team"})
+	job.Add(&model.UserIms{ClientId: id1}, &model.Post{UserId: id1, Message: "test"}, &model.Team{Name: "team"})
 	job.handleNewNotifications()
 	if len(job.pendingNotifications) != 1 {
 		t.Fatal("should have received posts for 1 user")
@@ -50,7 +50,7 @@ func TestHandleNewNotifications(t *testing.T) {
 		t.Fatal("should have received 2 posts for user1", job.pendingNotifications[id1])
 	}
 
-	job.Add(&model.User{ClientId: id2}, &model.Post{UserId: id1, Message: "test"}, &model.Team{Name: "team"})
+	job.Add(&model.UserIms{ClientId: id2}, &model.Post{UserId: id1, Message: "test"}, &model.Team{Name: "team"})
 	job.handleNewNotifications()
 	if len(job.pendingNotifications) != 2 {
 		t.Fatal("should have received posts for 2 users")
@@ -60,10 +60,10 @@ func TestHandleNewNotifications(t *testing.T) {
 		t.Fatal("should have received 1 post for user2")
 	}
 
-	job.Add(&model.User{ClientId: id2}, &model.Post{UserId: id2, Message: "test"}, &model.Team{Name: "team"})
-	job.Add(&model.User{ClientId: id1}, &model.Post{UserId: id3, Message: "test"}, &model.Team{Name: "team"})
-	job.Add(&model.User{ClientId: id3}, &model.Post{UserId: id3, Message: "test"}, &model.Team{Name: "team"})
-	job.Add(&model.User{ClientId: id2}, &model.Post{UserId: id2, Message: "test"}, &model.Team{Name: "team"})
+	job.Add(&model.UserIms{ClientId: id2}, &model.Post{UserId: id2, Message: "test"}, &model.Team{Name: "team"})
+	job.Add(&model.UserIms{ClientId: id1}, &model.Post{UserId: id3, Message: "test"}, &model.Team{Name: "team"})
+	job.Add(&model.UserIms{ClientId: id3}, &model.Post{UserId: id3, Message: "test"}, &model.Team{Name: "team"})
+	job.Add(&model.UserIms{ClientId: id2}, &model.Post{UserId: id2, Message: "test"}, &model.Team{Name: "team"})
 	job.handleNewNotifications()
 	if len(job.pendingNotifications) != 3 {
 		t.Fatal("should have received posts for 3 users")
@@ -78,11 +78,11 @@ func TestHandleNewNotifications(t *testing.T) {
 	// test ordering of received posts
 	job = NewEmailBatchingJob(th.Server, 128)
 
-	job.Add(&model.User{ClientId: id1}, &model.Post{UserId: id1, Message: "test1"}, &model.Team{Name: "team"})
-	job.Add(&model.User{ClientId: id1}, &model.Post{UserId: id1, Message: "test2"}, &model.Team{Name: "team"})
-	job.Add(&model.User{ClientId: id2}, &model.Post{UserId: id1, Message: "test3"}, &model.Team{Name: "team"})
-	job.Add(&model.User{ClientId: id1}, &model.Post{UserId: id1, Message: "test4"}, &model.Team{Name: "team"})
-	job.Add(&model.User{ClientId: id2}, &model.Post{UserId: id1, Message: "test5"}, &model.Team{Name: "team"})
+	job.Add(&model.UserIms{ClientId: id1}, &model.Post{UserId: id1, Message: "test1"}, &model.Team{Name: "team"})
+	job.Add(&model.UserIms{ClientId: id1}, &model.Post{UserId: id1, Message: "test2"}, &model.Team{Name: "team"})
+	job.Add(&model.UserIms{ClientId: id2}, &model.Post{UserId: id1, Message: "test3"}, &model.Team{Name: "team"})
+	job.Add(&model.UserIms{ClientId: id1}, &model.Post{UserId: id1, Message: "test4"}, &model.Team{Name: "team"})
+	job.Add(&model.UserIms{ClientId: id2}, &model.Post{UserId: id1, Message: "test5"}, &model.Team{Name: "team"})
 	job.handleNewNotifications()
 	if job.pendingNotifications[id1][0].post.Message != "test1" ||
 		job.pendingNotifications[id1][1].post.Message != "test2" ||
@@ -300,7 +300,7 @@ func TestRenderBatchedPostGeneric(t *testing.T) {
 	notification.post = post
 	var channel = &model.Channel{}
 	channel.DisplayName = "Some Test Channel"
-	var sender = &model.User{}
+	var sender = &model.UserIms{}
 	sender.Email = "sender@test.com"
 
 	translateFunc := func(translationID string, args ...interface{}) string {
@@ -327,7 +327,7 @@ func TestRenderBatchedPostFull(t *testing.T) {
 	notification.post = post
 	var channel = &model.Channel{}
 	channel.DisplayName = "Some Test Channel"
-	var sender = &model.User{}
+	var sender = &model.UserIms{}
 	sender.Email = "sender@test.com"
 
 	translateFunc := func(translationID string, args ...interface{}) string {

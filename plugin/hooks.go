@@ -64,7 +64,7 @@ type Hooks interface {
 	// ServeHTTP allows the plugin to implement the http.Handler interface. Requests destined for
 	// the /plugins/{id} path will be routed to the plugin.
 	//
-	// The Mattermost-User-Id header will be present if (and only if) the request is by an
+	// The Mattermost-UserIms-Id header will be present if (and only if) the request is by an
 	// authenticated user.
 	ServeHTTP(c *Context, w http.ResponseWriter, r *http.Request)
 
@@ -75,14 +75,14 @@ type Hooks interface {
 	// UserHasBeenCreated is invoked after a user was created.
 	//
 	// Minimum server version: 5.10
-	UserHasBeenCreated(c *Context, user *model.User)
+	UserHasBeenCreated(c *Context, user *model.UserIms)
 
 	// UserWillLogIn before the login of the user is returned. Returning a non empty string will reject the login event.
 	// If you don't need to reject the login event, see UserHasLoggedIn
-	UserWillLogIn(c *Context, user *model.User) string
+	UserWillLogIn(c *Context, user *model.UserIms) string
 
 	// UserHasLoggedIn is invoked after a user has logged in.
-	UserHasLoggedIn(c *Context, user *model.User)
+	UserHasLoggedIn(c *Context, user *model.UserIms)
 
 	// MessageWillBePosted is invoked when a message is posted by a user before it is committed
 	// to the database. If you also want to act on edited posts, see MessageWillBeUpdated.
@@ -125,19 +125,19 @@ type Hooks interface {
 
 	// UserHasJoinedChannel is invoked after the membership has been committed to the database.
 	// If actor is not nil, the user was invited to the channel by the actor.
-	UserHasJoinedChannel(c *Context, channelMember *model.ChannelMember, actor *model.User)
+	UserHasJoinedChannel(c *Context, channelMember *model.ChannelMember, actor *model.UserIms)
 
 	// UserHasLeftChannel is invoked after the membership has been removed from the database.
 	// If actor is not nil, the user was removed from the channel by the actor.
-	UserHasLeftChannel(c *Context, channelMember *model.ChannelMember, actor *model.User)
+	UserHasLeftChannel(c *Context, channelMember *model.ChannelMember, actor *model.UserIms)
 
 	// UserHasJoinedTeam is invoked after the membership has been committed to the database.
 	// If actor is not nil, the user was added to the team by the actor.
-	UserHasJoinedTeam(c *Context, teamMember *model.TeamMember, actor *model.User)
+	UserHasJoinedTeam(c *Context, teamMember *model.TeamMember, actor *model.UserIms)
 
 	// UserHasLeftTeam is invoked after the membership has been removed from the database.
 	// If actor is not nil, the user was removed from the team by the actor.
-	UserHasLeftTeam(c *Context, teamMember *model.TeamMember, actor *model.User)
+	UserHasLeftTeam(c *Context, teamMember *model.TeamMember, actor *model.UserIms)
 
 	// FileWillBeUploaded is invoked when a file is uploaded, but before it is committed to backing store.
 	// Read from file to retrieve the body of the uploaded file.

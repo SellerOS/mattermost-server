@@ -239,8 +239,8 @@ type PostStore interface {
 }
 
 type UserStore interface {
-	Save(user *model.User) StoreChannel
-	Update(user *model.User, allowRoleUpdate bool) StoreChannel
+	Save(user *model.UserIms) StoreChannel
+	Update(user *model.UserIms, allowRoleUpdate bool) StoreChannel
 	UpdateLastPictureUpdate(userId string) StoreChannel
 	ResetLastPictureUpdate(userId string) StoreChannel
 	UpdateUpdateAt(userId string) StoreChannel
@@ -248,7 +248,9 @@ type UserStore interface {
 	UpdateAuthData(userId string, service string, authData *string, email string, resetMfa bool) StoreChannel
 	UpdateMfaSecret(userId, secret string) StoreChannel
 	UpdateMfaActive(userId string, active bool) StoreChannel
-	Get(id string) (*model.User, *model.AppError)
+	Get(id string) (*model.UserIms, *model.AppError)
+    GetUserInfo(clientId string) (*model.UserInfo, *model.AppError)
+	GetUserLogin(clientId string) (*model.UserLogin, *model.AppError)
 	GetAll() StoreChannel
 	ClearCaches()
 	InvalidateProfilesInChannelCacheByUser(userId string)
@@ -264,6 +266,7 @@ type UserStore interface {
 	GetProfileByIds(userId []string, allowFromCache bool) StoreChannel
 	InvalidatProfileCacheForUser(userId string)
 	GetByEmail(email string) StoreChannel
+	GetUserLoginByEmail(email string) StoreChannel
 	GetByAuth(authData *string, authService string) StoreChannel
 	GetAllUsingAuthService(authService string) StoreChannel
 	GetByUsername(username string) StoreChannel

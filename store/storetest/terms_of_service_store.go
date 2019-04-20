@@ -18,10 +18,10 @@ func TestTermsOfServiceStore(t *testing.T, ss store.Store) {
 }
 
 func testSaveTermsOfService(t *testing.T, ss store.Store) {
-	u1 := model.User{}
+	u1 := model.UserIms{}
 	u1.Username = model.NewId()
 	u1.Email = MakeEmail()
-	u1.Nickname = model.NewId()
+	//u1.Nickname = model.NewId()
 	store.Must(ss.User().Save(&u1))
 
 	termsOfService := &model.TermsOfService{Text: "terms of service", UserId: u1.ClientId}
@@ -42,10 +42,10 @@ func testSaveTermsOfService(t *testing.T, ss store.Store) {
 }
 
 func testGetLatestTermsOfService(t *testing.T, ss store.Store) {
-	u1 := model.User{}
+	u1 := model.UserIms{}
 	u1.Username = model.NewId()
 	u1.Email = MakeEmail()
-	u1.Nickname = model.NewId()
+	//u1.Nickname = model.NewId()
 	store.Must(ss.User().Save(&u1))
 
 	termsOfService := &model.TermsOfService{Text: "terms of service", UserId: u1.ClientId}
@@ -62,10 +62,10 @@ func testGetLatestTermsOfService(t *testing.T, ss store.Store) {
 }
 
 func testGetTermsOfService(t *testing.T, ss store.Store) {
-	u1 := model.User{}
+	u1 := model.UserIms{}
 	u1.Username = model.NewId()
 	u1.Email = MakeEmail()
-	u1.Nickname = model.NewId()
+	//u1.Nickname = model.NewId()
 	store.Must(ss.User().Save(&u1))
 
 	termsOfService := &model.TermsOfService{Text: "terms of service", UserId: u1.ClientId}

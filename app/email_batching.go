@@ -35,7 +35,7 @@ func (s *Server) InitEmailBatching() {
 	}
 }
 
-func (a *App) AddNotificationEmailToBatch(user *model.User, post *model.Post, team *model.Team) *model.AppError {
+func (a *App) AddNotificationEmailToBatch(user *model.UserIms, post *model.Post, team *model.Team) *model.AppError {
 	if !*a.Config().EmailSettings.EnableEmailBatching {
 		return model.NewAppError("AddNotificationEmailToBatch", "api.email_batching.add_notification_email_to_batch.disabled.app_error", nil, "", http.StatusNotImplemented)
 	}
@@ -84,7 +84,7 @@ func (job *EmailBatchingJob) Start() {
 	}
 }
 
-func (job *EmailBatchingJob) Add(user *model.User, post *model.Post, team *model.Team) bool {
+func (job *EmailBatchingJob) Add(user *model.UserIms, post *model.Post, team *model.Team) bool {
 	notification := &batchedNotification{
 		userId:   user.ClientId,
 		post:     post,
@@ -250,7 +250,7 @@ func (s *Server) sendBatchedEmailNotification(userId string, notifications []*ba
 	}
 }
 
-func (s *Server) renderBatchedPost(notification *batchedNotification, channel *model.Channel, sender *model.User, siteURL string, displayNameFormat string, translateFunc i18n.TranslateFunc, userLocale string, emailNotificationContentsType string) string {
+func (s *Server) renderBatchedPost(notification *batchedNotification, channel *model.Channel, sender *model.UserIms, siteURL string, displayNameFormat string, translateFunc i18n.TranslateFunc, userLocale string, emailNotificationContentsType string) string {
 	// don't include message contents if email notification contents type is set to generic
 	var template *utils.HTMLTemplate
 	if emailNotificationContentsType == model.EMAIL_NOTIFICATION_CONTENTS_FULL {

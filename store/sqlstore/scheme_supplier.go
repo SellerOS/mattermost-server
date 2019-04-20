@@ -113,10 +113,10 @@ func (s *SqlSupplier) createScheme(ctx context.Context, scheme *model.Scheme, tr
 			scheme.DefaultTeamAdminRole = saveRoleResult.Data.(*model.Role).Name
 		}
 
-		// Team User Role
+		// Team UserIms Role
 		teamUserRole := &model.Role{
 			Name:          model.NewId(),
-			DisplayName:   fmt.Sprintf("Team User Role for Scheme %s", scheme.Name),
+			DisplayName:   fmt.Sprintf("Team UserIms Role for Scheme %s", scheme.Name),
 			Permissions:   defaultRoles[model.TEAM_USER_ROLE_ID].Permissions,
 			SchemeManaged: true,
 		}
@@ -144,10 +144,10 @@ func (s *SqlSupplier) createScheme(ctx context.Context, scheme *model.Scheme, tr
 			scheme.DefaultChannelAdminRole = saveRoleResult.Data.(*model.Role).Name
 		}
 
-		// Channel User Role
+		// Channel UserIms Role
 		channelUserRole := &model.Role{
 			Name:          model.NewId(),
-			DisplayName:   fmt.Sprintf("Channel User Role for Scheme %s", scheme.Name),
+			DisplayName:   fmt.Sprintf("Channel UserIms Role for Scheme %s", scheme.Name),
 			Permissions:   defaultRoles[model.CHANNEL_USER_ROLE_ID].Permissions,
 			SchemeManaged: true,
 		}

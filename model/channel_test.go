@@ -152,11 +152,11 @@ func TestChannelPreUpdate(t *testing.T) {
 }
 
 func TestGetGroupDisplayNameFromUsers(t *testing.T) {
-	users := make([]*User, 4)
-	users[0] = &User{Username: NewId()}
-	users[1] = &User{Username: NewId()}
-	users[2] = &User{Username: NewId()}
-	users[3] = &User{Username: NewId()}
+	users := make([]*UserIms, 4)
+	users[0] = &UserIms{Username: NewId()}
+	users[1] = &UserIms{Username: NewId()}
+	users[2] = &UserIms{Username: NewId()}
+	users[3] = &UserIms{Username: NewId()}
 
 	name := GetGroupDisplayNameFromUsers(users, true)
 	if len(name) > CHANNEL_NAME_MAX_LENGTH {

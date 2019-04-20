@@ -22,7 +22,7 @@ const (
 	THREAD_ROOT = "root"
 )
 
-func (a *App) SendNotifications(post *model.Post, team *model.Team, channel *model.Channel, sender *model.User, parentPostList *model.PostList) ([]string, *model.AppError) {
+func (a *App) SendNotifications(post *model.Post, team *model.Team, channel *model.Channel, sender *model.UserIms, parentPostList *model.PostList) ([]string, *model.AppError) {
 	// Do not send notifications in archived channels
 	if channel.DeleteAt > 0 {
 		return []string{}, nil
@@ -40,7 +40,7 @@ func (a *App) SendNotifications(post *model.Post, team *model.Team, channel *mod
 	if result.Err != nil {
 		return nil, result.Err
 	}
-	profileMap := result.Data.(map[string]*model.User)
+	profileMap := result.Data.(map[string]*model.UserIms)
 
 	result = <-cmnchan
 	if result.Err != nil {
@@ -126,7 +126,7 @@ func (a *App) SendNotifications(post *model.Post, team *model.Team, channel *mod
 
 		if len(m.OtherPotentialMentions) > 0 && !post.IsSystemMessage() {
 			if result := <-a.Srv.Store.User().GetProfilesByUsernames(m.OtherPotentialMentions, team.Id); result.Err == nil {
-				outOfChannelMentions := result.Data.([]*model.User)
+				outOfChannelMentions := result.Data.([]*model.UserIms)
 				if channel.Type != model.CHANNEL_GROUP {
 					a.Srv.Go(func() {
 						a.sendOutOfChannelMentions(sender, post, outOfChannelMentions)
@@ -181,10 +181,10 @@ func (a *App) SendNotifications(post *model.Post, team *model.Team, channel *mod
 			}
 
 			//If email verification is required and user email is not verified don't send email.
-			if *a.Config().EmailSettings.RequireEmailVerification && !profileMap[id].EmailVerified {
-				mlog.Error(fmt.Sprintf("Skipped sending notification email to %v, address not verified. [details: user_id=%v]", profileMap[id].Email, id))
-				continue
-			}
+			//if *a.Config().EmailSettings.RequireEmailVerification && !profileMap[id].EmailVerified {
+			//	mlog.Error(fmt.Sprintf("Skipped sending notification email to %v, address not verified. [details: user_id=%v]", profileMap[id].Email, id))
+			//	continue
+			//}
 
 			var status *model.Status
 			var err *model.AppError
@@ -355,7 +355,7 @@ func (a *App) SendNotifications(post *model.Post, team *model.Team, channel *mod
 	return mentionedUsersList, nil
 }
 
-func (a *App) sendOutOfChannelMentions(sender *model.User, post *model.Post, users []*model.User) *model.AppError {
+func (a *App) sendOutOfChannelMentions(sender *model.UserIms, post *model.Post, users []*model.UserIms) *model.AppError {
 	if len(users) == 0 {
 		return nil
 	}
@@ -578,7 +578,7 @@ func GetMentionsEnabledFields(post *model.Post) model.StringArray {
 
 // Given a map of user IDs to profiles, returns a list of mention
 // keywords for all users in the channel.
-func (a *App) GetMentionKeywordsInChannel(profiles map[string]*model.User, lookForSpecialMentions bool, channelMemberNotifyPropsMap map[string]model.StringMap) map[string][]string {
+func (a *App) GetMentionKeywordsInChannel(profiles map[string]*model.UserIms, lookForSpecialMentions bool, channelMemberNotifyPropsMap map[string]model.StringMap) map[string][]string {
 	keywords := make(map[string][]string)
 
 	for id, profile := range profiles {
@@ -628,8 +628,8 @@ func (a *App) GetMentionKeywordsInChannel(profiles map[string]*model.User, lookF
 type postNotification struct {
 	channel    *model.Channel
 	post       *model.Post
-	profileMap map[string]*model.User
-	sender     *model.User
+	profileMap map[string]*model.UserIms
+	sender     *model.UserIms
 }
 
 // Returns the name of the channel for this notification. For direct messages, this is the sender's name

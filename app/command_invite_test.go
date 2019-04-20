@@ -53,7 +53,7 @@ func TestInviteProvider(t *testing.T) {
 			msg:      "",
 		},
 		{
-			desc:     "User added in the current channel",
+			desc:     "UserIms added in the current channel",
 			expected: "",
 			msg:      th.BasicUser2.Username,
 		},

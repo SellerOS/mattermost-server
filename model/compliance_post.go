@@ -19,7 +19,7 @@ type CompliancePost struct {
 	ChannelDisplayName string
 	ChannelType        string
 
-	// From User
+	// From UserIms
 	UserUsername string
 	UserEmail    string
 	UserNickname string

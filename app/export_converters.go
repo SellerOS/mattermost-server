@@ -48,7 +48,7 @@ func ImportLineFromDirectChannel(channel *model.DirectChannelForExport) *LineImp
 	}
 }
 
-func ImportLineFromUser(user *model.User, exportedPrefs map[string]*string) *LineImportData {
+func ImportLineFromUser(user *model.UserIms, exportedPrefs map[string]*string) *LineImportData {
 	// Bulk Importer doesn't accept "empty string" for AuthService.
 	var authService *string
 	if user.AuthService != "" {
@@ -62,7 +62,6 @@ func ImportLineFromUser(user *model.User, exportedPrefs map[string]*string) *Lin
 			Email:              &user.Email,
 			AuthService:        authService,
 			AuthData:           user.AuthData,
-			Nickname:           &user.Nickname,
 			FirstName:          &user.FirstName,
 			LastName:           &user.LastName,
 			Position:           &user.Position,
@@ -171,7 +170,7 @@ func ImportReplyFromPost(post *model.ReplyForExport) *ReplyImportData {
 	}
 }
 
-func ImportReactionFromPost(user *model.User, reaction *model.Reaction) *ReactionImportData {
+func ImportReactionFromPost(user *model.UserIms, reaction *model.Reaction) *ReactionImportData {
 	return &ReactionImportData{
 		User:      &user.Username,
 		EmojiName: &reaction.EmojiName,

@@ -1578,7 +1578,7 @@ type LdapSettings struct {
 	GroupDisplayNameAttribute *string
 	GroupIdAttribute          *string
 
-	// User Mapping
+	// UserIms Mapping
 	FirstNameAttribute *string
 	LastNameAttribute  *string
 	EmailAttribute     *string
@@ -1781,7 +1781,7 @@ type SamlSettings struct {
 	PublicCertificateFile *string
 	PrivateKeyFile        *string
 
-	// User Mapping
+	// UserIms Mapping
 	IdAttribute        *string
 	FirstNameAttribute *string
 	LastNameAttribute  *string

@@ -181,7 +181,7 @@ func removeUsersCmdF(command *cobra.Command, args []string) error {
 	return nil
 }
 
-func removeUserFromTeam(a *app.App, team *model.Team, user *model.User, userArg string) {
+func removeUserFromTeam(a *app.App, team *model.Team, user *model.UserIms, userArg string) {
 	if user == nil {
 		CommandPrintErrorln("Can't find user '" + userArg + "'")
 		return
@@ -211,7 +211,7 @@ func addUsersCmdF(command *cobra.Command, args []string) error {
 	return nil
 }
 
-func addUserToTeam(a *app.App, team *model.Team, user *model.User, userArg string) {
+func addUserToTeam(a *app.App, team *model.Team, user *model.UserIms, userArg string) {
 	if user == nil {
 		CommandPrintErrorln("Can't find user '" + userArg + "'")
 		return

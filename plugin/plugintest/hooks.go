@@ -195,41 +195,41 @@ func (_m *Hooks) ServeHTTP(c *plugin.Context, w http.ResponseWriter, r *http.Req
 }
 
 // UserHasBeenCreated provides a mock function with given fields: c, user
-func (_m *Hooks) UserHasBeenCreated(c *plugin.Context, user *model.User) {
+func (_m *Hooks) UserHasBeenCreated(c *plugin.Context, user *model.UserIms) {
 	_m.Called(c, user)
 }
 
 // UserHasJoinedChannel provides a mock function with given fields: c, channelMember, actor
-func (_m *Hooks) UserHasJoinedChannel(c *plugin.Context, channelMember *model.ChannelMember, actor *model.User) {
+func (_m *Hooks) UserHasJoinedChannel(c *plugin.Context, channelMember *model.ChannelMember, actor *model.UserIms) {
 	_m.Called(c, channelMember, actor)
 }
 
 // UserHasJoinedTeam provides a mock function with given fields: c, teamMember, actor
-func (_m *Hooks) UserHasJoinedTeam(c *plugin.Context, teamMember *model.TeamMember, actor *model.User) {
+func (_m *Hooks) UserHasJoinedTeam(c *plugin.Context, teamMember *model.TeamMember, actor *model.UserIms) {
 	_m.Called(c, teamMember, actor)
 }
 
 // UserHasLeftChannel provides a mock function with given fields: c, channelMember, actor
-func (_m *Hooks) UserHasLeftChannel(c *plugin.Context, channelMember *model.ChannelMember, actor *model.User) {
+func (_m *Hooks) UserHasLeftChannel(c *plugin.Context, channelMember *model.ChannelMember, actor *model.UserIms) {
 	_m.Called(c, channelMember, actor)
 }
 
 // UserHasLeftTeam provides a mock function with given fields: c, teamMember, actor
-func (_m *Hooks) UserHasLeftTeam(c *plugin.Context, teamMember *model.TeamMember, actor *model.User) {
+func (_m *Hooks) UserHasLeftTeam(c *plugin.Context, teamMember *model.TeamMember, actor *model.UserIms) {
 	_m.Called(c, teamMember, actor)
 }
 
 // UserHasLoggedIn provides a mock function with given fields: c, user
-func (_m *Hooks) UserHasLoggedIn(c *plugin.Context, user *model.User) {
+func (_m *Hooks) UserHasLoggedIn(c *plugin.Context, user *model.UserIms) {
 	_m.Called(c, user)
 }
 
 // UserWillLogIn provides a mock function with given fields: c, user
-func (_m *Hooks) UserWillLogIn(c *plugin.Context, user *model.User) string {
+func (_m *Hooks) UserWillLogIn(c *plugin.Context, user *model.UserIms) string {
 	ret := _m.Called(c, user)
 
 	var r0 string
-	if rf, ok := ret.Get(0).(func(*plugin.Context, *model.User) string); ok {
+	if rf, ok := ret.Get(0).(func(*plugin.Context, *model.UserIms) string); ok {
 		r0 = rf(c, user)
 	} else {
 		r0 = ret.Get(0).(string)

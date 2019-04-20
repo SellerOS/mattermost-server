@@ -239,7 +239,7 @@ func (a *App) GetOAuthAccessTokenForCodeFlow(clientId, grantType, redirectUri, c
 		return nil, model.NewAppError("GetOAuthAccessToken", "api.oauth.get_access_token.credentials.app_error", nil, "", http.StatusForbidden)
 	}
 
-	var user *model.User
+	var user *model.UserIms
 	var accessData *model.AccessData
 	var accessRsp *model.AccessResponse
 	if grantType == model.ACCESS_TOKEN_GRANT_TYPE {
@@ -333,7 +333,7 @@ func (a *App) GetOAuthAccessTokenForCodeFlow(clientId, grantType, redirectUri, c
 	return accessRsp, nil
 }
 
-func (a *App) newSession(appName string, user *model.User) (*model.Session, *model.AppError) {
+func (a *App) newSession(appName string, user *model.UserIms) (*model.Session, *model.AppError) {
 	// Set new token an session
 	session := &model.Session{UserId: user.ClientId, Roles: user.Roles, IsOAuth: true}
 	session.GenerateCSRF()
@@ -353,7 +353,7 @@ func (a *App) newSession(appName string, user *model.User) (*model.Session, *mod
 	return session, nil
 }
 
-func (a *App) newSessionUpdateToken(appName string, accessData *model.AccessData, user *model.User) (*model.AccessResponse, *model.AppError) {
+func (a *App) newSessionUpdateToken(appName string, accessData *model.AccessData, user *model.UserIms) (*model.AccessResponse, *model.AppError) {
 	// Remove the previous session
 	<-a.Srv.Store.Session().Remove(accessData.Token)
 
@@ -499,7 +499,7 @@ func (a *App) RevokeAccessToken(token string) *model.AppError {
 	return nil
 }
 
-func (a *App) CompleteOAuth(service string, body io.ReadCloser, teamId string, props map[string]string) (*model.User, *model.AppError) {
+func (a *App) CompleteOAuth(service string, body io.ReadCloser, teamId string, props map[string]string) (*model.UserIms, *model.AppError) {
 	defer body.Close()
 
 	action := props["action"]
@@ -518,7 +518,7 @@ func (a *App) CompleteOAuth(service string, body io.ReadCloser, teamId string, p
 	}
 }
 
-func (a *App) LoginByOAuth(service string, userData io.Reader, teamId string) (*model.User, *model.AppError) {
+func (a *App) LoginByOAuth(service string, userData io.Reader, teamId string) (*model.UserIms, *model.AppError) {
 	provider := einterfaces.GetOauthProvider(service)
 	if provider == nil {
 		return nil, model.NewAppError("LoginByOAuth", "api.user.login_by_oauth.not_available.app_error",
@@ -572,7 +572,7 @@ func (a *App) LoginByOAuth(service string, userData io.Reader, teamId string) (*
 	return user, nil
 }
 
-func (a *App) CompleteSwitchWithOAuth(service string, userData io.Reader, email string) (*model.User, *model.AppError) {
+func (a *App) CompleteSwitchWithOAuth(service string, userData io.Reader, email string) (*model.UserIms, *model.AppError) {
 	provider := einterfaces.GetOauthProvider(service)
 	if provider == nil {
 		return nil, model.NewAppError("CompleteSwitchWithOAuth", "api.user.complete_switch_with_oauth.unavailable.app_error",
@@ -599,7 +599,7 @@ func (a *App) CompleteSwitchWithOAuth(service string, userData io.Reader, email 
 	if result.Err != nil {
 		return nil, result.Err
 	}
-	user := result.Data.(*model.User)
+	user := result.Data.(*model.UserIms)
 
 	if err := a.RevokeAllSessions(user.ClientId); err != nil {
 		return nil, err
@@ -860,7 +860,7 @@ func (a *App) SwitchOAuthToEmail(email, password, requesterId string) (string, *
 		return "", model.NewAppError("oauthToEmail", "api.user.oauth_to_email.not_available.app_error", nil, "", http.StatusForbidden)
 	}
 
-	user, err := a.GetUserByEmail(email)
+	user, err := a.GetUserLoginByEmail(email)
 	if err != nil {
 		return "", err
 	}
@@ -873,10 +873,14 @@ func (a *App) SwitchOAuthToEmail(email, password, requesterId string) (string, *
 		return "", err
 	}
 
-	T := utils.GetUserTranslations(user.Locale)
+	userIms, err := a.GetUser(user.ClientId)
+	if err != nil {
+		return "", err
+	}
+	T := utils.GetUserTranslations(userIms.Locale)
 
 	a.Srv.Go(func() {
-		if err := a.SendSignInChangeEmail(user.Email, T("api.templates.signin_change_email.body.method_email"), user.Locale, a.GetSiteURL()); err != nil {
+		if err := a.SendSignInChangeEmail(user.Email, T("api.templates.signin_change_email.body.method_email"), userIms.Locale, a.GetSiteURL()); err != nil {
 			mlog.Error(err.Error())
 		}
 	})

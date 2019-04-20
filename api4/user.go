@@ -85,7 +85,7 @@ func createUser(c *Context, w http.ResponseWriter, r *http.Request) {
 
 	// No permission check required
 
-	var ruser *model.User
+	var ruser *model.UserIms
 	var err *model.AppError
 	if len(tokenId) > 0 {
 		ruser, err = c.App.CreateUserWithToken(user, tokenId)
@@ -135,7 +135,7 @@ func getUser(c *Context, w http.ResponseWriter, r *http.Request) {
 
 	etag := user.Etag(*c.App.Config().PrivacySettings.ShowFullName, *c.App.Config().PrivacySettings.ShowEmailAddress)
 
-	if c.HandleEtag(etag, "Get User", w, r) {
+	if c.HandleEtag(etag, "Get UserIms", w, r) {
 		return
 	}
 
@@ -178,7 +178,7 @@ func getUserByUsername(c *Context, w http.ResponseWriter, r *http.Request) {
 
 	etag := user.Etag(*c.App.Config().PrivacySettings.ShowFullName, *c.App.Config().PrivacySettings.ShowEmailAddress)
 
-	if c.HandleEtag(etag, "Get User", w, r) {
+	if c.HandleEtag(etag, "Get UserIms", w, r) {
 		return
 	}
 
@@ -213,7 +213,7 @@ func getUserByEmail(c *Context, w http.ResponseWriter, r *http.Request) {
 
 	etag := user.Etag(*c.App.Config().PrivacySettings.ShowFullName, *c.App.Config().PrivacySettings.ShowEmailAddress)
 
-	if c.HandleEtag(etag, "Get User", w, r) {
+	if c.HandleEtag(etag, "Get UserIms", w, r) {
 		return
 	}
 
@@ -269,7 +269,7 @@ func getProfileImage(c *Context, w http.ResponseWriter, r *http.Request) {
 	}
 
 	user := users[0]
-	etag := strconv.FormatInt(user.LastPictureUpdate, 10)
+	etag := strconv.FormatInt(user.UpdateAt, 10)
 	if c.HandleEtag(etag, "Get Profile Image", w, r) {
 		return
 	}
@@ -433,7 +433,7 @@ func getUsers(c *Context, w http.ResponseWriter, r *http.Request) {
 		PerPage:        c.Params.PerPage,
 	}
 
-	var profiles []*model.User
+	var profiles []*model.UserIms
 	var err *model.AppError
 	etag := ""
 
@@ -728,9 +728,14 @@ func updateUser(c *Context, w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	userLogin, err := c.App.GetUserLogin(user.ClientId)
+	if err != nil {
+		c.Err = err
+		return
+	}
 	// If eMail update is attempted by the currently logged in user, check if correct password was provided
 	if user.Email != "" && ouser.Email != user.Email && c.App.Session.UserId == c.Params.UserId {
-		err = c.App.DoubleCheckPassword(ouser, user.Password)
+		err = c.App.DoubleCheckPassword(ouser, userLogin.PasswordOld)
 		if err != nil {
 			c.SetInvalidParam("password")
 			return

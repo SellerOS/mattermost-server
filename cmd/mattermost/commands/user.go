@@ -274,7 +274,7 @@ func changeUsersActiveStatus(a *app.App, userArgs []string, active bool) {
 	}
 }
 
-func changeUserActiveStatus(a *app.App, user *model.User, userArg string, activate bool) error {
+func changeUserActiveStatus(a *app.App, user *model.UserIms, userArg string, activate bool) error {
 	if user == nil {
 		return fmt.Errorf("Can't find user '%v'", userArg)
 	}
@@ -323,17 +323,17 @@ func userCreateCmdF(command *cobra.Command, args []string) error {
 	if errp != nil || password == "" {
 		return errors.New("Password is required")
 	}
-	nickname, _ := command.Flags().GetString("nickname")
+	//nickname, _ := command.Flags().GetString("nickname")
 	firstname, _ := command.Flags().GetString("firstname")
 	lastname, _ := command.Flags().GetString("lastname")
 	locale, _ := command.Flags().GetString("locale")
 	systemAdmin, _ := command.Flags().GetBool("system_admin")
 
-	user := &model.User{
+	user := &model.UserIms{
 		Username:  username,
 		Email:     email,
-		Password:  password,
-		Nickname:  nickname,
+		//Password:  password,
+		//Nickname:  nickname,
 		FirstName: firstname,
 		LastName:  lastname,
 		Locale:    locale,
@@ -358,7 +358,7 @@ func userCreateCmdF(command *cobra.Command, args []string) error {
 
 	CommandPrettyPrintln("id: " + ruser.ClientId)
 	CommandPrettyPrintln("username: " + ruser.Username)
-	CommandPrettyPrintln("nickname: " + ruser.Nickname)
+	//CommandPrettyPrintln("nickname: " + ruser.Nickname)
 	CommandPrettyPrintln("position: " + ruser.Position)
 	CommandPrettyPrintln("first_name: " + ruser.FirstName)
 	CommandPrettyPrintln("last_name: " + ruser.LastName)
@@ -429,7 +429,11 @@ func resetUserPasswordCmdF(command *cobra.Command, args []string) error {
 	}
 	password := args[1]
 
-	if result := <-a.Srv.Store.User().UpdatePassword(user.ClientId, model.HashPassword(password, user.Salt)); result.Err != nil {
+	userLogin, err := a.GetUserLogin(user.ClientId)
+	if err != nil {
+		return err
+	}
+	if result := <-a.Srv.Store.User().UpdatePassword(user.ClientId, model.HashPassword(password, userLogin.Salt)); result.Err != nil {
 		return result.Err
 	}
 
@@ -725,7 +729,7 @@ func searchUserCmdF(command *cobra.Command, args []string) error {
 
 		CommandPrettyPrintln("id: " + user.ClientId)
 		CommandPrettyPrintln("username: " + user.Username)
-		CommandPrettyPrintln("nickname: " + user.Nickname)
+		//CommandPrettyPrintln("nickname: " + user.Nickname)
 		CommandPrettyPrintln("position: " + user.Position)
 		CommandPrettyPrintln("first_name: " + user.FirstName)
 		CommandPrettyPrintln("last_name: " + user.LastName)

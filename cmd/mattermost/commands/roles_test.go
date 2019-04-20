@@ -18,7 +18,7 @@ func TestAssignRole(t *testing.T) {
 	if result := <-th.App.Srv.Store.User().GetByEmail(th.BasicUser.Email); result.Err != nil {
 		t.Fatal(result.Err)
 	} else {
-		user := result.Data.(*model.User)
+		user := result.Data.(*model.UserIms)
 		if user.Roles != "system_user system_admin" {
 			t.Fatal("Got wrong roles:", user.Roles)
 		}
@@ -29,7 +29,7 @@ func TestAssignRole(t *testing.T) {
 	if result := <-th.App.Srv.Store.User().GetByEmail(th.BasicUser.Email); result.Err != nil {
 		t.Fatal(result.Err)
 	} else {
-		user := result.Data.(*model.User)
+		user := result.Data.(*model.UserIms)
 		if user.Roles != "system_user" {
 			t.Fatal("Got wrong roles:", user.Roles, user.ClientId)
 		}

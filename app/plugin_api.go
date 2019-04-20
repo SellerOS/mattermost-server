@@ -192,7 +192,7 @@ func (api *PluginAPI) GetTeamStats(teamId string) (*model.TeamStats, *model.AppE
 	return api.app.GetTeamStats(teamId)
 }
 
-func (api *PluginAPI) CreateUser(user *model.User) (*model.User, *model.AppError) {
+func (api *PluginAPI) CreateUser(user *model.UserIms) (*model.UserIms, *model.AppError) {
 	return api.app.CreateUser(user)
 }
 
@@ -205,32 +205,32 @@ func (api *PluginAPI) DeleteUser(userId string) *model.AppError {
 	return err
 }
 
-func (api *PluginAPI) GetUsers(options *model.UserGetOptions) ([]*model.User, *model.AppError) {
+func (api *PluginAPI) GetUsers(options *model.UserGetOptions) ([]*model.UserIms, *model.AppError) {
 	return api.app.GetUsers(options)
 }
 
-func (api *PluginAPI) GetUser(userId string) (*model.User, *model.AppError) {
+func (api *PluginAPI) GetUser(userId string) (*model.UserIms, *model.AppError) {
 	return api.app.GetUser(userId)
 }
 
-func (api *PluginAPI) GetUserByEmail(email string) (*model.User, *model.AppError) {
+func (api *PluginAPI) GetUserByEmail(email string) (*model.UserIms, *model.AppError) {
 	return api.app.GetUserByEmail(email)
 }
 
-func (api *PluginAPI) GetUserByUsername(name string) (*model.User, *model.AppError) {
+func (api *PluginAPI) GetUserByUsername(name string) (*model.UserIms, *model.AppError) {
 	return api.app.GetUserByUsername(name)
 }
 
-func (api *PluginAPI) GetUsersByUsernames(usernames []string) ([]*model.User, *model.AppError) {
+func (api *PluginAPI) GetUsersByUsernames(usernames []string) ([]*model.UserIms, *model.AppError) {
 	return api.app.GetUsersByUsernames(usernames, true)
 }
 
-func (api *PluginAPI) GetUsersInTeam(teamId string, page int, perPage int) ([]*model.User, *model.AppError) {
+func (api *PluginAPI) GetUsersInTeam(teamId string, page int, perPage int) ([]*model.UserIms, *model.AppError) {
 	options := &model.UserGetOptions{InTeamId: teamId, Page: page, PerPage: perPage}
 	return api.app.GetUsersInTeam(options)
 }
 
-func (api *PluginAPI) UpdateUser(user *model.User) (*model.User, *model.AppError) {
+func (api *PluginAPI) UpdateUser(user *model.UserIms) (*model.UserIms, *model.AppError) {
 	return api.app.UpdateUser(user, true)
 }
 
@@ -263,7 +263,7 @@ func (api *PluginAPI) UpdateUserStatus(userId, status string) (*model.Status, *m
 	return api.app.GetStatus(userId)
 }
 
-func (api *PluginAPI) GetUsersInChannel(channelId, sortBy string, page, perPage int) ([]*model.User, *model.AppError) {
+func (api *PluginAPI) GetUsersInChannel(channelId, sortBy string, page, perPage int) ([]*model.UserIms, *model.AppError) {
 	switch sortBy {
 	case model.CHANNEL_SORT_BY_USERNAME:
 		return api.app.GetUsersInChannel(channelId, page*perPage, perPage)
@@ -365,7 +365,7 @@ func (api *PluginAPI) SearchChannels(teamId string, term string) ([]*model.Chann
 	return *channels, err
 }
 
-func (api *PluginAPI) SearchUsers(search *model.UserSearch) ([]*model.User, *model.AppError) {
+func (api *PluginAPI) SearchUsers(search *model.UserSearch) ([]*model.UserIms, *model.AppError) {
 	pluginSearchUsersOptions := &model.UserSearchOptions{
 		IsAdmin:       true,
 		AllowInactive: search.AllowInactive,

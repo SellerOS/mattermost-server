@@ -238,20 +238,20 @@ func (_m *API) CreateTeamMembers(teamId string, userIds []string, requestorId st
 }
 
 // CreateUser provides a mock function with given fields: user
-func (_m *API) CreateUser(user *model.User) (*model.User, *model.AppError) {
+func (_m *API) CreateUser(user *model.UserIms) (*model.UserIms, *model.AppError) {
 	ret := _m.Called(user)
 
-	var r0 *model.User
-	if rf, ok := ret.Get(0).(func(*model.User) *model.User); ok {
+	var r0 *model.UserIms
+	if rf, ok := ret.Get(0).(func(*model.UserIms) *model.UserIms); ok {
 		r0 = rf(user)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*model.User)
+			r0 = ret.Get(0).(*model.UserIms)
 		}
 	}
 
 	var r1 *model.AppError
-	if rf, ok := ret.Get(1).(func(*model.User) *model.AppError); ok {
+	if rf, ok := ret.Get(1).(func(*model.UserIms) *model.AppError); ok {
 		r1 = rf(user)
 	} else {
 		if ret.Get(1) != nil {
@@ -1596,15 +1596,15 @@ func (_m *API) GetTeamsUnreadForUser(userId string) ([]*model.TeamUnread, *model
 }
 
 // GetUser provides a mock function with given fields: userId
-func (_m *API) GetUser(userId string) (*model.User, *model.AppError) {
+func (_m *API) GetUser(userId string) (*model.UserIms, *model.AppError) {
 	ret := _m.Called(userId)
 
-	var r0 *model.User
-	if rf, ok := ret.Get(0).(func(string) *model.User); ok {
+	var r0 *model.UserIms
+	if rf, ok := ret.Get(0).(func(string) *model.UserIms); ok {
 		r0 = rf(userId)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*model.User)
+			r0 = ret.Get(0).(*model.UserIms)
 		}
 	}
 
@@ -1621,15 +1621,15 @@ func (_m *API) GetUser(userId string) (*model.User, *model.AppError) {
 }
 
 // GetUserByEmail provides a mock function with given fields: email
-func (_m *API) GetUserByEmail(email string) (*model.User, *model.AppError) {
+func (_m *API) GetUserByEmail(email string) (*model.UserIms, *model.AppError) {
 	ret := _m.Called(email)
 
-	var r0 *model.User
-	if rf, ok := ret.Get(0).(func(string) *model.User); ok {
+	var r0 *model.UserIms
+	if rf, ok := ret.Get(0).(func(string) *model.UserIms); ok {
 		r0 = rf(email)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*model.User)
+			r0 = ret.Get(0).(*model.UserIms)
 		}
 	}
 
@@ -1646,15 +1646,15 @@ func (_m *API) GetUserByEmail(email string) (*model.User, *model.AppError) {
 }
 
 // GetUserByUsername provides a mock function with given fields: name
-func (_m *API) GetUserByUsername(name string) (*model.User, *model.AppError) {
+func (_m *API) GetUserByUsername(name string) (*model.UserIms, *model.AppError) {
 	ret := _m.Called(name)
 
-	var r0 *model.User
-	if rf, ok := ret.Get(0).(func(string) *model.User); ok {
+	var r0 *model.UserIms
+	if rf, ok := ret.Get(0).(func(string) *model.UserIms); ok {
 		r0 = rf(name)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*model.User)
+			r0 = ret.Get(0).(*model.UserIms)
 		}
 	}
 
@@ -1721,15 +1721,15 @@ func (_m *API) GetUserStatusesByIds(userIds []string) ([]*model.Status, *model.A
 }
 
 // GetUsers provides a mock function with given fields: options
-func (_m *API) GetUsers(options *model.UserGetOptions) ([]*model.User, *model.AppError) {
+func (_m *API) GetUsers(options *model.UserGetOptions) ([]*model.UserIms, *model.AppError) {
 	ret := _m.Called(options)
 
-	var r0 []*model.User
-	if rf, ok := ret.Get(0).(func(*model.UserGetOptions) []*model.User); ok {
+	var r0 []*model.UserIms
+	if rf, ok := ret.Get(0).(func(*model.UserGetOptions) []*model.UserIms); ok {
 		r0 = rf(options)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.User)
+			r0 = ret.Get(0).([]*model.UserIms)
 		}
 	}
 
@@ -1746,15 +1746,15 @@ func (_m *API) GetUsers(options *model.UserGetOptions) ([]*model.User, *model.Ap
 }
 
 // GetUsersByUsernames provides a mock function with given fields: usernames
-func (_m *API) GetUsersByUsernames(usernames []string) ([]*model.User, *model.AppError) {
+func (_m *API) GetUsersByUsernames(usernames []string) ([]*model.UserIms, *model.AppError) {
 	ret := _m.Called(usernames)
 
-	var r0 []*model.User
-	if rf, ok := ret.Get(0).(func([]string) []*model.User); ok {
+	var r0 []*model.UserIms
+	if rf, ok := ret.Get(0).(func([]string) []*model.UserIms); ok {
 		r0 = rf(usernames)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.User)
+			r0 = ret.Get(0).([]*model.UserIms)
 		}
 	}
 
@@ -1771,15 +1771,15 @@ func (_m *API) GetUsersByUsernames(usernames []string) ([]*model.User, *model.Ap
 }
 
 // GetUsersInChannel provides a mock function with given fields: channelId, sortBy, page, perPage
-func (_m *API) GetUsersInChannel(channelId string, sortBy string, page int, perPage int) ([]*model.User, *model.AppError) {
+func (_m *API) GetUsersInChannel(channelId string, sortBy string, page int, perPage int) ([]*model.UserIms, *model.AppError) {
 	ret := _m.Called(channelId, sortBy, page, perPage)
 
-	var r0 []*model.User
-	if rf, ok := ret.Get(0).(func(string, string, int, int) []*model.User); ok {
+	var r0 []*model.UserIms
+	if rf, ok := ret.Get(0).(func(string, string, int, int) []*model.UserIms); ok {
 		r0 = rf(channelId, sortBy, page, perPage)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.User)
+			r0 = ret.Get(0).([]*model.UserIms)
 		}
 	}
 
@@ -1796,15 +1796,15 @@ func (_m *API) GetUsersInChannel(channelId string, sortBy string, page int, perP
 }
 
 // GetUsersInTeam provides a mock function with given fields: teamId, page, perPage
-func (_m *API) GetUsersInTeam(teamId string, page int, perPage int) ([]*model.User, *model.AppError) {
+func (_m *API) GetUsersInTeam(teamId string, page int, perPage int) ([]*model.UserIms, *model.AppError) {
 	ret := _m.Called(teamId, page, perPage)
 
-	var r0 []*model.User
-	if rf, ok := ret.Get(0).(func(string, int, int) []*model.User); ok {
+	var r0 []*model.UserIms
+	if rf, ok := ret.Get(0).(func(string, int, int) []*model.UserIms); ok {
 		r0 = rf(teamId, page, perPage)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.User)
+			r0 = ret.Get(0).([]*model.UserIms)
 		}
 	}
 
@@ -2279,15 +2279,15 @@ func (_m *API) SearchTeams(term string) ([]*model.Team, *model.AppError) {
 }
 
 // SearchUsers provides a mock function with given fields: search
-func (_m *API) SearchUsers(search *model.UserSearch) ([]*model.User, *model.AppError) {
+func (_m *API) SearchUsers(search *model.UserSearch) ([]*model.UserIms, *model.AppError) {
 	ret := _m.Called(search)
 
-	var r0 []*model.User
-	if rf, ok := ret.Get(0).(func(*model.UserSearch) []*model.User); ok {
+	var r0 []*model.UserIms
+	if rf, ok := ret.Get(0).(func(*model.UserSearch) []*model.UserIms); ok {
 		r0 = rf(search)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.User)
+			r0 = ret.Get(0).([]*model.UserIms)
 		}
 	}
 
@@ -2573,20 +2573,20 @@ func (_m *API) UpdateTeamMemberRoles(teamId string, userId string, newRoles stri
 }
 
 // UpdateUser provides a mock function with given fields: user
-func (_m *API) UpdateUser(user *model.User) (*model.User, *model.AppError) {
+func (_m *API) UpdateUser(user *model.UserIms) (*model.UserIms, *model.AppError) {
 	ret := _m.Called(user)
 
-	var r0 *model.User
-	if rf, ok := ret.Get(0).(func(*model.User) *model.User); ok {
+	var r0 *model.UserIms
+	if rf, ok := ret.Get(0).(func(*model.UserIms) *model.UserIms); ok {
 		r0 = rf(user)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*model.User)
+			r0 = ret.Get(0).(*model.UserIms)
 		}
 	}
 
 	var r1 *model.AppError
-	if rf, ok := ret.Get(1).(func(*model.User) *model.AppError); ok {
+	if rf, ok := ret.Get(1).(func(*model.UserIms) *model.AppError); ok {
 		r1 = rf(user)
 	} else {
 		if ret.Get(1) != nil {

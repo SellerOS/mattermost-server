@@ -24,13 +24,13 @@ type UserSearch struct {
 	Role           string `json:"role"`
 }
 
-// ToJson convert a User to a json string
+// ToJson convert a UserIms to a json string
 func (u *UserSearch) ToJson() []byte {
 	b, _ := json.Marshal(u)
 	return b
 }
 
-// UserSearchFromJson will decode the input and return a User
+// UserSearchFromJson will decode the input and return a UserIms
 func UserSearchFromJson(data io.Reader) *UserSearch {
 	var us *UserSearch
 	json.NewDecoder(data).Decode(&us)

@@ -120,7 +120,7 @@ func TestSetDefaultProfileImage(t *testing.T) {
 	th := Setup(t).InitBasic()
 	defer th.TearDown()
 
-	err := th.App.SetDefaultProfileImage(&model.User{
+	err := th.App.SetDefaultProfileImage(&model.UserIms{
 		ClientId:       model.NewId(),
 		Username: "notvaliduser",
 	})
@@ -131,8 +131,8 @@ func TestSetDefaultProfileImage(t *testing.T) {
 	err = th.App.SetDefaultProfileImage(user)
 	require.Nil(t, err)
 
-	user = getUserFromDB(th.App, user.ClientId, t)
-	assert.Equal(t, int64(0), user.LastPictureUpdate)
+	//user = getUserFromDB(th.App, user.ClientId, t)
+	//assert.Equal(t, int64(0), user.LastPictureUpdate)
 }
 
 func TestUpdateUserToRestrictedDomain(t *testing.T) {
@@ -231,7 +231,7 @@ func TestUpdateOAuthUserAttrs(t *testing.T) {
 	email := "user" + id + "@nowhere.com"
 	email2 := "user" + id2 + "@nowhere.com"
 
-	var user, user2 *model.User
+	var user, user2 *model.UserIms
 	var gitlabUserObj oauthgitlab.GitLabUser
 	user, gitlabUserObj = createGitlabUser(t, th.App, username, email)
 	user2, _ = createGitlabUser(t, th.App, username2, email2)
@@ -281,9 +281,9 @@ func TestUpdateOAuthUserAttrs(t *testing.T) {
 				t.Fatal("user's email is not updated")
 			}
 
-			if !user.EmailVerified {
-				t.Fatal("user's email should have been verified")
-			}
+			//if !user.EmailVerified {
+			//	t.Fatal("user's email should have been verified")
+			//}
 		})
 
 		t.Run("ExistingUserWithSameEmail", func(t *testing.T) {
@@ -303,7 +303,7 @@ func TestUpdateOAuthUserAttrs(t *testing.T) {
 	})
 
 	t.Run("UpdateFirstName", func(t *testing.T) {
-		gitlabUserObj.Name = "Updated User"
+		gitlabUserObj.Name = "Updated UserIms"
 		gitlabUser := getGitlabUserPayload(gitlabUserObj, t)
 		data := bytes.NewReader(gitlabUser)
 
@@ -349,7 +349,7 @@ func TestUpdateUserEmail(t *testing.T) {
 		user2, err := th.App.UpdateUser(user, false)
 		assert.Nil(t, err)
 		assert.Equal(t, currentEmail, user2.Email)
-		assert.True(t, user2.EmailVerified)
+		//assert.True(t, user2.EmailVerified)
 
 		token, err := th.App.CreateVerifyEmailToken(user2.ClientId, newEmail)
 		assert.Nil(t, err)
@@ -360,7 +360,7 @@ func TestUpdateUserEmail(t *testing.T) {
 		user2, err = th.App.GetUser(user2.ClientId)
 		assert.Nil(t, err)
 		assert.Equal(t, newEmail, user2.Email)
-		assert.True(t, user2.EmailVerified)
+		//assert.True(t, user2.EmailVerified)
 	})
 
 	t.Run("RequireVerificationAlreadyUsedEmail", func(t *testing.T) {
@@ -391,7 +391,7 @@ func TestUpdateUserEmail(t *testing.T) {
 	})
 }
 
-func getUserFromDB(a *App, id string, t *testing.T) *model.User {
+func getUserFromDB(a *App, id string, t *testing.T) *model.UserIms {
 	user, err := a.GetUser(id)
 	if err != nil {
 		t.Fatal("user is not found", err)
@@ -410,12 +410,12 @@ func getGitlabUserPayload(gitlabUser oauthgitlab.GitLabUser, t *testing.T) []byt
 	return payload
 }
 
-func createGitlabUser(t *testing.T, a *App, username string, email string) (*model.User, oauthgitlab.GitLabUser) {
+func createGitlabUser(t *testing.T, a *App, username string, email string) (*model.UserIms, oauthgitlab.GitLabUser) {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	gitlabUserObj := oauthgitlab.GitLabUser{Id: int64(r.Intn(1000)) + 1, Username: username, Login: "user1", Email: email, Name: "Test User"}
+	gitlabUserObj := oauthgitlab.GitLabUser{Id: int64(r.Intn(1000)) + 1, Username: username, Login: "user1", Email: email, Name: "Test UserIms"}
 	gitlabUser := getGitlabUserPayload(gitlabUserObj, t)
 
-	var user *model.User
+	var user *model.UserIms
 	var err *model.AppError
 
 	if user, err = a.CreateOAuthUser("gitlab", bytes.NewReader(gitlabUser), ""); err != nil {
@@ -441,14 +441,14 @@ func TestGetUsersByStatus(t *testing.T) {
 		t.Fatalf("failed to create channel: %v", err)
 	}
 
-	createUserWithStatus := func(username string, status string) *model.User {
+	createUserWithStatus := func(username string, status string) *model.UserIms {
 		id := model.NewId()
 
-		user, err := th.App.CreateUser(&model.User{
+		user, err := th.App.CreateUser(&model.UserIms{
 			Email:    "success+" + id + "@simulator.amazonses.com",
 			Username: "un_" + username + "_" + id,
-			Nickname: "nn_" + id,
-			Password: "Password1",
+			//Nickname: "nn_" + id,
+			//Password: "Password1",
 		})
 		if err != nil {
 			t.Fatalf("failed to create user: %v", err)
@@ -482,7 +482,7 @@ func TestGetUsersByStatus(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		expectedUsersByStatus := []*model.User{
+		expectedUsersByStatus := []*model.UserIms{
 			onlineUser1,
 			onlineUser2,
 			awayUser1,
@@ -558,7 +558,7 @@ func TestCreateUserWithToken(t *testing.T) {
 	th := Setup(t).InitBasic()
 	defer th.TearDown()
 
-	user := model.User{ClientId:model.NewId(), Email: strings.ToLower(model.NewId()) + "success+test@example.com", Nickname: "Darth Vader", Username: "vader" + model.NewId(), Password: "passwd1", AuthService: ""}
+	user := model.UserIms{ClientId:model.NewId(), Email: strings.ToLower(model.NewId()) + "success+test@example.com",  Username: "vader" + model.NewId(),  AuthService: ""}
 
 	t.Run("invalid token", func(t *testing.T) {
 		if _, err := th.App.CreateUserWithToken(&user, "123"); err == nil {

@@ -752,14 +752,14 @@ func TestGetChannelMembersTimezones(t *testing.T) {
 	user2.Timezone["automaticTimezone"] = "NoWhere/Island"
 	th.App.UpdateUser(user2, false)
 
-	user3 := model.User{Email: strings.ToLower(model.NewId()) + "success+test@example.com", Nickname: "Darth Vader", Username: "vader" + model.NewId(), Password: "passwd1", AuthService: ""}
+	user3 := model.UserIms{Email: strings.ToLower(model.NewId()) + "success+test@example.com",  Username: "vader" + model.NewId(),  AuthService: ""}
 	ruser, _ := th.App.CreateUser(&user3)
 	th.App.AddUserToChannel(ruser, th.BasicChannel)
 
 	ruser.Timezone["automaticTimezone"] = "NoWhere/Island"
 	th.App.UpdateUser(ruser, false)
 
-	user4 := model.User{Email: strings.ToLower(model.NewId()) + "success+test@example.com", Nickname: "Darth Vader", Username: "vader" + model.NewId(), Password: "passwd1", AuthService: ""}
+	user4 := model.UserIms{Email: strings.ToLower(model.NewId()) + "success+test@example.com", Username: "vader" + model.NewId(), AuthService: ""}
 	ruser, _ = th.App.CreateUser(&user4)
 	th.App.AddUserToChannel(ruser, th.BasicChannel)
 

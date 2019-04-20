@@ -72,8 +72,8 @@ func TestCreateChannel(t *testing.T) {
 	_, resp = Client.CreateChannel(channel)
 	CheckUnauthorizedStatus(t, resp)
 
-	userNotOnTeam := th.CreateUser()
-	Client.Login(userNotOnTeam.Email, userNotOnTeam.Password)
+	//userNotOnTeam := th.CreateUser()
+	//Client.Login(userNotOnTeam.Email, userNotOnTeam.Password)
 
 	_, resp = Client.CreateChannel(channel)
 	CheckForbiddenStatus(t, resp)
@@ -228,7 +228,8 @@ func TestUpdateChannel(t *testing.T) {
 
 	//Try to update using another user
 	user := th.CreateUser()
-	Client.Login(user.Email, user.Password)
+	userLogin := th.CreateUserLogin(user.Email)
+	Client.Login(user.Email, userLogin.PasswordOld)
 
 	channel.DisplayName = "Should not update"
 	_, resp = Client.UpdateChannel(channel)
@@ -244,20 +245,20 @@ func TestUpdateChannel(t *testing.T) {
 
 	groupChannel.Header = "lolololol"
 	Client.Logout()
-	Client.Login(user3.Email, user3.Password)
+	Client.Login(user3.Email, userLogin.PasswordOld)
 	_, resp = Client.UpdateChannel(groupChannel)
 	CheckForbiddenStatus(t, resp)
 
 	// Test updating the header of someone else's GM channel.
 	Client.Logout()
-	Client.Login(user.Email, user.Password)
+	Client.Login(user.Email, userLogin.PasswordOld)
 
 	directChannel, resp := Client.CreateDirectChannel(user.ClientId, user1.ClientId)
 	CheckNoError(t, resp)
 
 	directChannel.Header = "lolololol"
 	Client.Logout()
-	Client.Login(user3.Email, user3.Password)
+	Client.Login(user3.Email, userLogin.PasswordOld)
 	_, resp = Client.UpdateChannel(directChannel)
 	CheckForbiddenStatus(t, resp)
 }
@@ -318,7 +319,8 @@ func TestPatchChannel(t *testing.T) {
 	CheckNotFoundStatus(t, resp)
 
 	user := th.CreateUser()
-	Client.Login(user.Email, user.Password)
+	userLogin := th.CreateUserLogin(user.Email)
+	Client.Login(user.Email, userLogin.PasswordOld)
 	_, resp = Client.PatchChannel(th.BasicChannel.Id, patch)
 	CheckForbiddenStatus(t, resp)
 
@@ -326,7 +328,7 @@ func TestPatchChannel(t *testing.T) {
 	CheckNoError(t, resp)
 
 	Client.Logout()
-	Client.Login(th.BasicUser.Username, th.BasicUser.Password)
+	Client.Login(th.BasicUser.Username, th.BasicUserLogin.PasswordOld)
 
 	_, resp = th.Client.PatchChannel(th.BasicPrivateChannel.Id, patch)
 	CheckNoError(t, resp)
@@ -339,12 +341,12 @@ func TestPatchChannel(t *testing.T) {
 	user1 := th.CreateUser()
 	user2 := th.CreateUser()
 	user3 := th.CreateUser()
-
+	userLogin3 := th.CreateUserLogin(user3.Email)
 	groupChannel, resp := Client.CreateGroupChannel([]string{user1.ClientId, user2.ClientId})
 	CheckNoError(t, resp)
 
 	Client.Logout()
-	Client.Login(user3.Email, user3.Password)
+	Client.Login(user3.Email, userLogin3.PasswordOld)
 
 	channelPatch := &model.ChannelPatch{}
 	channelPatch.Header = new(string)
@@ -355,13 +357,13 @@ func TestPatchChannel(t *testing.T) {
 
 	// Test updating the header of someone else's GM channel.
 	Client.Logout()
-	Client.Login(user.Email, user.Password)
+	Client.Login(user.Email, userLogin.PasswordOld)
 
 	directChannel, resp := Client.CreateDirectChannel(user.ClientId, user1.ClientId)
 	CheckNoError(t, resp)
 
 	Client.Logout()
-	Client.Login(user3.Email, user3.Password)
+	Client.Login(user3.Email, userLogin3.PasswordOld)
 	_, resp = Client.PatchChannel(directChannel.Id, channelPatch)
 	CheckForbiddenStatus(t, resp)
 }
@@ -562,7 +564,8 @@ func TestGetChannel(t *testing.T) {
 	CheckUnauthorizedStatus(t, resp)
 
 	user := th.CreateUser()
-	Client.Login(user.Email, user.Password)
+	userLogin := th.CreateUserLogin(user.Email)
+	Client.Login(user.Email, userLogin.PasswordOld)
 	_, resp = Client.GetChannel(th.BasicChannel.Id, "")
 	CheckForbiddenStatus(t, resp)
 
@@ -695,7 +698,8 @@ func TestGetPublicChannelsForTeam(t *testing.T) {
 	CheckUnauthorizedStatus(t, resp)
 
 	user := th.CreateUser()
-	Client.Login(user.Email, user.Password)
+	userLogin := th.CreateUserLogin(user.Email)
+	Client.Login(user.Email, userLogin.PasswordOld)
 	_, resp = Client.GetPublicChannelsForTeam(team.Id, 0, 100, "")
 	CheckForbiddenStatus(t, resp)
 
@@ -1004,7 +1008,8 @@ func TestDeleteChannel(t *testing.T) {
 	publicChannel5 := th.CreatePublicChannel()
 	Client.Logout()
 
-	Client.Login(user.ClientId, user.Password)
+	userLogin := th.CreateUserLogin(user.Email)
+	Client.Login(user.Email, userLogin.PasswordOld)
 	_, resp = Client.DeleteChannel(publicChannel5.Id)
 	CheckUnauthorizedStatus(t, resp)
 
@@ -1245,7 +1250,8 @@ func TestGetChannelByName(t *testing.T) {
 	CheckUnauthorizedStatus(t, resp)
 
 	user := th.CreateUser()
-	Client.Login(user.Email, user.Password)
+	userLogin := th.CreateUserLogin(user.Email)
+	Client.Login(user.Email, userLogin.PasswordOld)
 	_, resp = Client.GetChannelByName(th.BasicChannel.Name, th.BasicTeam.Id, "")
 	CheckForbiddenStatus(t, resp)
 
@@ -1289,7 +1295,8 @@ func TestGetChannelByNameForTeamName(t *testing.T) {
 	CheckUnauthorizedStatus(t, resp)
 
 	user := th.CreateUser()
-	Client.Login(user.Email, user.Password)
+	userLogin := th.CreateUserLogin(user.Email)
+	Client.Login(user.Email, userLogin.PasswordOld)
 	_, resp = Client.GetChannelByNameForTeamName(th.BasicChannel.Name, th.BasicTeam.Name, "")
 	CheckForbiddenStatus(t, resp)
 }
@@ -1341,7 +1348,8 @@ func TestGetChannelMembers(t *testing.T) {
 	CheckUnauthorizedStatus(t, resp)
 
 	user := th.CreateUser()
-	Client.Login(user.Email, user.Password)
+	userLogin := th.CreateUserLogin(user.Email)
+	Client.Login(user.Email, userLogin.PasswordOld)
 	_, resp = Client.GetChannelMembers(th.BasicChannel.Id, 0, 60, "")
 	CheckForbiddenStatus(t, resp)
 
@@ -1435,7 +1443,8 @@ func TestGetChannelMember(t *testing.T) {
 	CheckUnauthorizedStatus(t, resp)
 
 	user := th.CreateUser()
-	Client.Login(user.Email, user.Password)
+	userLogin := th.CreateUserLogin(user.Email)
+	Client.Login(user.Email, userLogin.PasswordOld)
 	_, resp = Client.GetChannelMember(th.BasicChannel.Id, th.BasicUser.ClientId, "")
 	CheckForbiddenStatus(t, resp)
 
@@ -1478,7 +1487,8 @@ func TestGetChannelMembersForUser(t *testing.T) {
 	CheckUnauthorizedStatus(t, resp)
 
 	user := th.CreateUser()
-	Client.Login(user.Email, user.Password)
+	userLogin := th.CreateUserLogin(user.Email)
+	Client.Login(user.Email, userLogin.PasswordOld)
 	_, resp = Client.GetChannelMembersForUser(th.BasicUser.ClientId, th.BasicTeam.Id, "")
 	CheckForbiddenStatus(t, resp)
 
@@ -1601,7 +1611,8 @@ func TestGetChannelUnread(t *testing.T) {
 	CheckForbiddenStatus(t, resp)
 
 	newUser := th.CreateUser()
-	Client.Login(newUser.Email, newUser.Password)
+	userLogin := th.CreateUserLogin(newUser.Email)
+	Client.Login(newUser.Email, userLogin.PasswordOld)
 	_, resp = Client.GetChannelUnread(th.BasicChannel.Id, user.ClientId)
 	CheckForbiddenStatus(t, resp)
 
@@ -1698,13 +1709,13 @@ func TestUpdateChannelRoles(t *testing.T) {
 	const CHANNEL_ADMIN = "channel_user channel_admin"
 	const CHANNEL_MEMBER = "channel_user"
 
-	// User 1 creates a channel, making them channel admin by default.
+	// UserIms 1 creates a channel, making them channel admin by default.
 	channel := th.CreatePublicChannel()
 
-	// Adds User 2 to the channel, making them a channel member by default.
+	// Adds UserIms 2 to the channel, making them a channel member by default.
 	th.App.AddUserToChannel(th.BasicUser2, channel)
 
-	// User 1 promotes User 2
+	// UserIms 1 promotes UserIms 2
 	pass, resp := Client.UpdateChannelRoles(channel.Id, th.BasicUser2.ClientId, CHANNEL_ADMIN)
 	CheckNoError(t, resp)
 
@@ -1719,35 +1730,35 @@ func TestUpdateChannelRoles(t *testing.T) {
 		t.Fatal("roles don't match")
 	}
 
-	// User 1 demotes User 2
+	// UserIms 1 demotes UserIms 2
 	_, resp = Client.UpdateChannelRoles(channel.Id, th.BasicUser2.ClientId, CHANNEL_MEMBER)
 	CheckNoError(t, resp)
 
 	th.LoginBasic2()
 
-	// User 2 cannot demote User 1
+	// UserIms 2 cannot demote UserIms 1
 	_, resp = Client.UpdateChannelRoles(channel.Id, th.BasicUser.ClientId, CHANNEL_MEMBER)
 	CheckForbiddenStatus(t, resp)
 
-	// User 2 cannot promote self
+	// UserIms 2 cannot promote self
 	_, resp = Client.UpdateChannelRoles(channel.Id, th.BasicUser2.ClientId, CHANNEL_ADMIN)
 	CheckForbiddenStatus(t, resp)
 
 	th.LoginBasic()
 
-	// User 1 demotes self
+	// UserIms 1 demotes self
 	_, resp = Client.UpdateChannelRoles(channel.Id, th.BasicUser.ClientId, CHANNEL_MEMBER)
 	CheckNoError(t, resp)
 
-	// System Admin promotes User 1
+	// System Admin promotes UserIms 1
 	_, resp = th.SystemAdminClient.UpdateChannelRoles(channel.Id, th.BasicUser.ClientId, CHANNEL_ADMIN)
 	CheckNoError(t, resp)
 
-	// System Admin demotes User 1
+	// System Admin demotes UserIms 1
 	_, resp = th.SystemAdminClient.UpdateChannelRoles(channel.Id, th.BasicUser.ClientId, CHANNEL_MEMBER)
 	CheckNoError(t, resp)
 
-	// System Admin promotes User 1
+	// System Admin promotes UserIms 1
 	_, resp = th.SystemAdminClient.UpdateChannelRoles(channel.Id, th.BasicUser.ClientId, CHANNEL_ADMIN)
 	CheckNoError(t, resp)
 
@@ -1972,7 +1983,8 @@ func TestAddChannelMember(t *testing.T) {
 	otherUser := th.CreateUser()
 	otherChannel := th.CreatePublicChannel()
 	Client.Logout()
-	Client.Login(user2.ClientId, user2.Password)
+	userLogin := th.CreateUserLogin(user2.Email)
+	Client.Login(user2.Email, userLogin.PasswordOld)
 
 	_, resp = Client.AddChannelMember(publicChannel.Id, otherUser.ClientId)
 	CheckUnauthorizedStatus(t, resp)
@@ -1984,7 +1996,7 @@ func TestAddChannelMember(t *testing.T) {
 	CheckUnauthorizedStatus(t, resp)
 
 	Client.Logout()
-	Client.Login(user.ClientId, user.Password)
+	Client.Login(user.ClientId, userLogin.PasswordOld)
 
 	// should fail adding user who is not a member of the team
 	_, resp = Client.AddChannelMember(otherChannel.Id, otherUser.ClientId)
@@ -2018,13 +2030,13 @@ func TestAddChannelMember(t *testing.T) {
 	th.AddPermissionToRole(model.PERMISSION_MANAGE_PRIVATE_CHANNEL_MEMBERS.Id, model.CHANNEL_USER_ROLE_ID)
 
 	// Check that a regular channel user can add other users.
-	Client.Login(user2.Username, user2.Password)
+	Client.Login(user2.Username, userLogin.PasswordOld)
 	privateChannel = th.CreatePrivateChannel()
 	_, resp = Client.AddChannelMember(privateChannel.Id, user.ClientId)
 	CheckNoError(t, resp)
 	Client.Logout()
 
-	Client.Login(user.Username, user.Password)
+	Client.Login(user.Username, userLogin.PasswordOld)
 	_, resp = Client.AddChannelMember(privateChannel.Id, user3.ClientId)
 	CheckNoError(t, resp)
 	Client.Logout()
@@ -2033,13 +2045,13 @@ func TestAddChannelMember(t *testing.T) {
 	th.AddPermissionToRole(model.PERMISSION_MANAGE_PRIVATE_CHANNEL_MEMBERS.Id, model.CHANNEL_ADMIN_ROLE_ID)
 	th.RemovePermissionFromRole(model.PERMISSION_MANAGE_PRIVATE_CHANNEL_MEMBERS.Id, model.CHANNEL_USER_ROLE_ID)
 
-	Client.Login(user2.Username, user2.Password)
+	Client.Login(user2.Username, userLogin.PasswordOld)
 	privateChannel = th.CreatePrivateChannel()
 	_, resp = Client.AddChannelMember(privateChannel.Id, user.ClientId)
 	CheckNoError(t, resp)
 	Client.Logout()
 
-	Client.Login(user.Username, user.Password)
+	Client.Login(user.Username, userLogin.PasswordOld)
 	_, resp = Client.AddChannelMember(privateChannel.Id, user3.ClientId)
 	CheckForbiddenStatus(t, resp)
 	Client.Logout()
@@ -2047,7 +2059,7 @@ func TestAddChannelMember(t *testing.T) {
 	th.MakeUserChannelAdmin(user, privateChannel)
 	th.App.InvalidateAllCaches()
 
-	Client.Login(user.Username, user.Password)
+	Client.Login(user.Username, userLogin.PasswordOld)
 	_, resp = Client.AddChannelMember(privateChannel.Id, user3.ClientId)
 	CheckNoError(t, resp)
 	Client.Logout()
@@ -2057,7 +2069,7 @@ func TestAddChannelMember(t *testing.T) {
 	_, appErr := th.App.UpdateChannel(privateChannel)
 	require.Nil(t, appErr)
 
-	// User is not in associated groups so shouldn't be allowed
+	// UserIms is not in associated groups so shouldn't be allowed
 	_, resp = th.SystemAdminClient.AddChannelMember(privateChannel.Id, user.ClientId)
 	CheckErrorMessage(t, resp, "api.channel.add_members.user_denied")
 
@@ -2082,6 +2094,7 @@ func TestAddChannelMemberAddMyself(t *testing.T) {
 	defer th.TearDown()
 	Client := th.Client
 	user := th.CreateUser()
+	userLogin := th.CreateUserLogin(user.Email)
 	th.LinkUserToTeam(user, th.BasicTeam)
 	notMemberPublicChannel1 := th.CreatePublicChannel()
 	notMemberPublicChannel2 := th.CreatePublicChannel()
@@ -2129,7 +2142,7 @@ func TestAddChannelMemberAddMyself(t *testing.T) {
 			"",
 		},
 	}
-	Client.Login(user.Email, user.Password)
+	Client.Login(user.Email, userLogin.PasswordOld)
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
 

@@ -33,8 +33,8 @@ func (a *App) CreateDefaultChannels(teamId string) ([]*model.Channel, *model.App
 	return channels, nil
 }
 
-func (a *App) JoinDefaultChannels(teamId string, user *model.User, shouldBeAdmin bool, userRequestorId string) *model.AppError {
-	var requestor *model.User
+func (a *App) JoinDefaultChannels(teamId string, user *model.UserIms, shouldBeAdmin bool, userRequestorId string) *model.AppError {
+	var requestor *model.UserIms
 	if userRequestorId != "" {
 		var err *model.AppError
 		requestor, err = a.Srv.Store.User().Get(userRequestorId)
@@ -103,7 +103,7 @@ func (a *App) JoinDefaultChannels(teamId string, user *model.User, shouldBeAdmin
 	return err
 }
 
-func (a *App) postJoinMessageForDefaultChannel(user *model.User, requestor *model.User, channel *model.Channel) {
+func (a *App) postJoinMessageForDefaultChannel(user *model.UserIms, requestor *model.UserIms, channel *model.Channel) {
 	if channel.Name == model.DEFAULT_CHANNEL {
 		if requestor == nil {
 			if err := a.postJoinTeamMessage(user, channel); err != nil {
@@ -157,7 +157,7 @@ func (a *App) CreateChannelWithUser(channel *model.Channel, userId string) (*mod
 		return nil, err
 	}
 
-	var user *model.User
+	var user *model.UserIms
 	if user, err = a.GetUser(userId); err != nil {
 		return nil, err
 	}
@@ -424,7 +424,7 @@ func (a *App) createGroupChannel(userIds []string, creatorId string) (*model.Cha
 	if result.Err != nil {
 		return nil, result.Err
 	}
-	users := result.Data.([]*model.User)
+	users := result.Data.([]*model.UserIms)
 
 	if len(users) != len(userIds) {
 		return nil, model.NewAppError("CreateGroupChannel", "api.channel.create_group.bad_user.app_error", nil, "user_ids="+model.ArrayToJson(userIds), http.StatusBadRequest)
@@ -473,7 +473,7 @@ func (a *App) GetGroupChannel(userIds []string) (*model.Channel, *model.AppError
 	if result.Err != nil {
 		return nil, result.Err
 	}
-	users := result.Data.([]*model.User)
+	users := result.Data.([]*model.UserIms)
 
 	if len(users) != len(userIds) {
 		return nil, model.NewAppError("GetGroupChannel", "api.channel.create_group.bad_user.app_error", nil, "user_ids="+model.ArrayToJson(userIds), http.StatusBadRequest)
@@ -528,7 +528,7 @@ func (a *App) UpdateChannelScheme(channel *model.Channel) (*model.Channel, *mode
 	return newChannel, nil
 }
 
-func (a *App) UpdateChannelPrivacy(oldChannel *model.Channel, user *model.User) (*model.Channel, *model.AppError) {
+func (a *App) UpdateChannelPrivacy(oldChannel *model.Channel, user *model.UserIms) (*model.Channel, *model.AppError) {
 	channel, err := a.UpdateChannel(oldChannel)
 	if err != nil {
 		return channel, err
@@ -554,7 +554,7 @@ func (a *App) UpdateChannelPrivacy(oldChannel *model.Channel, user *model.User) 
 	return channel, nil
 }
 
-func (a *App) postChannelPrivacyMessage(user *model.User, channel *model.Channel) *model.AppError {
+func (a *App) postChannelPrivacyMessage(user *model.UserIms, channel *model.Channel) *model.AppError {
 	message := (map[string]string{
 		model.CHANNEL_OPEN:    utils.T("api.channel.change_channel_privacy.private_to_public"),
 		model.CHANNEL_PRIVATE: utils.T("api.channel.change_channel_privacy.public_to_private"),
@@ -769,7 +769,7 @@ func (a *App) DeleteChannel(channel *model.Channel, userId string) *model.AppErr
 	ihc := a.Srv.Store.Webhook().GetIncomingByChannel(channel.Id)
 	ohc := a.Srv.Store.Webhook().GetOutgoingByChannel(channel.Id, -1, -1)
 
-	var user *model.User
+	var user *model.UserIms
 	if userId != "" {
 		var err *model.AppError
 		user, err = a.Srv.Store.User().Get(userId)
@@ -848,7 +848,7 @@ func (a *App) DeleteChannel(channel *model.Channel, userId string) *model.AppErr
 	return nil
 }
 
-func (a *App) addUserToChannel(user *model.User, channel *model.Channel, teamMember *model.TeamMember) (*model.ChannelMember, *model.AppError) {
+func (a *App) addUserToChannel(user *model.UserIms, channel *model.Channel, teamMember *model.TeamMember) (*model.ChannelMember, *model.AppError) {
 	if channel.Type != model.CHANNEL_OPEN && channel.Type != model.CHANNEL_PRIVATE {
 		return nil, model.NewAppError("AddUserToChannel", "api.channel.add_user_to_channel.type.app_error", nil, "", http.StatusBadRequest)
 	}
@@ -885,7 +885,7 @@ func (a *App) addUserToChannel(user *model.User, channel *model.Channel, teamMem
 	return newMember, nil
 }
 
-func (a *App) AddUserToChannel(user *model.User, channel *model.Channel) (*model.ChannelMember, *model.AppError) {
+func (a *App) AddUserToChannel(user *model.UserIms, channel *model.Channel) (*model.ChannelMember, *model.AppError) {
 	tmchan := a.Srv.Store.Team().GetMember(channel.TeamId, user.ClientId)
 	var teamMember *model.TeamMember
 
@@ -920,14 +920,14 @@ func (a *App) AddChannelMember(userId string, channel *model.Channel, userReques
 		return member, nil
 	}
 
-	var user *model.User
+	var user *model.UserIms
 	var err *model.AppError
 
 	if user, err = a.GetUser(userId); err != nil {
 		return nil, err
 	}
 
-	var userRequestor *model.User
+	var userRequestor *model.UserIms
 	if userRequestorId != "" {
 		if userRequestor, err = a.GetUser(userRequestorId); err != nil {
 			return nil, err
@@ -973,14 +973,14 @@ func (a *App) AddChannelMember(userId string, channel *model.Channel, userReques
 	return cm, nil
 }
 
-func (a *App) AddDirectChannels(teamId string, user *model.User) *model.AppError {
-	var profiles []*model.User
+func (a *App) AddDirectChannels(teamId string, user *model.UserIms) *model.AppError {
+	var profiles []*model.UserIms
 	options := &model.UserGetOptions{InTeamId: teamId, Page: 0, PerPage: 100}
 	result := <-a.Srv.Store.User().GetProfiles(options)
 	if result.Err != nil {
 		return model.NewAppError("AddDirectChannels", "api.user.add_direct_channels_and_forget.failed.error", map[string]interface{}{"UserId": user.ClientId, "TeamId": teamId, "Error": result.Err.Error()}, "", http.StatusInternalServerError)
 	}
-	profiles = result.Data.([]*model.User)
+	profiles = result.Data.([]*model.UserIms)
 
 	var preferences model.Preferences
 
@@ -1346,7 +1346,7 @@ func (a *App) JoinChannel(channel *model.Channel, userId string) *model.AppError
 		return nil
 	}
 
-	user := uresult.Data.(*model.User)
+	user := uresult.Data.(*model.UserIms)
 
 	if channel.Type != model.CHANNEL_OPEN {
 		return model.NewAppError("JoinChannel", "api.channel.join_channel.permissions.app_error", nil, "", http.StatusBadRequest)
@@ -1383,7 +1383,7 @@ func (a *App) JoinChannel(channel *model.Channel, userId string) *model.AppError
 	return nil
 }
 
-func (a *App) postJoinChannelMessage(user *model.User, channel *model.Channel) *model.AppError {
+func (a *App) postJoinChannelMessage(user *model.UserIms, channel *model.Channel) *model.AppError {
 	post := &model.Post{
 		ChannelId: channel.Id,
 		Message:   fmt.Sprintf(utils.T("api.channel.join_channel.post_and_forget"), user.Username),
@@ -1401,7 +1401,7 @@ func (a *App) postJoinChannelMessage(user *model.User, channel *model.Channel) *
 	return nil
 }
 
-func (a *App) postJoinTeamMessage(user *model.User, channel *model.Channel) *model.AppError {
+func (a *App) postJoinTeamMessage(user *model.UserIms, channel *model.Channel) *model.AppError {
 	post := &model.Post{
 		ChannelId: channel.Id,
 		Message:   fmt.Sprintf(utils.T("api.team.join_team.post_and_forget"), user.Username),
@@ -1443,7 +1443,7 @@ func (a *App) LeaveChannel(channelId string, userId string) *model.AppError {
 	}
 
 	channel := cresult.Data.(*model.Channel)
-	user := uresult.Data.(*model.User)
+	user := uresult.Data.(*model.UserIms)
 	membersCount := ccmresult.Data.(int64)
 
 	if channel.IsGroupOrDirect() {
@@ -1471,7 +1471,7 @@ func (a *App) LeaveChannel(channelId string, userId string) *model.AppError {
 	return nil
 }
 
-func (a *App) postLeaveChannelMessage(user *model.User, channel *model.Channel) *model.AppError {
+func (a *App) postLeaveChannelMessage(user *model.UserIms, channel *model.Channel) *model.AppError {
 	post := &model.Post{
 		ChannelId: channel.Id,
 		Message:   fmt.Sprintf(utils.T("api.channel.leave.left"), user.Username),
@@ -1489,7 +1489,7 @@ func (a *App) postLeaveChannelMessage(user *model.User, channel *model.Channel) 
 	return nil
 }
 
-func (a *App) PostAddToChannelMessage(user *model.User, addedUser *model.User, channel *model.Channel, postRootId string) *model.AppError {
+func (a *App) PostAddToChannelMessage(user *model.UserIms, addedUser *model.UserIms, channel *model.Channel, postRootId string) *model.AppError {
 	post := &model.Post{
 		ChannelId: channel.Id,
 		Message:   fmt.Sprintf(utils.T("api.channel.add_member.added"), addedUser.Username, user.Username),
@@ -1511,7 +1511,7 @@ func (a *App) PostAddToChannelMessage(user *model.User, addedUser *model.User, c
 	return nil
 }
 
-func (a *App) postAddToTeamMessage(user *model.User, addedUser *model.User, channel *model.Channel, postRootId string) *model.AppError {
+func (a *App) postAddToTeamMessage(user *model.UserIms, addedUser *model.UserIms, channel *model.Channel, postRootId string) *model.AppError {
 	post := &model.Post{
 		ChannelId: channel.Id,
 		Message:   fmt.Sprintf(utils.T("api.team.add_user_to_team.added"), addedUser.Username, user.Username),
@@ -1533,7 +1533,7 @@ func (a *App) postAddToTeamMessage(user *model.User, addedUser *model.User, chan
 	return nil
 }
 
-func (a *App) postRemoveFromChannelMessage(removerUserId string, removedUser *model.User, channel *model.Channel) *model.AppError {
+func (a *App) postRemoveFromChannelMessage(removerUserId string, removedUser *model.UserIms, channel *model.Channel) *model.AppError {
 	post := &model.Post{
 		ChannelId: channel.Id,
 		Message:   fmt.Sprintf(utils.T("api.channel.remove_member.removed"), removedUser.Username),
@@ -1573,7 +1573,7 @@ func (a *App) removeUserFromChannel(userIdToRemove string, removerUserId string,
 	a.InvalidateCacheForChannelMembers(channel.Id)
 
 	if pluginsEnvironment := a.GetPluginsEnvironment(); pluginsEnvironment != nil {
-		var actorUser *model.User
+		var actorUser *model.UserIms
 		if removerUserId != "" {
 			actorUser, _ = a.GetUser(removerUserId)
 		}
@@ -1617,7 +1617,7 @@ func (a *App) RemoveUserFromChannel(userIdToRemove string, removerUserId string,
 		return err
 	}
 
-	var user *model.User
+	var user *model.UserIms
 	if user, err = a.GetUser(userIdToRemove); err != nil {
 		return err
 	}
@@ -1863,7 +1863,7 @@ func (a *App) PermanentDeleteChannel(channel *model.Channel) *model.AppError {
 	esInterface := a.Elasticsearch
 	if esInterface != nil && *a.Config().ElasticsearchSettings.EnableIndexing {
 		a.Srv.Go(func() {
-			for _, user := range channelUsers.Data.(map[string]*model.User) {
+			for _, user := range channelUsers.Data.(map[string]*model.UserIms) {
 				if err := a.indexUser(user); err != nil {
 					mlog.Error("Encountered error indexing user", mlog.String("user_id", user.ClientId), mlog.Err(err))
 				}
@@ -1883,7 +1883,7 @@ func (a *App) PermanentDeleteChannel(channel *model.Channel) *model.AppError {
 
 // This function is intended for use from the CLI. It is not robust against people joining the channel while the move
 // is in progress, and therefore should not be used from the API without first fixing this potential race condition.
-func (a *App) MoveChannel(team *model.Team, channel *model.Channel, user *model.User, removeDeactivatedMembers bool) *model.AppError {
+func (a *App) MoveChannel(team *model.Team, channel *model.Channel, user *model.UserIms, removeDeactivatedMembers bool) *model.AppError {
 	if removeDeactivatedMembers {
 		if result := <-a.Srv.Store.Channel().RemoveAllDeactivatedMembers(channel.Id); result.Err != nil {
 			return result.Err
@@ -1929,7 +1929,7 @@ func (a *App) MoveChannel(team *model.Team, channel *model.Channel, user *model.
 	return nil
 }
 
-func (a *App) postChannelMoveMessage(user *model.User, channel *model.Channel, previousTeam *model.Team) *model.AppError {
+func (a *App) postChannelMoveMessage(user *model.UserIms, channel *model.Channel, previousTeam *model.Team) *model.AppError {
 
 	post := &model.Post{
 		ChannelId: channel.Id,

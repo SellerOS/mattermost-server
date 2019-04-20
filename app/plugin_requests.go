@@ -92,7 +92,7 @@ func (a *App) servePluginRequest(w http.ResponseWriter, r *http.Request, handler
 		token = r.URL.Query().Get("access_token")
 	}
 
-	r.Header.Del("Mattermost-User-Id")
+	r.Header.Del("Mattermost-UserIms-Id")
 	if token != "" {
 		session, err := a.GetSession(token)
 		csrfCheckPassed := false
@@ -131,7 +131,7 @@ func (a *App) servePluginRequest(w http.ResponseWriter, r *http.Request, handler
 		}
 
 		if session != nil && err == nil && csrfCheckPassed {
-			r.Header.Set("Mattermost-User-Id", session.UserId)
+			r.Header.Set("Mattermost-UserIms-Id", session.UserId)
 			context.SessionId = session.Id
 		}
 	}

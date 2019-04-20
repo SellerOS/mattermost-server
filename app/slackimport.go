@@ -133,12 +133,12 @@ func SlackParsePosts(data io.Reader) ([]SlackPost, error) {
 	return posts, nil
 }
 
-func (a *App) SlackAddUsers(teamId string, slackusers []SlackUser, importerLog *bytes.Buffer) map[string]*model.User {
+func (a *App) SlackAddUsers(teamId string, slackusers []SlackUser, importerLog *bytes.Buffer) map[string]*model.UserIms {
 	// Log header
 	importerLog.WriteString(utils.T("api.slackimport.slack_add_users.created"))
 	importerLog.WriteString("===============\r\n\r\n")
 
-	addedUsers := make(map[string]*model.User)
+	addedUsers := make(map[string]*model.UserIms)
 
 	// Need the team
 	result := <-a.Srv.Store.Team().Get(teamId)
@@ -155,14 +155,14 @@ func (a *App) SlackAddUsers(teamId string, slackusers []SlackUser, importerLog *
 		if email == "" {
 			email = sUser.Username + "@example.com"
 			importerLog.WriteString(utils.T("api.slackimport.slack_add_users.missing_email_address", map[string]interface{}{"Email": email, "Username": sUser.Username}))
-			mlog.Warn(fmt.Sprintf("Slack Import: User %v does not have an email address in the Slack export. Used %v as a placeholder. The user should update their email address once logged in to the system.", email, sUser.Username))
+			mlog.Warn(fmt.Sprintf("Slack Import: UserIms %v does not have an email address in the Slack export. Used %v as a placeholder. The user should update their email address once logged in to the system.", email, sUser.Username))
 		}
 
 		password := model.NewId()
 
 		// Check for email conflict and use existing user if found
 		if result := <-a.Srv.Store.User().GetByEmail(email); result.Err == nil {
-			existingUser := result.Data.(*model.User)
+			existingUser := result.Data.(*model.UserIms)
 			addedUsers[sUser.Id] = existingUser
 			if err := a.JoinUserToTeam(team, addedUsers[sUser.Id], ""); err != nil {
 				importerLog.WriteString(utils.T("api.slackimport.slack_add_users.merge_existing_failed", map[string]interface{}{"Email": existingUser.Email, "Username": existingUser.Username}))
@@ -172,12 +172,12 @@ func (a *App) SlackAddUsers(teamId string, slackusers []SlackUser, importerLog *
 			continue
 		}
 
-		newUser := model.User{
+		newUser := model.UserIms{
 			Username:  sUser.Username,
 			FirstName: firstName,
 			LastName:  lastName,
 			Email:     email,
-			Password:  password,
+			//Password:  password,
 		}
 
 		mUser := a.OldImportUser(team, &newUser)
@@ -192,7 +192,7 @@ func (a *App) SlackAddUsers(teamId string, slackusers []SlackUser, importerLog *
 	return addedUsers
 }
 
-func (a *App) SlackAddBotUser(teamId string, log *bytes.Buffer) *model.User {
+func (a *App) SlackAddBotUser(teamId string, log *bytes.Buffer) *model.UserIms {
 	result := <-a.Srv.Store.Team().Get(teamId)
 	if result.Err != nil {
 		log.WriteString(utils.T("api.slackimport.slack_import.team_fail"))
@@ -204,12 +204,12 @@ func (a *App) SlackAddBotUser(teamId string, log *bytes.Buffer) *model.User {
 	username := "slackimportuser_" + model.NewId()
 	email := username + "@localhost"
 
-	botUser := model.User{
+	botUser := model.UserIms{
 		Username:  username,
 		FirstName: "",
 		LastName:  "",
 		Email:     email,
-		Password:  password,
+		//Password:  password,
 	}
 
 	mUser := a.OldImportUser(team, &botUser)
@@ -218,11 +218,11 @@ func (a *App) SlackAddBotUser(teamId string, log *bytes.Buffer) *model.User {
 		return nil
 	}
 
-	log.WriteString(utils.T("api.slackimport.slack_add_bot_user.email_pwd", map[string]interface{}{"Email": botUser.Email, "Password": password}))
+	log.WriteString(utils.T("api.slackimport.slack_add_bot_user.email_pwd", map[string]interface{}{"Email": botUser.Email , "Password": password}))
 	return mUser
 }
 
-func (a *App) SlackAddPosts(teamId string, channel *model.Channel, posts []SlackPost, users map[string]*model.User, uploads map[string]*zip.File, botUser *model.User) {
+func (a *App) SlackAddPosts(teamId string, channel *model.Channel, posts []SlackPost, users map[string]*model.UserIms, uploads map[string]*zip.File, botUser *model.UserIms) {
 	for _, sPost := range posts {
 		switch {
 		case sPost.Type == "message" && (sPost.SubType == "" || sPost.SubType == "file_share"):
@@ -426,13 +426,13 @@ func (a *App) SlackUploadFile(sPost SlackPost, uploads map[string]*zip.File, tea
 	return uploadedFile, true
 }
 
-func (a *App) deactivateSlackBotUser(user *model.User) {
+func (a *App) deactivateSlackBotUser(user *model.UserIms) {
 	if _, err := a.UpdateActive(user, false); err != nil {
 		mlog.Warn("Slack Import: Unable to deactivate the user account used for the bot.")
 	}
 }
 
-func (a *App) addSlackUsersToChannel(members []string, users map[string]*model.User, channel *model.Channel, log *bytes.Buffer) {
+func (a *App) addSlackUsersToChannel(members []string, users map[string]*model.UserIms, channel *model.Channel, log *bytes.Buffer) {
 	for _, member := range members {
 		user, ok := users[member]
 		if !ok {
@@ -469,7 +469,7 @@ func SlackSanitiseChannelProperties(channel model.Channel) model.Channel {
 	return channel
 }
 
-func (a *App) SlackAddChannels(teamId string, slackchannels []SlackChannel, posts map[string][]SlackPost, users map[string]*model.User, uploads map[string]*zip.File, botUser *model.User, importerLog *bytes.Buffer) map[string]*model.Channel {
+func (a *App) SlackAddChannels(teamId string, slackchannels []SlackChannel, posts map[string][]SlackPost, users map[string]*model.UserIms, uploads map[string]*zip.File, botUser *model.UserIms, importerLog *bytes.Buffer) map[string]*model.Channel {
 	// Write Header
 	importerLog.WriteString(utils.T("api.slackimport.slack_add_channels.added"))
 	importerLog.WriteString("=================\r\n\r\n")
@@ -734,7 +734,7 @@ func (a *App) OldImportPost(post *model.Post) {
 	}
 }
 
-func (a *App) OldImportUser(team *model.Team, user *model.User) *model.User {
+func (a *App) OldImportUser(team *model.Team, user *model.UserIms) *model.UserIms {
 	user.MakeNonNil()
 
 	user.Roles = model.SYSTEM_USER_ROLE_ID
@@ -744,7 +744,7 @@ func (a *App) OldImportUser(team *model.Team, user *model.User) *model.User {
 		mlog.Error(fmt.Sprintf("Error saving user. err=%v", result.Err))
 		return nil
 	}
-	ruser := result.Data.(*model.User)
+	ruser := result.Data.(*model.UserIms)
 
 	if cresult := <-a.Srv.Store.User().VerifyEmail(ruser.ClientId, ruser.Email); cresult.Err != nil {
 		mlog.Error(fmt.Sprintf("Failed to set email verified err=%v", cresult.Err))

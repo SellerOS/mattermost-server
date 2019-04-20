@@ -35,9 +35,12 @@ type TestHelper struct {
 	ConfigStore config.Store
 
 	Client              *model.Client4
-	BasicUser           *model.User
-	BasicUser2          *model.User
-	TeamAdminUser       *model.User
+	BasicUser           *model.UserIms
+	BasicUserLogin      *model.UserLogin
+	BasicUser2          *model.UserIms
+	BasicUser2Login     *model.UserLogin
+	TeamAdminUser       *model.UserIms
+	TeamAdminUserLogin  *model.UserLogin
 	BasicTeam           *model.Team
 	BasicChannel        *model.Channel
 	BasicPrivateChannel *model.Channel
@@ -46,9 +49,10 @@ type TestHelper struct {
 	BasicPost           *model.Post
 	Group               *model.Group
 
-	SystemAdminClient *model.Client4
-	SystemAdminUser   *model.User
-	tempWorkspace     string
+	SystemAdminClient    *model.Client4
+	SystemAdminUser      *model.UserIms
+	SystemAdminUserLogin *model.UserLogin
+	tempWorkspace        string
 }
 
 // testStore tracks the active test store.
@@ -183,6 +187,7 @@ func (me *TestHelper) InitBasic() *TestHelper {
 	me.waitForConnectivity()
 
 	me.SystemAdminUser = me.CreateUser()
+	me.SystemAdminUserLogin = me.CreateUserLogin(me.SystemAdminUser.Email)
 	me.App.UpdateUserRoles(me.SystemAdminUser.ClientId, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_ADMIN_ROLE_ID, false)
 	me.LoginSystemAdmin()
 
@@ -197,8 +202,10 @@ func (me *TestHelper) InitBasic() *TestHelper {
 	me.BasicChannel2 = me.CreatePublicChannel()
 	me.BasicPost = me.CreatePost()
 	me.BasicUser = me.CreateUser()
+	me.BasicUserLogin = me.CreateUserLogin(me.BasicUser.Email)
 	me.LinkUserToTeam(me.BasicUser, me.BasicTeam)
 	me.BasicUser2 = me.CreateUser()
+	me.BasicUser2Login = me.CreateUserLogin(me.BasicUser2.Email)
 	me.LinkUserToTeam(me.BasicUser2, me.BasicTeam)
 	me.App.AddUserToChannel(me.BasicUser, me.BasicChannel)
 	me.App.AddUserToChannel(me.BasicUser2, me.BasicChannel)
@@ -240,8 +247,12 @@ func (me *TestHelper) CreateWebSocketSystemAdminClient() (*model.WebSocketClient
 	return model.NewWebSocketClient4(fmt.Sprintf("ws://localhost:%v", me.App.Srv.ListenAddr.Port), me.SystemAdminClient.AuthToken)
 }
 
-func (me *TestHelper) CreateUser() *model.User {
+func (me *TestHelper) CreateUser() *model.UserIms {
 	return me.CreateUserWithClient(me.Client)
+}
+
+func (me *TestHelper) CreateUserLogin(email string) *model.UserLogin {
+	return me.CreateUserLoginWithClient(me.Client,email)
 }
 
 func (me *TestHelper) CreateTeam() *model.Team {
@@ -266,16 +277,16 @@ func (me *TestHelper) CreateTeamWithClient(client *model.Client4) *model.Team {
 	return rteam
 }
 
-func (me *TestHelper) CreateUserWithClient(client *model.Client4) *model.User {
+func (me *TestHelper) CreateUserWithClient(client *model.Client4) *model.UserIms {
 	id := model.NewId()
 
-	user := &model.User{
-		Email:     me.GenerateTestEmail(),
-		Username:  GenerateTestUsername(),
-		Nickname:  "nn_" + id,
+	user := &model.UserIms{
+		Email:    me.GenerateTestEmail(),
+		Username: GenerateTestUsername(),
+		//Nickname:  "nn_" + id,
 		FirstName: "f_" + id,
 		LastName:  "l_" + id,
-		Password:  "Password1",
+		//Password:  "Password1",
 	}
 
 	utils.DisableDebugLogForTest()
@@ -284,10 +295,31 @@ func (me *TestHelper) CreateUserWithClient(client *model.Client4) *model.User {
 		panic(response.Error)
 	}
 
-	ruser.Password = "Password1"
+	//ruser.Password = "Password1"
 	store.Must(me.App.Srv.Store.User().VerifyEmail(ruser.ClientId, ruser.Email))
 	utils.EnableDebugLogForTest()
 	return ruser
+}
+
+func (me *TestHelper) CreateUserLoginWithClient(client *model.Client4, email string) *model.UserLogin {
+	userLogin := &model.UserLogin{
+		ClientId: GenerateTestId(),
+		Email:    email,
+		//Nickname:  "nn_" + id,
+		PasswordOld: "Password1",
+		Salt:        GenerateTestId(),
+	}
+
+	utils.DisableDebugLogForTest()
+	//ruser, response := client.CreateUser(user)
+	//if response.Error != nil {
+	//	panic(response.Error)
+	//}
+
+	//ruser.Password = "Password1"
+	//store.Must(me.App.Srv.Store.User().VerifyEmail(userLogin.ClientId, userLogin.Email))
+	utils.EnableDebugLogForTest()
+	return userLogin
 }
 
 func (me *TestHelper) CreatePublicChannel() *model.Channel {
@@ -394,7 +426,7 @@ func (me *TestHelper) CreateMessagePostNoClient(channel *model.Channel, message 
 	return post
 }
 
-func (me *TestHelper) CreateDmChannel(user *model.User) *model.Channel {
+func (me *TestHelper) CreateDmChannel(user *model.UserIms) *model.Channel {
 	utils.DisableDebugLogForTest()
 	var err *model.AppError
 	var channel *model.Channel
@@ -426,7 +458,7 @@ func (me *TestHelper) LoginSystemAdmin() {
 
 func (me *TestHelper) LoginBasicWithClient(client *model.Client4) {
 	utils.DisableDebugLogForTest()
-	_, resp := client.Login(me.BasicUser.Email, me.BasicUser.Password)
+	_, resp := client.Login(me.BasicUser.Email, me.BasicUserLogin.PasswordOld)
 	if resp.Error != nil {
 		panic(resp.Error)
 	}
@@ -435,7 +467,7 @@ func (me *TestHelper) LoginBasicWithClient(client *model.Client4) {
 
 func (me *TestHelper) LoginBasic2WithClient(client *model.Client4) {
 	utils.DisableDebugLogForTest()
-	_, resp := client.Login(me.BasicUser2.Email, me.BasicUser2.Password)
+	_, resp := client.Login(me.BasicUser2.Email, me.BasicUser2Login.PasswordOld)
 	if resp.Error != nil {
 		panic(resp.Error)
 	}
@@ -444,7 +476,7 @@ func (me *TestHelper) LoginBasic2WithClient(client *model.Client4) {
 
 func (me *TestHelper) LoginTeamAdminWithClient(client *model.Client4) {
 	utils.DisableDebugLogForTest()
-	_, resp := client.Login(me.TeamAdminUser.Email, me.TeamAdminUser.Password)
+	_, resp := client.Login(me.TeamAdminUser.Email, me.TeamAdminUserLogin.PasswordOld)
 	if resp.Error != nil {
 		panic(resp.Error)
 	}
@@ -453,14 +485,14 @@ func (me *TestHelper) LoginTeamAdminWithClient(client *model.Client4) {
 
 func (me *TestHelper) LoginSystemAdminWithClient(client *model.Client4) {
 	utils.DisableDebugLogForTest()
-	_, resp := client.Login(me.SystemAdminUser.Email, me.SystemAdminUser.Password)
+	_, resp := client.Login(me.SystemAdminUser.Email, me.SystemAdminUserLogin.PasswordOld)
 	if resp.Error != nil {
 		panic(resp.Error)
 	}
 	utils.EnableDebugLogForTest()
 }
 
-func (me *TestHelper) UpdateActiveUser(user *model.User, active bool) {
+func (me *TestHelper) UpdateActiveUser(user *model.UserIms, active bool) {
 	utils.DisableDebugLogForTest()
 
 	_, err := me.App.UpdateActive(user, active)
@@ -474,7 +506,7 @@ func (me *TestHelper) UpdateActiveUser(user *model.User, active bool) {
 	utils.EnableDebugLogForTest()
 }
 
-func (me *TestHelper) LinkUserToTeam(user *model.User, team *model.Team) {
+func (me *TestHelper) LinkUserToTeam(user *model.UserIms, team *model.Team) {
 	utils.DisableDebugLogForTest()
 
 	err := me.App.JoinUserToTeam(team, user, "")
@@ -488,7 +520,7 @@ func (me *TestHelper) LinkUserToTeam(user *model.User, team *model.Team) {
 	utils.EnableDebugLogForTest()
 }
 
-func (me *TestHelper) AddUserToChannel(user *model.User, channel *model.Channel) *model.ChannelMember {
+func (me *TestHelper) AddUserToChannel(user *model.UserIms, channel *model.Channel) *model.ChannelMember {
 	utils.DisableDebugLogForTest()
 
 	member, err := me.App.AddUserToChannel(user, channel)
@@ -549,12 +581,12 @@ func GenerateTestId() string {
 	return model.NewId()
 }
 
-func CheckUserSanitization(t *testing.T, user *model.User) {
+func CheckUserSanitization(t *testing.T, user *model.UserIms) {
 	t.Helper()
 
-	if user.Password != "" {
-		t.Fatal("password wasn't blank")
-	}
+	//if user.Password != "" {
+	//	t.Fatal("password wasn't blank")
+	//}
 
 	if user.AuthData != nil && *user.AuthData != "" {
 		t.Fatal("auth data wasn't blank")
@@ -730,7 +762,7 @@ func (me *TestHelper) cleanupTestFile(info *model.FileInfo) error {
 	return nil
 }
 
-func (me *TestHelper) MakeUserChannelAdmin(user *model.User, channel *model.Channel) {
+func (me *TestHelper) MakeUserChannelAdmin(user *model.UserIms, channel *model.Channel) {
 	utils.DisableDebugLogForTest()
 
 	if cm, err := me.App.Srv.Store.Channel().GetMember(channel.Id, user.ClientId); err == nil {
@@ -747,7 +779,7 @@ func (me *TestHelper) MakeUserChannelAdmin(user *model.User, channel *model.Chan
 	utils.EnableDebugLogForTest()
 }
 
-func (me *TestHelper) UpdateUserToTeamAdmin(user *model.User, team *model.Team) {
+func (me *TestHelper) UpdateUserToTeamAdmin(user *model.UserIms, team *model.Team) {
 	utils.DisableDebugLogForTest()
 
 	if tmr := <-me.App.Srv.Store.Team().GetMember(team.Id, user.ClientId); tmr.Err == nil {
@@ -768,7 +800,7 @@ func (me *TestHelper) UpdateUserToTeamAdmin(user *model.User, team *model.Team) 
 	utils.EnableDebugLogForTest()
 }
 
-func (me *TestHelper) UpdateUserToNonTeamAdmin(user *model.User, team *model.Team) {
+func (me *TestHelper) UpdateUserToNonTeamAdmin(user *model.UserIms, team *model.Team) {
 	utils.DisableDebugLogForTest()
 
 	if tmr := <-me.App.Srv.Store.Team().GetMember(team.Id, user.ClientId); tmr.Err == nil {

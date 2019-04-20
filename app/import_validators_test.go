@@ -571,7 +571,7 @@ func TestImportValidateUserImportData(t *testing.T) {
 		t.Fatal("Validation should have succeeded with valid auth service and auth data.")
 	}
 
-	// Test a valid User with all fields populated.
+	// Test a valid UserIms with all fields populated.
 	testsDir, _ := fileutils.FindDir("tests")
 	data = UserImportData{
 		ProfileImage: ptrStr(filepath.Join(testsDir, "test.png")),

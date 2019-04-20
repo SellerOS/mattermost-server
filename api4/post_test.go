@@ -363,12 +363,12 @@ func TestCreatePostPublic(t *testing.T) {
 
 	post := &model.Post{ChannelId: th.BasicChannel.Id, Message: "#hashtag a" + model.NewId() + "a"}
 
-	user := model.User{Email: th.GenerateTestEmail(), Nickname: "Joram Wilander", Password: "hello1", Username: GenerateTestUsername(), Roles: model.SYSTEM_USER_ROLE_ID}
-
+	user := model.UserIms{Email: th.GenerateTestEmail(), Username: GenerateTestUsername(), Roles: model.SYSTEM_USER_ROLE_ID}
+	userLogin := th.CreateUserLogin(user.Email)
 	ruser, resp := Client.CreateUser(&user)
 	CheckNoError(t, resp)
 
-	Client.Login(user.Email, user.Password)
+	Client.Login(user.Email, userLogin.PasswordOld)
 
 	_, resp = Client.CreatePost(post)
 	CheckForbiddenStatus(t, resp)
@@ -376,7 +376,7 @@ func TestCreatePostPublic(t *testing.T) {
 	th.App.UpdateUserRoles(ruser.ClientId, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_POST_ALL_PUBLIC_ROLE_ID, false)
 	th.App.InvalidateAllCaches()
 
-	Client.Login(user.Email, user.Password)
+	Client.Login(user.Email, userLogin.PasswordOld)
 
 	_, resp = Client.CreatePost(post)
 	CheckNoError(t, resp)
@@ -390,7 +390,7 @@ func TestCreatePostPublic(t *testing.T) {
 	th.App.UpdateTeamMemberRoles(th.BasicTeam.Id, ruser.ClientId, model.TEAM_USER_ROLE_ID+" "+model.TEAM_POST_ALL_PUBLIC_ROLE_ID)
 	th.App.InvalidateAllCaches()
 
-	Client.Login(user.Email, user.Password)
+	Client.Login(user.Email, userLogin.PasswordOld)
 
 	post.ChannelId = th.BasicPrivateChannel.Id
 	_, resp = Client.CreatePost(post)
@@ -408,14 +408,15 @@ func TestCreatePostAll(t *testing.T) {
 
 	post := &model.Post{ChannelId: th.BasicChannel.Id, Message: "#hashtag a" + model.NewId() + "a"}
 
-	user := model.User{Email: th.GenerateTestEmail(), Nickname: "Joram Wilander", Password: "hello1", Username: GenerateTestUsername(), Roles: model.SYSTEM_USER_ROLE_ID}
+	user := model.UserIms{Email: th.GenerateTestEmail(), Username: GenerateTestUsername(), Roles: model.SYSTEM_USER_ROLE_ID}
 
 	directChannel, _ := th.App.GetOrCreateDirectChannel(th.BasicUser.ClientId, th.BasicUser2.ClientId)
 
 	ruser, resp := Client.CreateUser(&user)
 	CheckNoError(t, resp)
 
-	Client.Login(user.Email, user.Password)
+	userLogin := th.CreateUserLogin(user.Email)
+	Client.Login(user.Email, userLogin.PasswordOld)
 
 	_, resp = Client.CreatePost(post)
 	CheckForbiddenStatus(t, resp)
@@ -423,7 +424,7 @@ func TestCreatePostAll(t *testing.T) {
 	th.App.UpdateUserRoles(ruser.ClientId, model.SYSTEM_USER_ROLE_ID+" "+model.SYSTEM_POST_ALL_ROLE_ID, false)
 	th.App.InvalidateAllCaches()
 
-	Client.Login(user.Email, user.Password)
+	Client.Login(user.Email, userLogin.PasswordOld)
 
 	_, resp = Client.CreatePost(post)
 	CheckNoError(t, resp)
@@ -441,7 +442,7 @@ func TestCreatePostAll(t *testing.T) {
 	th.App.UpdateTeamMemberRoles(th.BasicTeam.Id, ruser.ClientId, model.TEAM_USER_ROLE_ID+" "+model.TEAM_POST_ALL_ROLE_ID)
 	th.App.InvalidateAllCaches()
 
-	Client.Login(user.Email, user.Password)
+	Client.Login(user.Email, userLogin.PasswordOld)
 
 	post.ChannelId = th.BasicPrivateChannel.Id
 	_, resp = Client.CreatePost(post)
@@ -1338,15 +1339,15 @@ func TestDeletePost(t *testing.T) {
 	_, resp = Client.DeletePost(th.BasicPost.Id)
 	CheckForbiddenStatus(t, resp)
 
-	Client.Login(th.TeamAdminUser.Email, th.TeamAdminUser.Password)
+	Client.Login(th.TeamAdminUser.Email, th.CreateUserLogin(th.TeamAdminUser.Email).PasswordOld)
 	_, resp = Client.DeletePost(th.BasicPost.Id)
 	CheckNoError(t, resp)
 
 	post := th.CreatePost()
 	user := th.CreateUser()
-
+	userLogin := th.CreateUserLogin(user.Email)
 	Client.Logout()
-	Client.Login(user.Email, user.Password)
+	Client.Login(user.Email, userLogin.PasswordOld)
 
 	_, resp = Client.DeletePost(post.Id)
 	CheckForbiddenStatus(t, resp)
@@ -1664,6 +1665,7 @@ func TestSearchPostsFromUser(t *testing.T) {
 
 	th.LoginTeamAdmin()
 	user := th.CreateUser()
+	userLogin := th.CreateUserLogin(user.Email)
 	th.LinkUserToTeam(user, th.BasicTeam)
 	th.App.AddUserToChannel(user, th.BasicChannel)
 	th.App.AddUserToChannel(user, th.BasicChannel2)
@@ -1696,7 +1698,7 @@ func TestSearchPostsFromUser(t *testing.T) {
 		t.Fatalf("wrong number of posts returned %v", len(posts.Order))
 	}
 
-	Client.Login(user.Email, user.Password)
+	Client.Login(user.Email, userLogin.PasswordOld)
 
 	// wait for the join/leave messages to be created for user3 since they're done asynchronously
 	time.Sleep(100 * time.Millisecond)

@@ -14,7 +14,7 @@ func (a *App) CreateBot(bot *model.Bot) (*model.Bot, *model.AppError) {
 	if result.Err != nil {
 		return nil, result.Err
 	}
-	bot.UserId = result.Data.(*model.User).ClientId
+	bot.UserId = result.Data.(*model.UserIms).ClientId
 
 	result = <-a.Srv.Store.Bot().Save(bot)
 	if result.Err != nil {

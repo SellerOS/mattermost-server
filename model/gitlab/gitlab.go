@@ -29,8 +29,8 @@ func init() {
 	einterfaces.RegisterOauthProvider(model.USER_AUTH_SERVICE_GITLAB, provider)
 }
 
-func userFromGitLabUser(glu *GitLabUser) *model.User {
-	user := &model.User{}
+func userFromGitLabUser(glu *GitLabUser) *model.UserIms {
+	user := &model.UserIms{}
 	username := glu.Username
 	if username == "" {
 		username = glu.Login
@@ -46,7 +46,7 @@ func userFromGitLabUser(glu *GitLabUser) *model.User {
 	} else {
 		user.FirstName = glu.Name
 	}
-	user.Email = glu.Email
+	//user.Email = glu.Email
 	userId := glu.getAuthData()
 	user.AuthData = &userId
 	user.AuthService = model.USER_AUTH_SERVICE_GITLAB
@@ -90,11 +90,11 @@ func (glu *GitLabUser) getAuthData() string {
 	return strconv.FormatInt(glu.Id, 10)
 }
 
-func (m *GitLabProvider) GetUserFromJson(data io.Reader) *model.User {
+func (m *GitLabProvider) GetUserFromJson(data io.Reader) *model.UserIms {
 	glu := gitLabUserFromJson(data)
 	if glu.IsValid() {
 		return userFromGitLabUser(glu)
 	}
 
-	return &model.User{}
+	return &model.UserIms{}
 }

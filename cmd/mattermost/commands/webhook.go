@@ -145,7 +145,7 @@ func createIncomingWebhookCmdF(command *cobra.Command, args []string) error {
 
 	userArg, errUser := command.Flags().GetString("user")
 	if errUser != nil || userArg == "" {
-		return errors.New("User is required")
+		return errors.New("UserIms is required")
 	}
 	user := getUserFromUserArg(app, userArg)
 	if user == nil {
@@ -244,7 +244,7 @@ func createOutgoingWebhookCmdF(command *cobra.Command, args []string) error {
 
 	userArg, errUser := command.Flags().GetString("user")
 	if errUser != nil || userArg == "" {
-		return errors.New("User is required")
+		return errors.New("UserIms is required")
 	}
 	user := getUserFromUserArg(app, userArg)
 	if user == nil {
@@ -439,7 +439,7 @@ func showWebhookCmdF(command *cobra.Command, args []string) error {
 
 func init() {
 	WebhookCreateIncomingCmd.Flags().String("channel", "", "Channel ID (required)")
-	WebhookCreateIncomingCmd.Flags().String("user", "", "User ID (required)")
+	WebhookCreateIncomingCmd.Flags().String("user", "", "UserIms ID (required)")
 	WebhookCreateIncomingCmd.Flags().String("display-name", "", "Incoming webhook display name")
 	WebhookCreateIncomingCmd.Flags().String("description", "", "Incoming webhook description")
 	WebhookCreateIncomingCmd.Flags().String("icon", "", "Icon URL")
@@ -453,7 +453,7 @@ func init() {
 
 	WebhookCreateOutgoingCmd.Flags().String("team", "", "Team name or ID (required)")
 	WebhookCreateOutgoingCmd.Flags().String("channel", "", "Channel name or ID")
-	WebhookCreateOutgoingCmd.Flags().String("user", "", "User username, email, or ID (required)")
+	WebhookCreateOutgoingCmd.Flags().String("user", "", "UserIms username, email, or ID (required)")
 	WebhookCreateOutgoingCmd.Flags().String("display-name", "", "Outgoing webhook display name (required)")
 	WebhookCreateOutgoingCmd.Flags().String("description", "", "Outgoing webhook description")
 	WebhookCreateOutgoingCmd.Flags().StringArray("trigger-word", []string{}, "Word to trigger webhook (required)")

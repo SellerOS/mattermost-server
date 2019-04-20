@@ -598,7 +598,7 @@ func CheckStatusOK(r *http.Response) bool {
 // Authentication Section
 
 // LoginById authenticates a user by user id and password.
-func (c *Client4) LoginById(id string, password string) (*User, *Response) {
+func (c *Client4) LoginById(id string, password string) (*UserIms, *Response) {
 	m := make(map[string]string)
 	m["id"] = id
 	m["password"] = password
@@ -607,7 +607,7 @@ func (c *Client4) LoginById(id string, password string) (*User, *Response) {
 
 // Login authenticates a user by login id, which can be username, email or some sort
 // of SSO identifier based on server configuration, and a password.
-func (c *Client4) Login(loginId string, password string) (*User, *Response) {
+func (c *Client4) Login(loginId string, password string) (*UserIms, *Response) {
 	m := make(map[string]string)
 	m["login_id"] = loginId
 	m["password"] = password
@@ -615,7 +615,7 @@ func (c *Client4) Login(loginId string, password string) (*User, *Response) {
 }
 
 // LoginByLdap authenticates a user by LDAP id and password.
-func (c *Client4) LoginByLdap(loginId string, password string) (*User, *Response) {
+func (c *Client4) LoginByLdap(loginId string, password string) (*UserIms, *Response) {
 	m := make(map[string]string)
 	m["login_id"] = loginId
 	m["password"] = password
@@ -626,7 +626,7 @@ func (c *Client4) LoginByLdap(loginId string, password string) (*User, *Response
 // LoginWithDevice authenticates a user by login id (username, email or some sort
 // of SSO identifier based on configuration), password and attaches a device id to
 // the session.
-func (c *Client4) LoginWithDevice(loginId string, password string, deviceId string) (*User, *Response) {
+func (c *Client4) LoginWithDevice(loginId string, password string, deviceId string) (*UserIms, *Response) {
 	m := make(map[string]string)
 	m["login_id"] = loginId
 	m["password"] = password
@@ -635,7 +635,7 @@ func (c *Client4) LoginWithDevice(loginId string, password string, deviceId stri
 }
 
 // LoginWithMFA logs a user in with a MFA token
-func (c *Client4) LoginWithMFA(loginId, password, mfaToken string) (*User, *Response) {
+func (c *Client4) LoginWithMFA(loginId, password, mfaToken string) (*UserIms, *Response) {
 	m := make(map[string]string)
 	m["login_id"] = loginId
 	m["password"] = password
@@ -643,7 +643,7 @@ func (c *Client4) LoginWithMFA(loginId, password, mfaToken string) (*User, *Resp
 	return c.login(m)
 }
 
-func (c *Client4) login(m map[string]string) (*User, *Response) {
+func (c *Client4) login(m map[string]string) (*UserIms, *Response) {
 	r, err := c.DoApiPost("/users/login", MapToJson(m))
 	if err != nil {
 		return nil, BuildErrorResponse(r, err)
@@ -676,10 +676,10 @@ func (c *Client4) SwitchAccountType(switchRequest *SwitchRequest) (string, *Resp
 	return MapFromJson(r.Body)["follow_link"], BuildResponse(r)
 }
 
-// User Section
+// UserIms Section
 
 // CreateUser creates a user in the system based on the provided user struct.
-func (c *Client4) CreateUser(user *User) (*User, *Response) {
+func (c *Client4) CreateUser(user *UserIms) (*UserIms, *Response) {
 	r, err := c.DoApiPost(c.GetUsersRoute(), user.ToJson())
 	if err != nil {
 		return nil, BuildErrorResponse(r, err)
@@ -689,7 +689,7 @@ func (c *Client4) CreateUser(user *User) (*User, *Response) {
 }
 
 // CreateUserWithToken creates a user in the system based on the provided tokenId.
-func (c *Client4) CreateUserWithToken(user *User, tokenId string) (*User, *Response) {
+func (c *Client4) CreateUserWithToken(user *UserIms, tokenId string) (*UserIms, *Response) {
 	if tokenId == "" {
 		err := NewAppError("MissingHashOrData", "api.user.create_user.missing_token.app_error", nil, "", http.StatusBadRequest)
 		return nil, &Response{StatusCode: err.StatusCode, Error: err}
@@ -706,7 +706,7 @@ func (c *Client4) CreateUserWithToken(user *User, tokenId string) (*User, *Respo
 }
 
 // CreateUserWithInviteId creates a user in the system based on the provided invited id.
-func (c *Client4) CreateUserWithInviteId(user *User, inviteId string) (*User, *Response) {
+func (c *Client4) CreateUserWithInviteId(user *UserIms, inviteId string) (*UserIms, *Response) {
 	if inviteId == "" {
 		err := NewAppError("MissingInviteId", "api.user.create_user.missing_invite_id.app_error", nil, "", http.StatusBadRequest)
 		return nil, &Response{StatusCode: err.StatusCode, Error: err}
@@ -723,7 +723,7 @@ func (c *Client4) CreateUserWithInviteId(user *User, inviteId string) (*User, *R
 }
 
 // GetMe returns the logged in user.
-func (c *Client4) GetMe(etag string) (*User, *Response) {
+func (c *Client4) GetMe(etag string) (*UserIms, *Response) {
 	r, err := c.DoApiGet(c.GetUserRoute(ME), etag)
 	if err != nil {
 		return nil, BuildErrorResponse(r, err)
@@ -733,7 +733,7 @@ func (c *Client4) GetMe(etag string) (*User, *Response) {
 }
 
 // GetUser returns a user based on the provided user id string.
-func (c *Client4) GetUser(userId, etag string) (*User, *Response) {
+func (c *Client4) GetUser(userId, etag string) (*UserIms, *Response) {
 	r, err := c.DoApiGet(c.GetUserRoute(userId), etag)
 	if err != nil {
 		return nil, BuildErrorResponse(r, err)
@@ -743,7 +743,7 @@ func (c *Client4) GetUser(userId, etag string) (*User, *Response) {
 }
 
 // GetUserByUsername returns a user based on the provided user name string.
-func (c *Client4) GetUserByUsername(userName, etag string) (*User, *Response) {
+func (c *Client4) GetUserByUsername(userName, etag string) (*UserIms, *Response) {
 	r, err := c.DoApiGet(c.GetUserByUsernameRoute(userName), etag)
 	if err != nil {
 		return nil, BuildErrorResponse(r, err)
@@ -753,7 +753,7 @@ func (c *Client4) GetUserByUsername(userName, etag string) (*User, *Response) {
 }
 
 // GetUserByEmail returns a user based on the provided user email string.
-func (c *Client4) GetUserByEmail(email, etag string) (*User, *Response) {
+func (c *Client4) GetUserByEmail(email, etag string) (*UserIms, *Response) {
 	r, err := c.DoApiGet(c.GetUserByEmailRoute(email), etag)
 	if err != nil {
 		return nil, BuildErrorResponse(r, err)
@@ -827,7 +827,7 @@ func (c *Client4) GetProfileImage(userId, etag string) ([]byte, *Response) {
 }
 
 // GetUsers returns a page of users on the system. Page counting starts at 0.
-func (c *Client4) GetUsers(page int, perPage int, etag string) ([]*User, *Response) {
+func (c *Client4) GetUsers(page int, perPage int, etag string) ([]*UserIms, *Response) {
 	query := fmt.Sprintf("?page=%v&per_page=%v", page, perPage)
 	r, err := c.DoApiGet(c.GetUsersRoute()+query, etag)
 	if err != nil {
@@ -838,7 +838,7 @@ func (c *Client4) GetUsers(page int, perPage int, etag string) ([]*User, *Respon
 }
 
 // GetUsersInTeam returns a page of users on a team. Page counting starts at 0.
-func (c *Client4) GetUsersInTeam(teamId string, page int, perPage int, etag string) ([]*User, *Response) {
+func (c *Client4) GetUsersInTeam(teamId string, page int, perPage int, etag string) ([]*UserIms, *Response) {
 	query := fmt.Sprintf("?in_team=%v&page=%v&per_page=%v", teamId, page, perPage)
 	r, err := c.DoApiGet(c.GetUsersRoute()+query, etag)
 	if err != nil {
@@ -849,7 +849,7 @@ func (c *Client4) GetUsersInTeam(teamId string, page int, perPage int, etag stri
 }
 
 // GetNewUsersInTeam returns a page of users on a team. Page counting starts at 0.
-func (c *Client4) GetNewUsersInTeam(teamId string, page int, perPage int, etag string) ([]*User, *Response) {
+func (c *Client4) GetNewUsersInTeam(teamId string, page int, perPage int, etag string) ([]*UserIms, *Response) {
 	query := fmt.Sprintf("?sort=create_at&in_team=%v&page=%v&per_page=%v", teamId, page, perPage)
 	r, err := c.DoApiGet(c.GetUsersRoute()+query, etag)
 	if err != nil {
@@ -860,7 +860,7 @@ func (c *Client4) GetNewUsersInTeam(teamId string, page int, perPage int, etag s
 }
 
 // GetRecentlyActiveUsersInTeam returns a page of users on a team. Page counting starts at 0.
-func (c *Client4) GetRecentlyActiveUsersInTeam(teamId string, page int, perPage int, etag string) ([]*User, *Response) {
+func (c *Client4) GetRecentlyActiveUsersInTeam(teamId string, page int, perPage int, etag string) ([]*UserIms, *Response) {
 	query := fmt.Sprintf("?sort=last_activity_at&in_team=%v&page=%v&per_page=%v", teamId, page, perPage)
 	r, err := c.DoApiGet(c.GetUsersRoute()+query, etag)
 	if err != nil {
@@ -871,7 +871,7 @@ func (c *Client4) GetRecentlyActiveUsersInTeam(teamId string, page int, perPage 
 }
 
 // GetUsersNotInTeam returns a page of users who are not in a team. Page counting starts at 0.
-func (c *Client4) GetUsersNotInTeam(teamId string, page int, perPage int, etag string) ([]*User, *Response) {
+func (c *Client4) GetUsersNotInTeam(teamId string, page int, perPage int, etag string) ([]*UserIms, *Response) {
 	query := fmt.Sprintf("?not_in_team=%v&page=%v&per_page=%v", teamId, page, perPage)
 	r, err := c.DoApiGet(c.GetUsersRoute()+query, etag)
 	if err != nil {
@@ -882,7 +882,7 @@ func (c *Client4) GetUsersNotInTeam(teamId string, page int, perPage int, etag s
 }
 
 // GetUsersInChannel returns a page of users in a channel. Page counting starts at 0.
-func (c *Client4) GetUsersInChannel(channelId string, page int, perPage int, etag string) ([]*User, *Response) {
+func (c *Client4) GetUsersInChannel(channelId string, page int, perPage int, etag string) ([]*UserIms, *Response) {
 	query := fmt.Sprintf("?in_channel=%v&page=%v&per_page=%v", channelId, page, perPage)
 	r, err := c.DoApiGet(c.GetUsersRoute()+query, etag)
 	if err != nil {
@@ -893,7 +893,7 @@ func (c *Client4) GetUsersInChannel(channelId string, page int, perPage int, eta
 }
 
 // GetUsersInChannelByStatus returns a page of users in a channel. Page counting starts at 0. Sorted by Status
-func (c *Client4) GetUsersInChannelByStatus(channelId string, page int, perPage int, etag string) ([]*User, *Response) {
+func (c *Client4) GetUsersInChannelByStatus(channelId string, page int, perPage int, etag string) ([]*UserIms, *Response) {
 	query := fmt.Sprintf("?in_channel=%v&page=%v&per_page=%v&sort=status", channelId, page, perPage)
 	r, err := c.DoApiGet(c.GetUsersRoute()+query, etag)
 	if err != nil {
@@ -904,7 +904,7 @@ func (c *Client4) GetUsersInChannelByStatus(channelId string, page int, perPage 
 }
 
 // GetUsersNotInChannel returns a page of users not in a channel. Page counting starts at 0.
-func (c *Client4) GetUsersNotInChannel(teamId, channelId string, page int, perPage int, etag string) ([]*User, *Response) {
+func (c *Client4) GetUsersNotInChannel(teamId, channelId string, page int, perPage int, etag string) ([]*UserIms, *Response) {
 	query := fmt.Sprintf("?in_team=%v&not_in_channel=%v&page=%v&per_page=%v", teamId, channelId, page, perPage)
 	r, err := c.DoApiGet(c.GetUsersRoute()+query, etag)
 	if err != nil {
@@ -915,7 +915,7 @@ func (c *Client4) GetUsersNotInChannel(teamId, channelId string, page int, perPa
 }
 
 // GetUsersWithoutTeam returns a page of users on the system that aren't on any teams. Page counting starts at 0.
-func (c *Client4) GetUsersWithoutTeam(page int, perPage int, etag string) ([]*User, *Response) {
+func (c *Client4) GetUsersWithoutTeam(page int, perPage int, etag string) ([]*UserIms, *Response) {
 	query := fmt.Sprintf("?without_team=1&page=%v&per_page=%v", page, perPage)
 	r, err := c.DoApiGet(c.GetUsersRoute()+query, etag)
 	if err != nil {
@@ -926,7 +926,7 @@ func (c *Client4) GetUsersWithoutTeam(page int, perPage int, etag string) ([]*Us
 }
 
 // GetUsersByIds returns a list of users based on the provided user ids.
-func (c *Client4) GetUsersByIds(userIds []string) ([]*User, *Response) {
+func (c *Client4) GetUsersByIds(userIds []string) ([]*UserIms, *Response) {
 	r, err := c.DoApiPost(c.GetUsersRoute()+"/ids", ArrayToJson(userIds))
 	if err != nil {
 		return nil, BuildErrorResponse(r, err)
@@ -936,7 +936,7 @@ func (c *Client4) GetUsersByIds(userIds []string) ([]*User, *Response) {
 }
 
 // GetUsersByUsernames returns a list of users based on the provided usernames.
-func (c *Client4) GetUsersByUsernames(usernames []string) ([]*User, *Response) {
+func (c *Client4) GetUsersByUsernames(usernames []string) ([]*UserIms, *Response) {
 	r, err := c.DoApiPost(c.GetUsersRoute()+"/usernames", ArrayToJson(usernames))
 	if err != nil {
 		return nil, BuildErrorResponse(r, err)
@@ -946,7 +946,7 @@ func (c *Client4) GetUsersByUsernames(usernames []string) ([]*User, *Response) {
 }
 
 // SearchUsers returns a list of users based on some search criteria.
-func (c *Client4) SearchUsers(search *UserSearch) ([]*User, *Response) {
+func (c *Client4) SearchUsers(search *UserSearch) ([]*UserIms, *Response) {
 	r, err := c.doApiPostBytes(c.GetUsersRoute()+"/search", search.ToJson())
 	if err != nil {
 		return nil, BuildErrorResponse(r, err)
@@ -956,7 +956,7 @@ func (c *Client4) SearchUsers(search *UserSearch) ([]*User, *Response) {
 }
 
 // UpdateUser updates a user in the system based on the provided user struct.
-func (c *Client4) UpdateUser(user *User) (*User, *Response) {
+func (c *Client4) UpdateUser(user *UserIms) (*UserIms, *Response) {
 	r, err := c.DoApiPut(c.GetUserRoute(user.ClientId), user.ToJson())
 	if err != nil {
 		return nil, BuildErrorResponse(r, err)
@@ -966,7 +966,7 @@ func (c *Client4) UpdateUser(user *User) (*User, *Response) {
 }
 
 // PatchUser partially updates a user in the system. Any missing fields are not updated.
-func (c *Client4) PatchUser(userId string, patch *UserPatch) (*User, *Response) {
+func (c *Client4) PatchUser(userId string, patch *UserPatch) (*UserIms, *Response) {
 	r, err := c.DoApiPut(c.GetUserRoute(userId)+"/patch", patch.ToJson())
 	if err != nil {
 		return nil, BuildErrorResponse(r, err)

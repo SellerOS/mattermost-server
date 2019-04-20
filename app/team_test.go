@@ -78,7 +78,7 @@ func TestAddUserToTeam(t *testing.T) {
 	defer th.TearDown()
 
 	t.Run("add user", func(t *testing.T) {
-		user := model.User{Email: strings.ToLower(model.NewId()) + "success+test@example.com", Nickname: "Darth Vader", Username: "vader" + model.NewId(), Password: "passwd1", AuthService: ""}
+		user := model.UserIms{Email: strings.ToLower(model.NewId()) + "success+test@example.com",  Username: "vader" + model.NewId(),  AuthService: ""}
 		ruser, _ := th.App.CreateUser(&user)
 		defer th.App.PermanentDeleteUser(&user)
 
@@ -95,7 +95,7 @@ func TestAddUserToTeam(t *testing.T) {
 			t.Fatal("Should update the team")
 		}
 
-		user := model.User{Email: strings.ToLower(model.NewId()) + "success+test@example.com", Nickname: "Darth Vader", Username: "vader" + model.NewId(), Password: "passwd1", AuthService: ""}
+		user := model.UserIms{Email: strings.ToLower(model.NewId()) + "success+test@example.com",  Username: "vader" + model.NewId(),  AuthService: ""}
 		ruser, _ := th.App.CreateUser(&user)
 		defer th.App.PermanentDeleteUser(&user)
 
@@ -112,7 +112,7 @@ func TestAddUserToTeam(t *testing.T) {
 			t.Fatal("Should update the team")
 		}
 
-		user := model.User{Email: strings.ToLower(model.NewId()) + "test@invalid.com", Nickname: "Darth Vader", Username: "vader" + model.NewId(), Password: "passwd1", AuthService: ""}
+		user := model.UserIms{Email: strings.ToLower(model.NewId()) + "test@invalid.com",  Username: "vader" + model.NewId(),  AuthService: ""}
 		ruser, err := th.App.CreateUser(&user)
 		if err != nil {
 			t.Fatalf("Error creating user: %s", err)
@@ -124,7 +124,7 @@ func TestAddUserToTeam(t *testing.T) {
 			t.Fatal("Should not add restricted user")
 		}
 
-		user = model.User{Email: strings.ToLower(model.NewId()) + "test@invalid.com", Nickname: "Darth Vader", Username: "vader" + model.NewId(), AuthService: "notnil", AuthData: model.NewString("notnil")}
+		user = model.UserIms{Email: strings.ToLower(model.NewId()) + "test@invalid.com",  Username: "vader" + model.NewId(), AuthService: "notnil", AuthData: model.NewString("notnil")}
 		ruser, err = th.App.CreateUser(&user)
 		if err != nil {
 			t.Fatalf("Error creating authservice user: %s", err)
@@ -144,7 +144,7 @@ func TestAddUserToTeam(t *testing.T) {
 			t.Fatal("Should update the team")
 		}
 
-		user := model.User{Email: strings.ToLower(model.NewId()) + "test@invalid.example.com", Nickname: "Darth Vader", Username: "vader" + model.NewId(), Password: "passwd1", AuthService: ""}
+		user := model.UserIms{Email: strings.ToLower(model.NewId()) + "test@invalid.example.com",  Username: "vader" + model.NewId(),  AuthService: ""}
 		ruser, _ := th.App.CreateUser(&user)
 		defer th.App.PermanentDeleteUser(&user)
 
@@ -161,11 +161,11 @@ func TestAddUserToTeam(t *testing.T) {
 			t.Fatal("Should update the team")
 		}
 
-		user1 := model.User{Email: strings.ToLower(model.NewId()) + "success+test@foo.com", Nickname: "Darth Vader", Username: "vader" + model.NewId(), Password: "passwd1", AuthService: ""}
+		user1 := model.UserIms{Email: strings.ToLower(model.NewId()) + "success+test@foo.com",  Username: "vader" + model.NewId(),  AuthService: ""}
 		ruser1, _ := th.App.CreateUser(&user1)
-		user2 := model.User{Email: strings.ToLower(model.NewId()) + "success+test@bar.com", Nickname: "Darth Vader", Username: "vader" + model.NewId(), Password: "passwd1", AuthService: ""}
+		user2 := model.UserIms{Email: strings.ToLower(model.NewId()) + "success+test@bar.com",  Username: "vader" + model.NewId(),  AuthService: ""}
 		ruser2, _ := th.App.CreateUser(&user2)
-		user3 := model.User{Email: strings.ToLower(model.NewId()) + "success+test@invalid.com", Nickname: "Darth Vader", Username: "vader" + model.NewId(), Password: "passwd1", AuthService: ""}
+		user3 := model.UserIms{Email: strings.ToLower(model.NewId()) + "success+test@invalid.com",  Username: "vader" + model.NewId(),  AuthService: ""}
 		ruser3, _ := th.App.CreateUser(&user3)
 		defer th.App.PermanentDeleteUser(&user1)
 		defer th.App.PermanentDeleteUser(&user2)
@@ -191,7 +191,7 @@ func TestAddUserToTeamByToken(t *testing.T) {
 	th := Setup(t).InitBasic()
 	defer th.TearDown()
 
-	user := model.User{Email: strings.ToLower(model.NewId()) + "success+test@example.com", Nickname: "Darth Vader", Username: "vader" + model.NewId(), Password: "passwd1", AuthService: ""}
+	user := model.UserIms{Email: strings.ToLower(model.NewId()) + "success+test@example.com",  Username: "vader" + model.NewId(),  AuthService: ""}
 	ruser, _ := th.App.CreateUser(&user)
 
 	t.Run("invalid token", func(t *testing.T) {
@@ -271,7 +271,7 @@ func TestAddUserToTeamByToken(t *testing.T) {
 			t.Fatal("Should update the team")
 		}
 
-		user := model.User{Email: strings.ToLower(model.NewId()) + "test@invalid.com", Nickname: "Darth Vader", Username: "vader" + model.NewId(), Password: "passwd1", AuthService: ""}
+		user := model.UserIms{Email: strings.ToLower(model.NewId()) + "test@invalid.com",  Username: "vader" + model.NewId(),  AuthService: ""}
 		ruser, _ := th.App.CreateUser(&user)
 		defer th.App.PermanentDeleteUser(&user)
 
@@ -293,7 +293,7 @@ func TestAddUserToTeamByTeamId(t *testing.T) {
 	defer th.TearDown()
 
 	t.Run("add user", func(t *testing.T) {
-		user := model.User{Email: strings.ToLower(model.NewId()) + "success+test@example.com", Nickname: "Darth Vader", Username: "vader" + model.NewId(), Password: "passwd1", AuthService: ""}
+		user := model.UserIms{Email: strings.ToLower(model.NewId()) + "success+test@example.com",  Username: "vader" + model.NewId(),  AuthService: ""}
 		ruser, _ := th.App.CreateUser(&user)
 
 		if err := th.App.AddUserToTeamByTeamId(th.BasicTeam.Id, ruser); err != nil {
@@ -309,7 +309,7 @@ func TestAddUserToTeamByTeamId(t *testing.T) {
 			t.Fatal("Should update the team")
 		}
 
-		user := model.User{Email: strings.ToLower(model.NewId()) + "test@invalid.com", Nickname: "Darth Vader", Username: "vader" + model.NewId(), Password: "passwd1", AuthService: ""}
+		user := model.UserIms{Email: strings.ToLower(model.NewId()) + "test@invalid.com",  Username: "vader" + model.NewId(),  AuthService: ""}
 		ruser, _ := th.App.CreateUser(&user)
 		defer th.App.PermanentDeleteUser(&user)
 
@@ -622,7 +622,7 @@ func TestJoinUserToTeam(t *testing.T) {
 	th.App.UpdateConfig(func(cfg *model.Config) { cfg.TeamSettings.MaxUsersPerTeam = &one })
 
 	t.Run("new join", func(t *testing.T) {
-		user := model.User{Email: strings.ToLower(model.NewId()) + "success+test@example.com", Nickname: "Darth Vader", Username: "vader" + model.NewId(), Password: "passwd1", AuthService: ""}
+		user := model.UserIms{Email: strings.ToLower(model.NewId()) + "success+test@example.com",  Username: "vader" + model.NewId(),  AuthService: ""}
 		ruser, _ := th.App.CreateUser(&user)
 		defer th.App.PermanentDeleteUser(&user)
 
@@ -632,7 +632,7 @@ func TestJoinUserToTeam(t *testing.T) {
 	})
 
 	t.Run("join when you are a member", func(t *testing.T) {
-		user := model.User{Email: strings.ToLower(model.NewId()) + "success+test@example.com", Nickname: "Darth Vader", Username: "vader" + model.NewId(), Password: "passwd1", AuthService: ""}
+		user := model.UserIms{Email: strings.ToLower(model.NewId()) + "success+test@example.com",  Username: "vader" + model.NewId(),  AuthService: ""}
 		ruser, _ := th.App.CreateUser(&user)
 		defer th.App.PermanentDeleteUser(&user)
 
@@ -643,7 +643,7 @@ func TestJoinUserToTeam(t *testing.T) {
 	})
 
 	t.Run("re-join after leaving", func(t *testing.T) {
-		user := model.User{Email: strings.ToLower(model.NewId()) + "success+test@example.com", Nickname: "Darth Vader", Username: "vader" + model.NewId(), Password: "passwd1", AuthService: ""}
+		user := model.UserIms{Email: strings.ToLower(model.NewId()) + "success+test@example.com",  Username: "vader" + model.NewId(),  AuthService: ""}
 		ruser, _ := th.App.CreateUser(&user)
 		defer th.App.PermanentDeleteUser(&user)
 
@@ -655,9 +655,9 @@ func TestJoinUserToTeam(t *testing.T) {
 	})
 
 	t.Run("new join with limit problem", func(t *testing.T) {
-		user1 := model.User{Email: strings.ToLower(model.NewId()) + "success+test@example.com", Nickname: "Darth Vader", Username: "vader" + model.NewId(), Password: "passwd1", AuthService: ""}
+		user1 := model.UserIms{Email: strings.ToLower(model.NewId()) + "success+test@example.com",  Username: "vader" + model.NewId(),  AuthService: ""}
 		ruser1, _ := th.App.CreateUser(&user1)
-		user2 := model.User{Email: strings.ToLower(model.NewId()) + "success+test@example.com", Nickname: "Darth Vader", Username: "vader" + model.NewId(), Password: "passwd1", AuthService: ""}
+		user2 := model.UserIms{Email: strings.ToLower(model.NewId()) + "success+test@example.com",  Username: "vader" + model.NewId(),  AuthService: ""}
 		ruser2, _ := th.App.CreateUser(&user2)
 		defer th.App.PermanentDeleteUser(&user1)
 		defer th.App.PermanentDeleteUser(&user2)
@@ -668,9 +668,9 @@ func TestJoinUserToTeam(t *testing.T) {
 	})
 
 	t.Run("re-join alfter leaving with limit problem", func(t *testing.T) {
-		user1 := model.User{Email: strings.ToLower(model.NewId()) + "success+test@example.com", Nickname: "Darth Vader", Username: "vader" + model.NewId(), Password: "passwd1", AuthService: ""}
+		user1 := model.UserIms{Email: strings.ToLower(model.NewId()) + "success+test@example.com",  Username: "vader" + model.NewId(),  AuthService: ""}
 		ruser1, _ := th.App.CreateUser(&user1)
-		user2 := model.User{Email: strings.ToLower(model.NewId()) + "success+test@example.com", Nickname: "Darth Vader", Username: "vader" + model.NewId(), Password: "passwd1", AuthService: ""}
+		user2 := model.UserIms{Email: strings.ToLower(model.NewId()) + "success+test@example.com",  Username: "vader" + model.NewId(),  AuthService: ""}
 		ruser2, _ := th.App.CreateUser(&user2)
 		defer th.App.PermanentDeleteUser(&user1)
 		defer th.App.PermanentDeleteUser(&user2)
@@ -711,10 +711,9 @@ func TestGetTeamMembers(t *testing.T) {
 	userIDs = append(userIDs, th.BasicUser2.ClientId)
 
 	for i := 0; i < 8; i++ {
-		user := model.User{
+		user := model.UserIms{
 			Email:    strings.ToLower(model.NewId()) + "success+test@example.com",
 			Username: fmt.Sprintf("user%v", i),
-			Password: "passwd1",
 		}
 		ruser, err := th.App.CreateUser(&user)
 		require.Nil(t, err)

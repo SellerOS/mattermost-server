@@ -9,17 +9,17 @@ import (
 )
 
 type UserAutocompleteInChannel struct {
-	InChannel    []*User `json:"in_channel"`
-	OutOfChannel []*User `json:"out_of_channel"`
+	InChannel    []*UserIms `json:"in_channel"`
+	OutOfChannel []*UserIms `json:"out_of_channel"`
 }
 
 type UserAutocompleteInTeam struct {
-	InTeam []*User `json:"in_team"`
+	InTeam []*UserIms `json:"in_team"`
 }
 
 type UserAutocomplete struct {
-	Users        []*User `json:"users"`
-	OutOfChannel []*User `json:"out_of_channel,omitempty"`
+	Users        []*UserIms `json:"users"`
+	OutOfChannel []*UserIms `json:"out_of_channel,omitempty"`
 }
 
 func (o *UserAutocomplete) ToJson() string {

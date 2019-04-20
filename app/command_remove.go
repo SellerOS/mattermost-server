@@ -115,7 +115,7 @@ func doCommand(a *App, args *model.CommandArgs, message string) *model.CommandRe
 			ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL,
 		}
 	}
-	userProfile := result.Data.(*model.User)
+	userProfile := result.Data.(*model.UserIms)
 	if userProfile.DeleteAt != 0 {
 		return &model.CommandResponse{
 			Text:         args.T("api.command_remove.missing.app_error"),

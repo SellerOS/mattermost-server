@@ -162,7 +162,7 @@ func TestCreateDirectChannelWithSocket(t *testing.T) {
 	Client := th.Client
 	user2 := th.BasicUser2
 
-	users := make([]*model.User, 0)
+	users := make([]*model.UserIms, 0)
 	users = append(users, user2)
 
 	for i := 0; i < 10; i++ {
@@ -301,17 +301,18 @@ func TestWebSocketStatuses(t *testing.T) {
 	team := model.Team{DisplayName: "Name", Name: "z-z-" + model.NewId() + "a", Email: "test@nowhere.com", Type: model.TEAM_OPEN}
 	rteam, _ := Client.CreateTeam(&team)
 
-	user := model.User{Email: strings.ToLower(model.NewId()) + "success+test@simulator.amazonses.com", Nickname: "Corey Hulen", Password: "passwd1"}
-	ruser := Client.Must(Client.CreateUser(&user)).(*model.User)
+	user := model.UserIms{Email: strings.ToLower(model.NewId()) + "success+test@simulator.amazonses.com", }
+	ruser := Client.Must(Client.CreateUser(&user)).(*model.UserIms)
 	th.LinkUserToTeam(ruser, rteam)
 	store.Must(th.App.Srv.Store.User().VerifyEmail(ruser.ClientId, ruser.Email))
 
-	user2 := model.User{Email: strings.ToLower(model.NewId()) + "success+test@simulator.amazonses.com", Nickname: "Corey Hulen", Password: "passwd1"}
-	ruser2 := Client.Must(Client.CreateUser(&user2)).(*model.User)
+	user2 := model.UserIms{Email: strings.ToLower(model.NewId()) + "success+test@simulator.amazonses.com", }
+	user2Login := model.UserLogin{Email:user2.Email,PasswordOld:"passwd1",Salt:model.NewId()}
+	ruser2 := Client.Must(Client.CreateUser(&user2)).(*model.UserIms)
 	th.LinkUserToTeam(ruser2, rteam)
 	store.Must(th.App.Srv.Store.User().VerifyEmail(ruser2.ClientId, ruser2.Email))
 
-	Client.Login(user.Email, user.Password)
+	Client.Login(user.Email, user2Login.PasswordOld)
 
 	th.LoginBasic2()
 

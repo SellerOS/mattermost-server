@@ -99,11 +99,11 @@ func postgreSQLRootDSN(dsn string) string {
 
 	// // Assume the unittesting database has the same password.
 	// password := ""
-	// if dsnUrl.User != nil {
-	// 	password, _ = dsnUrl.User.Password()
+	// if dsnUrl.UserIms != nil {
+	// 	password, _ = dsnUrl.UserIms.Password()
 	// }
 
-	// dsnUrl.User = url.UserPassword("", password)
+	// dsnUrl.UserIms = url.UserPassword("", password)
 	dsnUrl.Path = "postgres"
 
 	return dsnUrl.String()

@@ -406,24 +406,24 @@ func testGroupGetMemberUsers(t *testing.T, ss store.Store) {
 	require.Nil(t, res.Err)
 	group := res.Data.(*model.Group)
 
-	u1 := &model.User{
+	u1 := &model.UserIms{
 		Email:    MakeEmail(),
 		Username: model.NewId(),
 	}
 	res = <-ss.User().Save(u1)
 	require.Nil(t, res.Err)
-	user1 := res.Data.(*model.User)
+	user1 := res.Data.(*model.UserIms)
 
 	res = <-ss.Group().CreateOrRestoreMember(group.Id, user1.ClientId)
 	require.Nil(t, res.Err)
 
-	u2 := &model.User{
+	u2 := &model.UserIms{
 		Email:    MakeEmail(),
 		Username: model.NewId(),
 	}
 	res = <-ss.User().Save(u2)
 	require.Nil(t, res.Err)
-	user2 := res.Data.(*model.User)
+	user2 := res.Data.(*model.UserIms)
 
 	res = <-ss.Group().CreateOrRestoreMember(group.Id, user2.ClientId)
 	require.Nil(t, res.Err)
@@ -431,19 +431,19 @@ func testGroupGetMemberUsers(t *testing.T, ss store.Store) {
 	// Check returns members
 	res = <-ss.Group().GetMemberUsers(group.Id)
 	require.Nil(t, res.Err)
-	groupMembers := res.Data.([]*model.User)
+	groupMembers := res.Data.([]*model.UserIms)
 	require.Equal(t, 2, len(groupMembers))
 
 	// Check madeup id
 	res = <-ss.Group().GetMemberUsers(model.NewId())
-	require.Equal(t, 0, len(res.Data.([]*model.User)))
+	require.Equal(t, 0, len(res.Data.([]*model.UserIms)))
 
 	// Delete a member
 	<-ss.Group().DeleteMember(group.Id, user1.ClientId)
 
 	// Should not return deleted members
 	res = <-ss.Group().GetMemberUsers(group.Id)
-	groupMembers = res.Data.([]*model.User)
+	groupMembers = res.Data.([]*model.UserIms)
 	require.Equal(t, 1, len(groupMembers))
 }
 
@@ -460,24 +460,24 @@ func testGroupGetMemberUsersPage(t *testing.T, ss store.Store) {
 	require.Nil(t, res.Err)
 	group := res.Data.(*model.Group)
 
-	u1 := &model.User{
+	u1 := &model.UserIms{
 		Email:    MakeEmail(),
 		Username: model.NewId(),
 	}
 	res = <-ss.User().Save(u1)
 	require.Nil(t, res.Err)
-	user1 := res.Data.(*model.User)
+	user1 := res.Data.(*model.UserIms)
 
 	res = <-ss.Group().CreateOrRestoreMember(group.Id, user1.ClientId)
 	require.Nil(t, res.Err)
 
-	u2 := &model.User{
+	u2 := &model.UserIms{
 		Email:    MakeEmail(),
 		Username: model.NewId(),
 	}
 	res = <-ss.User().Save(u2)
 	require.Nil(t, res.Err)
-	user2 := res.Data.(*model.User)
+	user2 := res.Data.(*model.UserIms)
 
 	res = <-ss.Group().CreateOrRestoreMember(group.Id, user2.ClientId)
 	require.Nil(t, res.Err)
@@ -485,33 +485,33 @@ func testGroupGetMemberUsersPage(t *testing.T, ss store.Store) {
 	// Check returns members
 	res = <-ss.Group().GetMemberUsersPage(group.Id, 0, 100)
 	require.Nil(t, res.Err)
-	groupMembers := res.Data.([]*model.User)
+	groupMembers := res.Data.([]*model.UserIms)
 	require.Equal(t, 2, len(groupMembers))
 
 	// Check page 1
 	res = <-ss.Group().GetMemberUsersPage(group.Id, 0, 1)
 	require.Nil(t, res.Err)
-	groupMembers = res.Data.([]*model.User)
+	groupMembers = res.Data.([]*model.UserIms)
 	require.Equal(t, 1, len(groupMembers))
 	require.Equal(t, user2.ClientId, groupMembers[0].ClientId)
 
 	// Check page 2
 	res = <-ss.Group().GetMemberUsersPage(group.Id, 1, 1)
 	require.Nil(t, res.Err)
-	groupMembers = res.Data.([]*model.User)
+	groupMembers = res.Data.([]*model.UserIms)
 	require.Equal(t, 1, len(groupMembers))
 	require.Equal(t, user1.ClientId, groupMembers[0].ClientId)
 
 	// Check madeup id
 	res = <-ss.Group().GetMemberUsersPage(model.NewId(), 0, 100)
-	require.Equal(t, 0, len(res.Data.([]*model.User)))
+	require.Equal(t, 0, len(res.Data.([]*model.UserIms)))
 
 	// Delete a member
 	<-ss.Group().DeleteMember(group.Id, user1.ClientId)
 
 	// Should not return deleted members
 	res = <-ss.Group().GetMemberUsersPage(group.Id, 0, 100)
-	groupMembers = res.Data.([]*model.User)
+	groupMembers = res.Data.([]*model.UserIms)
 	require.Equal(t, 1, len(groupMembers))
 }
 
@@ -528,13 +528,13 @@ func testGroupCreateOrRestoreMember(t *testing.T, ss store.Store) {
 	group := res1.Data.(*model.Group)
 
 	// Create user
-	u1 := &model.User{
+	u1 := &model.UserIms{
 		Email:    MakeEmail(),
 		Username: model.NewId(),
 	}
 	res2 := <-ss.User().Save(u1)
 	require.Nil(t, res2.Err)
-	user := res2.Data.(*model.User)
+	user := res2.Data.(*model.UserIms)
 
 	// Happy path
 	res3 := <-ss.Group().CreateOrRestoreMember(group.Id, user.ClientId)
@@ -561,13 +561,13 @@ func testGroupCreateOrRestoreMember(t *testing.T, ss store.Store) {
 	require.Nil(t, res.Err)
 
 	res = <-ss.Group().GetMemberUsers(group.Id)
-	beforeRestoreCount := len(res.Data.([]*model.User))
+	beforeRestoreCount := len(res.Data.([]*model.UserIms))
 
 	res = <-ss.Group().CreateOrRestoreMember(group.Id, user.ClientId)
 	require.Nil(t, res.Err)
 
 	res = <-ss.Group().GetMemberUsers(group.Id)
-	afterRestoreCount := len(res.Data.([]*model.User))
+	afterRestoreCount := len(res.Data.([]*model.UserIms))
 
 	require.Equal(t, beforeRestoreCount+1, afterRestoreCount)
 }
@@ -585,13 +585,13 @@ func testGroupDeleteMember(t *testing.T, ss store.Store) {
 	group := res1.Data.(*model.Group)
 
 	// Create user
-	u1 := &model.User{
+	u1 := &model.UserIms{
 		Email:    MakeEmail(),
 		Username: model.NewId(),
 	}
 	res2 := <-ss.User().Save(u1)
 	require.Nil(t, res2.Err)
-	user := res2.Data.(*model.User)
+	user := res2.Data.(*model.UserIms)
 
 	// Create member
 	res3 := <-ss.Group().CreateOrRestoreMember(group.Id, user.ClientId)
@@ -611,7 +611,7 @@ func testGroupDeleteMember(t *testing.T, ss store.Store) {
 	res5 := <-ss.Group().DeleteMember(group.Id, user.ClientId)
 	require.Equal(t, res5.Err.Id, "store.sql_group.no_rows")
 
-	// Delete with non-existent User
+	// Delete with non-existent UserIms
 	res8 := <-ss.Group().DeleteMember(group.Id, model.NewId())
 	require.Equal(t, res8.Err.Id, "store.sql_group.no_rows")
 
@@ -907,14 +907,14 @@ func testPendingAutoAddTeamMembers(t *testing.T, ss store.Store) {
 	require.Nil(t, res.Err)
 	group := res.Data.(*model.Group)
 
-	// Create User
-	user := &model.User{
+	// Create UserIms
+	user := &model.UserIms{
 		Email:    MakeEmail(),
 		Username: model.NewId(),
 	}
 	res = <-ss.User().Save(user)
 	require.Nil(t, res.Err)
-	user = res.Data.(*model.User)
+	user = res.Data.(*model.UserIms)
 
 	// Create GroupMember
 	res = <-ss.Group().CreateOrRestoreMember(group.Id, user.ClientId)
@@ -1074,14 +1074,14 @@ func testPendingAutoAddChannelMembers(t *testing.T, ss store.Store) {
 	require.Nil(t, res.Err)
 	group := res.Data.(*model.Group)
 
-	// Create User
-	user := &model.User{
+	// Create UserIms
+	user := &model.UserIms{
 		Email:    MakeEmail(),
 		Username: model.NewId(),
 	}
 	res = <-ss.User().Save(user)
 	require.Nil(t, res.Err)
-	user = res.Data.(*model.User)
+	user = res.Data.(*model.UserIms)
 
 	// Create GroupMember
 	res = <-ss.Group().CreateOrRestoreMember(group.Id, user.ClientId)
@@ -1340,9 +1340,9 @@ func testPendingChannelMemberRemovals(t *testing.T, ss store.Store) {
 }
 
 type removalsData struct {
-	UserA                *model.User
-	UserB                *model.User
-	UserC                *model.User
+	UserA                *model.UserIms
+	UserB                *model.UserIms
+	UserC                *model.UserIms
 	ConstrainedChannel   *model.Channel
 	UnconstrainedChannel *model.Channel
 	ConstrainedTeam      *model.Team
@@ -1363,31 +1363,31 @@ func pendingMemberRemovalsDataSetup(t *testing.T, ss store.Store) *removalsData 
 
 	// create users
 	// userA will get removed from the group
-	userA := &model.User{
+	userA := &model.UserIms{
 		Email:    MakeEmail(),
 		Username: model.NewId(),
 	}
 	res = <-ss.User().Save(userA)
 	require.Nil(t, res.Err)
-	userA = res.Data.(*model.User)
+	userA = res.Data.(*model.UserIms)
 
 	// userB will not get removed from the group
-	userB := &model.User{
+	userB := &model.UserIms{
 		Email:    MakeEmail(),
 		Username: model.NewId(),
 	}
 	res = <-ss.User().Save(userB)
 	require.Nil(t, res.Err)
-	userB = res.Data.(*model.User)
+	userB = res.Data.(*model.UserIms)
 
 	// userC was never in the group
-	userC := &model.User{
+	userC := &model.UserIms{
 		Email:    MakeEmail(),
 		Username: model.NewId(),
 	}
 	res = <-ss.User().Save(userC)
 	require.Nil(t, res.Err)
-	userC = res.Data.(*model.User)
+	userC = res.Data.(*model.UserIms)
 
 	// add users to group (but not userC)
 	res = <-ss.Group().CreateOrRestoreMember(group.Id, userA.ClientId)

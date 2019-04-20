@@ -214,7 +214,7 @@ func GetDMNameFromIds(userId1, userId2 string) string {
 	}
 }
 
-func GetGroupDisplayNameFromUsers(users []*User, truncate bool) string {
+func GetGroupDisplayNameFromUsers(users []*UserIms, truncate bool) string {
 	usernames := make([]string, len(users))
 	for index, user := range users {
 		usernames[index] = user.Username

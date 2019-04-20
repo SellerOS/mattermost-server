@@ -22,12 +22,13 @@ type TestHelper struct {
 	App          *App
 	Server       *Server
 	BasicTeam    *model.Team
-	BasicUser    *model.User
-	BasicUser2   *model.User
+	BasicUser    *model.UserIms
+	BasicUserLogin *model.UserLogin
+	BasicUser2   *model.UserIms
 	BasicChannel *model.Channel
 	BasicPost    *model.Post
 
-	SystemAdminUser *model.User
+	SystemAdminUser *model.UserIms
 
 	tempWorkspace string
 }
@@ -108,7 +109,7 @@ func (me *TestHelper) InitBasic() *TestHelper {
 
 	me.BasicTeam = me.CreateTeam()
 	me.BasicUser = me.CreateUser()
-
+	me.BasicUserLogin = me.CreateUserLogin(me.BasicUser.Email)
 	me.LinkUserToTeam(me.BasicUser, me.BasicTeam)
 	me.BasicUser2 = me.CreateUser()
 	me.LinkUserToTeam(me.BasicUser2, me.BasicTeam)
@@ -143,16 +144,16 @@ func (me *TestHelper) CreateTeam() *model.Team {
 	return team
 }
 
-func (me *TestHelper) CreateUser() *model.User {
+func (me *TestHelper) CreateUser() *model.UserIms {
 	id := model.NewId()
 
-	user := &model.User{
+	user := &model.UserIms{
 		ClientId:      model.NewId(),
 		Email:         "success+" + id + "@simulator.amazonses.com",
 		Username:      "un_" + id,
-		Nickname:      "nn_" + id,
-		Password:      "Password1",
-		EmailVerified: true,
+		//Nickname:      "nn_" + id,
+		//Password:      "Password1",
+		//EmailVerified: true,
 	}
 
 	utils.DisableDebugLogForTest()
@@ -165,6 +166,27 @@ func (me *TestHelper) CreateUser() *model.User {
 	}
 	utils.EnableDebugLogForTest()
 	return user
+}
+
+func (me *TestHelper) CreateUserLogin(email string) *model.UserLogin {
+	userLogin := &model.UserLogin{
+		ClientId: model.NewId(),
+		Email:    email,
+		//Nickname:  "nn_" + id,
+		PasswordOld: "Password1",
+		Salt:        model.NewId(),
+	}
+
+	utils.DisableDebugLogForTest()
+	//ruser, response := client.CreateUser(user)
+	//if response.Error != nil {
+	//	panic(response.Error)
+	//}
+
+	//ruser.Password = "Password1"
+	//store.Must(me.App.Srv.Store.User().VerifyEmail(userLogin.ClientId, userLogin.Email))
+	utils.EnableDebugLogForTest()
+	return userLogin
 }
 
 func (me *TestHelper) CreateChannel(team *model.Team) *model.Channel {
@@ -221,7 +243,7 @@ func (me *TestHelper) createChannelWithAnotherUser(team *model.Team, channelType
 	return channel
 }
 
-func (me *TestHelper) CreateDmChannel(user *model.User) *model.Channel {
+func (me *TestHelper) CreateDmChannel(user *model.UserIms) *model.Channel {
 	utils.DisableDebugLogForTest()
 	var err *model.AppError
 	var channel *model.Channel
@@ -235,7 +257,7 @@ func (me *TestHelper) CreateDmChannel(user *model.User) *model.Channel {
 	return channel
 }
 
-func (me *TestHelper) CreateGroupChannel(user1 *model.User, user2 *model.User) *model.Channel {
+func (me *TestHelper) CreateGroupChannel(user1 *model.UserIms, user2 *model.UserIms) *model.Channel {
 	utils.DisableDebugLogForTest()
 	var err *model.AppError
 	var channel *model.Channel
@@ -271,7 +293,7 @@ func (me *TestHelper) CreatePost(channel *model.Channel) *model.Post {
 	return post
 }
 
-func (me *TestHelper) LinkUserToTeam(user *model.User, team *model.Team) {
+func (me *TestHelper) LinkUserToTeam(user *model.UserIms, team *model.Team) {
 	utils.DisableDebugLogForTest()
 
 	err := me.App.JoinUserToTeam(team, user, "")
@@ -285,7 +307,7 @@ func (me *TestHelper) LinkUserToTeam(user *model.User, team *model.Team) {
 	utils.EnableDebugLogForTest()
 }
 
-func (me *TestHelper) AddUserToChannel(user *model.User, channel *model.Channel) *model.ChannelMember {
+func (me *TestHelper) AddUserToChannel(user *model.UserIms, channel *model.Channel) *model.ChannelMember {
 	utils.DisableDebugLogForTest()
 
 	member, err := me.App.AddUserToChannel(user, channel)
@@ -373,7 +395,7 @@ func (me *TestHelper) CreateEmoji() *model.Emoji {
 	return result.Data.(*model.Emoji)
 }
 
-func (me *TestHelper) AddReactionToPost(post *model.Post, user *model.User, emojiName string) *model.Reaction {
+func (me *TestHelper) AddReactionToPost(post *model.Post, user *model.UserIms, emojiName string) *model.Reaction {
 	utils.DisableDebugLogForTest()
 
 	reaction, err := me.App.SaveReactionForPost(&model.Reaction{

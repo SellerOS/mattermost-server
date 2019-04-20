@@ -18,7 +18,7 @@ import (
 )
 
 func TestGenerateSecret(t *testing.T) {
-	user := &model.User{ClientId: model.NewId(), Roles: "system_user"}
+	user := &model.UserInfo{ClientId: model.NewId(), Email: "system_user@gmail.com"}
 
 	config := model.Config{}
 	config.SetDefaults()
@@ -32,7 +32,7 @@ func TestGenerateSecret(t *testing.T) {
 			result.Err = nil
 		})
 	})
-	storeMock.On("User").Return(&userStoreMock)
+	storeMock.On("UserIms").Return(&userStoreMock)
 
 	mfa := Mfa{configService, &storeMock}
 

@@ -20,7 +20,7 @@ func TestGetDirectMessageNotificationEmailSubject(t *testing.T) {
 	defer th.TearDown()
 
 	expectedPrefix := "[http://localhost:8065] New Direct Message from @sender on"
-	user := &model.User{}
+	user := &model.UserIms{}
 	post := &model.Post{
 		CreateAt: 1501804801000,
 	}
@@ -36,7 +36,7 @@ func TestGetGroupMessageNotificationEmailSubjectFull(t *testing.T) {
 	defer th.TearDown()
 
 	expectedPrefix := "[http://localhost:8065] New Group Message in sender on"
-	user := &model.User{}
+	user := &model.UserIms{}
 	post := &model.Post{
 		CreateAt: 1501804801000,
 	}
@@ -53,7 +53,7 @@ func TestGetGroupMessageNotificationEmailSubjectGeneric(t *testing.T) {
 	defer th.TearDown()
 
 	expectedPrefix := "[http://localhost:8065] New Group Message on"
-	user := &model.User{}
+	user := &model.UserIms{}
 	post := &model.Post{
 		CreateAt: 1501804801000,
 	}
@@ -70,7 +70,7 @@ func TestGetNotificationEmailSubject(t *testing.T) {
 	defer th.TearDown()
 
 	expectedPrefix := "[http://localhost:8065] Notification in team on"
-	user := &model.User{}
+	user := &model.UserIms{}
 	post := &model.Post{
 		CreateAt: 1501804801000,
 	}
@@ -85,7 +85,7 @@ func TestGetNotificationEmailBodyFullNotificationPublicChannel(t *testing.T) {
 	th := Setup(t)
 	defer th.TearDown()
 
-	recipient := &model.User{}
+	recipient := &model.UserIms{}
 	post := &model.Post{
 		Message: "This is the message",
 	}
@@ -122,7 +122,7 @@ func TestGetNotificationEmailBodyFullNotificationGroupChannel(t *testing.T) {
 	th := Setup(t)
 	defer th.TearDown()
 
-	recipient := &model.User{}
+	recipient := &model.UserIms{}
 	post := &model.Post{
 		Message: "This is the message",
 	}
@@ -159,7 +159,7 @@ func TestGetNotificationEmailBodyFullNotificationPrivateChannel(t *testing.T) {
 	th := Setup(t)
 	defer th.TearDown()
 
-	recipient := &model.User{}
+	recipient := &model.UserIms{}
 	post := &model.Post{
 		Message: "This is the message",
 	}
@@ -196,7 +196,7 @@ func TestGetNotificationEmailBodyFullNotificationDirectChannel(t *testing.T) {
 	th := Setup(t)
 	defer th.TearDown()
 
-	recipient := &model.User{}
+	recipient := &model.UserIms{}
 	post := &model.Post{
 		Message: "This is the message",
 	}
@@ -230,7 +230,7 @@ func TestGetNotificationEmailBodyFullNotificationLocaleTimeWithTimezone(t *testi
 	th := Setup(t)
 	defer th.TearDown()
 
-	recipient := &model.User{
+	recipient := &model.UserIms{
 		Timezone: timezones.DefaultUserTimezone(),
 	}
 	recipient.Timezone["automaticTimezone"] = "America/New_York"
@@ -261,7 +261,7 @@ func TestGetNotificationEmailBodyFullNotificationLocaleTimeNoTimezone(t *testing
 	th := Setup(t)
 	defer th.TearDown()
 
-	recipient := &model.User{
+	recipient := &model.UserIms{
 		Timezone: timezones.DefaultUserTimezone(),
 	}
 	post := &model.Post{
@@ -303,7 +303,7 @@ func TestGetNotificationEmailBodyFullNotificationLocaleTime12Hour(t *testing.T) 
 	th := Setup(t)
 	defer th.TearDown()
 
-	recipient := &model.User{
+	recipient := &model.UserIms{
 		Timezone: timezones.DefaultUserTimezone(),
 	}
 	recipient.Timezone["automaticTimezone"] = "America/New_York"
@@ -335,7 +335,7 @@ func TestGetNotificationEmailBodyFullNotificationLocaleTime24Hour(t *testing.T) 
 	th := Setup(t)
 	defer th.TearDown()
 
-	recipient := &model.User{
+	recipient := &model.UserIms{
 		Timezone: timezones.DefaultUserTimezone(),
 	}
 	recipient.Timezone["automaticTimezone"] = "America/New_York"
@@ -368,7 +368,7 @@ func TestGetNotificationEmailBodyGenericNotificationPublicChannel(t *testing.T) 
 	th := Setup(t)
 	defer th.TearDown()
 
-	recipient := &model.User{}
+	recipient := &model.UserIms{}
 	post := &model.Post{
 		Message: "This is the message",
 	}
@@ -402,7 +402,7 @@ func TestGetNotificationEmailBodyGenericNotificationGroupChannel(t *testing.T) {
 	th := Setup(t)
 	defer th.TearDown()
 
-	recipient := &model.User{}
+	recipient := &model.UserIms{}
 	post := &model.Post{
 		Message: "This is the message",
 	}
@@ -436,7 +436,7 @@ func TestGetNotificationEmailBodyGenericNotificationPrivateChannel(t *testing.T)
 	th := Setup(t)
 	defer th.TearDown()
 
-	recipient := &model.User{}
+	recipient := &model.UserIms{}
 	post := &model.Post{
 		Message: "This is the message",
 	}
@@ -470,7 +470,7 @@ func TestGetNotificationEmailBodyGenericNotificationDirectChannel(t *testing.T) 
 	th := Setup(t)
 	defer th.TearDown()
 
-	recipient := &model.User{}
+	recipient := &model.UserIms{}
 	post := &model.Post{
 		Message: "This is the message",
 	}

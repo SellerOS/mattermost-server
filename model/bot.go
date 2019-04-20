@@ -5,10 +5,8 @@ package model
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
-	"strings"
 	"unicode/utf8"
 )
 
@@ -18,7 +16,7 @@ const (
 	BOT_CREATOR_ID_MAX_RUNES   = KEY_VALUE_PLUGIN_ID_MAX_RUNES // UserId or PluginId
 )
 
-// Bot is a special type of User meant for programmatic interactions.
+// Bot is a special type of UserIms meant for programmatic interactions.
 // Note that the primary key of a bot is the UserId, and matches the primary key of the
 // corresponding user.
 type Bot struct {
@@ -162,12 +160,12 @@ func BotPatchFromJson(data io.Reader) *BotPatch {
 	return &botPatch
 }
 
-// UserFromBot returns a user model describing the bot fields stored in the User store.
-func UserFromBot(b *Bot) *User {
-	return &User{
+// UserFromBot returns a user model describing the bot fields stored in the UserIms store.
+func UserFromBot(b *Bot) *UserIms {
+	return &UserIms{
 		ClientId:        b.UserId,
 		Username:  b.Username,
-		Email:     fmt.Sprintf("%s@localhost", strings.ToLower(b.Username)),
+		//Email:     fmt.Sprintf("%s@localhost", strings.ToLower(b.Username)),
 		FirstName: b.DisplayName,
 	}
 }

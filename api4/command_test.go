@@ -440,7 +440,8 @@ func TestExecuteInvalidCommand(t *testing.T) {
 	CheckNotFoundStatus(t, resp)
 
 	otherUser := th.CreateUser()
-	Client.Login(otherUser.Email, otherUser.Password)
+	userLogin := th.CreateUserLogin(otherUser.Email)
+	Client.Login(otherUser.Email, userLogin.PasswordOld)
 
 	_, resp = Client.ExecuteCommand(channel.Id, "/getcommand")
 	CheckForbiddenStatus(t, resp)

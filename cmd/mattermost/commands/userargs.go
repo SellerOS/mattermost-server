@@ -8,8 +8,8 @@ import (
 	"github.com/mattermost/mattermost-server/model"
 )
 
-func getUsersFromUserArgs(a *app.App, userArgs []string) []*model.User {
-	users := make([]*model.User, 0, len(userArgs))
+func getUsersFromUserArgs(a *app.App, userArgs []string) []*model.UserIms {
+	users := make([]*model.UserIms, 0, len(userArgs))
 	for _, userArg := range userArgs {
 		user := getUserFromUserArg(a, userArg)
 		users = append(users, user)
@@ -17,15 +17,15 @@ func getUsersFromUserArgs(a *app.App, userArgs []string) []*model.User {
 	return users
 }
 
-func getUserFromUserArg(a *app.App, userArg string) *model.User {
-	var user *model.User
+func getUserFromUserArg(a *app.App, userArg string) *model.UserIms {
+	var user *model.UserIms
 	if result := <-a.Srv.Store.User().GetByEmail(userArg); result.Err == nil {
-		user = result.Data.(*model.User)
+		user = result.Data.(*model.UserIms)
 	}
 
 	if user == nil {
 		if result := <-a.Srv.Store.User().GetByUsername(userArg); result.Err == nil {
-			user = result.Data.(*model.User)
+			user = result.Data.(*model.UserIms)
 		}
 	}
 

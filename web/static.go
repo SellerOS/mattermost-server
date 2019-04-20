@@ -19,7 +19,7 @@ import (
 	"github.com/mattermost/mattermost-server/utils/fileutils"
 )
 
-var robotsTxt = []byte("User-agent: *\nDisallow: /\n")
+var robotsTxt = []byte("UserIms-agent: *\nDisallow: /\n")
 
 func (w *Web) InitStatic() {
 	if *w.ConfigService.Config().ServiceSettings.WebserverMode != "disabled" {

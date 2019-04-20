@@ -503,13 +503,13 @@ func TestUserFromBot(t *testing.T) {
 		DeleteAt:    6,
 	}
 
-	assert.Equal(t, &User{
+	assert.Equal(t, &UserIms{
 		ClientId:        bot1.UserId,
 		Username:  "username",
 		Email:     "username@localhost",
 		FirstName: "display name",
 	}, UserFromBot(bot1))
-	assert.Equal(t, &User{
+	assert.Equal(t, &UserIms{
 		ClientId:        bot2.UserId,
 		Username:  "username2",
 		Email:     "username2@localhost",

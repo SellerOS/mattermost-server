@@ -161,7 +161,7 @@ func listCommands(c *Context, w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else {
-		//User with no permission should see only system commands
+		//UserIms with no permission should see only system commands
 		if !c.App.SessionHasPermissionToTeam(c.App.Session, teamId, model.PERMISSION_MANAGE_SLASH_COMMANDS) {
 			commands, err = c.App.ListAutocompleteCommands(teamId, c.App.T)
 			if err != nil {

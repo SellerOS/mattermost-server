@@ -426,8 +426,8 @@ func getGroupMembers(c *Context, w http.ResponseWriter, r *http.Request) {
 	}
 
 	b, marshalErr := json.Marshal(struct {
-		Members []*model.User `json:"members"`
-		Count   int           `json:"total_member_count"`
+		Members []*model.UserIms `json:"members"`
+		Count   int              `json:"total_member_count"`
 	}{
 		Members: members,
 		Count:   count,

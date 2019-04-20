@@ -43,7 +43,7 @@ func (a *App) CreateBasicUser(client *model.Client4) *model.AppError {
 		if resp.Error != nil {
 			return resp.Error
 		}
-		newuser := &model.User{Email: BTEST_USER_EMAIL, Nickname: BTEST_USER_NAME, Password: BTEST_USER_PASSWORD}
+		newuser := &model.UserIms{Email: BTEST_USER_EMAIL, Username: BTEST_USER_NAME}
 		ruser, resp := client.CreateUser(newuser)
 		if resp.Error != nil {
 			return resp.Error
@@ -54,7 +54,7 @@ func (a *App) CreateBasicUser(client *model.Client4) *model.AppError {
 	return nil
 }
 
-func (cfg *AutoUserCreator) createRandomUser() (*model.User, bool) {
+func (cfg *AutoUserCreator) createRandomUser() (*model.UserIms, bool) {
 	var userEmail string
 	var userName string
 	if cfg.Fuzzy {
@@ -65,10 +65,9 @@ func (cfg *AutoUserCreator) createRandomUser() (*model.User, bool) {
 		userName = utils.RandomName(cfg.NameLength, cfg.NameCharset)
 	}
 
-	user := &model.User{
+	user := &model.UserIms{
 		Email:    userEmail,
-		Nickname: userName,
-		Password: USER_PASSWORD}
+		Username: userName}
 
 	ruser, resp := cfg.client.CreateUserWithInviteId(user, cfg.team.InviteId)
 	if resp.Error != nil {
@@ -88,9 +87,9 @@ func (cfg *AutoUserCreator) createRandomUser() (*model.User, bool) {
 	return ruser, true
 }
 
-func (cfg *AutoUserCreator) CreateTestUsers(num utils.Range) ([]*model.User, bool) {
+func (cfg *AutoUserCreator) CreateTestUsers(num utils.Range) ([]*model.UserIms, bool) {
 	numUsers := utils.RandIntFromRange(num)
-	users := make([]*model.User, numUsers)
+	users := make([]*model.UserIms, numUsers)
 
 	for i := 0; i < numUsers; i++ {
 		var err bool

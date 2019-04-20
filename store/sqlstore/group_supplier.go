@@ -219,7 +219,7 @@ func (s *SqlSupplier) GroupDelete(ctx context.Context, groupID string, hints ...
 func (s *SqlSupplier) GroupGetMemberUsers(stc context.Context, groupID string, hints ...store.LayeredStoreHint) *store.LayeredStoreSupplierResult {
 	result := store.NewSupplierResult()
 
-	var groupMembers []*model.User
+	var groupMembers []*model.UserIms
 
 	query := `
 		SELECT
@@ -245,7 +245,7 @@ func (s *SqlSupplier) GroupGetMemberUsers(stc context.Context, groupID string, h
 func (s *SqlSupplier) GroupGetMemberUsersPage(stc context.Context, groupID string, offset int, limit int, hints ...store.LayeredStoreHint) *store.LayeredStoreSupplierResult {
 	result := store.NewSupplierResult()
 
-	var groupMembers []*model.User
+	var groupMembers []*model.UserIms
 
 	query := `
 		SELECT

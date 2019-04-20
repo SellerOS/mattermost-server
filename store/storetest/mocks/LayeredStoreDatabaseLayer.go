@@ -1477,7 +1477,7 @@ func (_m *LayeredStoreDatabaseLayer) UnlockFromMaster() {
 	_m.Called()
 }
 
-// User provides a mock function with given fields:
+// UserIms provides a mock function with given fields:
 func (_m *LayeredStoreDatabaseLayer) User() store.UserStore {
 	ret := _m.Called()
 

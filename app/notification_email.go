@@ -17,7 +17,7 @@ import (
 	"github.com/nicksnyder/go-i18n/i18n"
 )
 
-func (a *App) sendNotificationEmail(notification *postNotification, user *model.User, team *model.Team) *model.AppError {
+func (a *App) sendNotificationEmail(notification *postNotification, user *model.UserIms, team *model.Team) *model.AppError {
 	channel := notification.channel
 	post := notification.post
 
@@ -119,7 +119,7 @@ func (a *App) sendNotificationEmail(notification *postNotification, user *model.
 /**
  * Computes the subject line for direct notification email messages
  */
-func getDirectMessageNotificationEmailSubject(user *model.User, post *model.Post, translateFunc i18n.TranslateFunc, siteName string, senderName string, useMilitaryTime bool) string {
+func getDirectMessageNotificationEmailSubject(user *model.UserIms, post *model.Post, translateFunc i18n.TranslateFunc, siteName string, senderName string, useMilitaryTime bool) string {
 	t := getFormattedPostTime(user, post, useMilitaryTime, translateFunc)
 	var subjectParameters = map[string]interface{}{
 		"SiteName":          siteName,
@@ -134,7 +134,7 @@ func getDirectMessageNotificationEmailSubject(user *model.User, post *model.Post
 /**
  * Computes the subject line for group, public, and private email messages
  */
-func getNotificationEmailSubject(user *model.User, post *model.Post, translateFunc i18n.TranslateFunc, siteName string, teamName string, useMilitaryTime bool) string {
+func getNotificationEmailSubject(user *model.UserIms, post *model.Post, translateFunc i18n.TranslateFunc, siteName string, teamName string, useMilitaryTime bool) string {
 	t := getFormattedPostTime(user, post, useMilitaryTime, translateFunc)
 	var subjectParameters = map[string]interface{}{
 		"SiteName": siteName,
@@ -149,7 +149,7 @@ func getNotificationEmailSubject(user *model.User, post *model.Post, translateFu
 /**
  * Computes the subject line for group email messages
  */
-func getGroupMessageNotificationEmailSubject(user *model.User, post *model.Post, translateFunc i18n.TranslateFunc, siteName string, channelName string, emailNotificationContentsType string, useMilitaryTime bool) string {
+func getGroupMessageNotificationEmailSubject(user *model.UserIms, post *model.Post, translateFunc i18n.TranslateFunc, siteName string, channelName string, emailNotificationContentsType string, useMilitaryTime bool) string {
 	t := getFormattedPostTime(user, post, useMilitaryTime, translateFunc)
 	var subjectParameters = map[string]interface{}{
 		"SiteName": siteName,
@@ -167,7 +167,7 @@ func getGroupMessageNotificationEmailSubject(user *model.User, post *model.Post,
 /**
  * Computes the email body for notification messages
  */
-func (a *App) getNotificationEmailBody(recipient *model.User, post *model.Post, channel *model.Channel, channelName string, senderName string, teamName string, teamURL string, emailNotificationContentsType string, useMilitaryTime bool, translateFunc i18n.TranslateFunc) string {
+func (a *App) getNotificationEmailBody(recipient *model.UserIms, post *model.Post, channel *model.Channel, channelName string, senderName string, teamName string, teamURL string, emailNotificationContentsType string, useMilitaryTime bool, translateFunc i18n.TranslateFunc) string {
 	// only include message contents in notification email if email notification contents type is set to full
 	var bodyPage *utils.HTMLTemplate
 	if emailNotificationContentsType == model.EMAIL_NOTIFICATION_CONTENTS_FULL {
@@ -252,7 +252,7 @@ type formattedPostTime struct {
 	TimeZone string
 }
 
-func getFormattedPostTime(user *model.User, post *model.Post, useMilitaryTime bool, translateFunc i18n.TranslateFunc) formattedPostTime {
+func getFormattedPostTime(user *model.UserIms, post *model.Post, useMilitaryTime bool, translateFunc i18n.TranslateFunc) formattedPostTime {
 	preferredTimezone := user.GetPreferredTimezone()
 	postTime := time.Unix(post.CreateAt/1000, 0)
 	zone, _ := postTime.Zone()

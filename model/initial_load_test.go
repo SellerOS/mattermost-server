@@ -9,7 +9,7 @@ import (
 )
 
 func TestInitialLoadJson(t *testing.T) {
-	u := &User{ClientId: NewId()}
+	u := &UserIms{ClientId: NewId()}
 	o := InitialLoad{User: u}
 	json := o.ToJson()
 	ro := InitialLoadFromJson(strings.NewReader(json))

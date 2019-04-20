@@ -67,7 +67,7 @@ func replaceUserIds(userStore store.UserStore, text string) string {
 		}
 
 		if res := <-userStore.GetProfileByIds(userIds, true); res.Err == nil {
-			for _, user := range res.Data.([]*model.User) {
+			for _, user := range res.Data.([]*model.UserIms) {
 				text = strings.Replace(text, "<@"+user.ClientId+">", "@"+user.Username, -1)
 			}
 		}

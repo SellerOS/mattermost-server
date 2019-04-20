@@ -195,7 +195,7 @@ func TestGetScheme(t *testing.T) {
 	_, r5 := th.SystemAdminClient.GetScheme(s1.Id)
 	CheckUnauthorizedStatus(t, r5)
 
-	th.SystemAdminClient.Login(th.SystemAdminUser.Username, th.SystemAdminUser.Password)
+	th.SystemAdminClient.Login(th.SystemAdminUser.Username, th.SystemAdminUserLogin.PasswordOld)
 	th.App.SetLicense(nil)
 	_, r6 := th.SystemAdminClient.GetScheme(s1.Id)
 	CheckNoError(t, r6)
@@ -262,7 +262,7 @@ func TestGetSchemes(t *testing.T) {
 	_, r7 := th.Client.GetSchemes("", 0, 100)
 	CheckUnauthorizedStatus(t, r7)
 
-	th.Client.Login(th.BasicUser.Username, th.BasicUser.Password)
+	th.Client.Login(th.BasicUser.Username, th.BasicUserLogin.PasswordOld)
 	_, r8 := th.Client.GetSchemes("", 0, 100)
 	CheckForbiddenStatus(t, r8)
 
@@ -345,7 +345,7 @@ func TestGetTeamsForScheme(t *testing.T) {
 	_, ri3 := th.Client.GetTeamsForScheme(model.NewId(), 0, 100)
 	CheckUnauthorizedStatus(t, ri3)
 
-	th.Client.Login(th.BasicUser.Username, th.BasicUser.Password)
+	th.Client.Login(th.BasicUser.Username, th.BasicUserLogin.PasswordOld)
 	_, ri4 := th.Client.GetTeamsForScheme(model.NewId(), 0, 100)
 	CheckForbiddenStatus(t, ri4)
 
@@ -442,7 +442,7 @@ func TestGetChannelsForScheme(t *testing.T) {
 	_, ri3 := th.Client.GetChannelsForScheme(model.NewId(), 0, 100)
 	CheckUnauthorizedStatus(t, ri3)
 
-	th.Client.Login(th.BasicUser.Username, th.BasicUser.Password)
+	th.Client.Login(th.BasicUser.Username, th.BasicUserLogin.PasswordOld)
 	_, ri4 := th.Client.GetChannelsForScheme(model.NewId(), 0, 100)
 	CheckForbiddenStatus(t, ri4)
 

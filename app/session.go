@@ -264,7 +264,7 @@ func (a *App) CreateUserAccessToken(token *model.UserAccessToken) (*model.UserAc
 	if result := <-uchan; result.Err != nil {
 		mlog.Error(result.Err.Error())
 	} else {
-		user := result.Data.(*model.User)
+		user := result.Data.(*model.UserIms)
 		if err := a.SendUserAccessTokenAddedEmail(user.Email, user.Locale, a.GetSiteURL()); err != nil {
 			mlog.Error(err.Error())
 		}

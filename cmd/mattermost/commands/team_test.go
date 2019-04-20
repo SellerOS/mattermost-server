@@ -34,7 +34,7 @@ func TestJoinTeam(t *testing.T) {
 
 	th.CheckCommand(t, "team", "add", th.BasicTeam.Name, th.BasicUser.Email)
 
-	profiles := th.SystemAdminClient.Must(th.SystemAdminClient.GetUsersInTeam(th.BasicTeam.Id, 0, 1000, "")).([]*model.User)
+	profiles := th.SystemAdminClient.Must(th.SystemAdminClient.GetUsersInTeam(th.BasicTeam.Id, 0, 1000, "")).([]*model.UserIms)
 
 	found := false
 
@@ -46,7 +46,7 @@ func TestJoinTeam(t *testing.T) {
 	}
 
 	if !found {
-		t.Fatal("Failed to create User")
+		t.Fatal("Failed to create UserIms")
 	}
 }
 
@@ -56,7 +56,7 @@ func TestLeaveTeam(t *testing.T) {
 
 	th.CheckCommand(t, "team", "remove", th.BasicTeam.Name, th.BasicUser.Email)
 
-	profiles := th.Client.Must(th.Client.GetUsersInTeam(th.BasicTeam.Id, 0, 1000, "")).([]*model.User)
+	profiles := th.Client.Must(th.Client.GetUsersInTeam(th.BasicTeam.Id, 0, 1000, "")).([]*model.UserIms)
 
 	found := false
 

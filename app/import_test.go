@@ -55,13 +55,13 @@ func checkPreference(t *testing.T, a *App, userId string, category string, name 
 	}
 }
 
-func checkNotifyProp(t *testing.T, user *model.User, key string, value string) {
+func checkNotifyProp(t *testing.T, user *model.UserIms, key string, value string) {
 	if actual, ok := user.NotifyProps[key]; !ok {
 		debug.PrintStack()
-		t.Fatalf("Notify prop %v not found. User: %v", key, user.ClientId)
+		t.Fatalf("Notify prop %v not found. UserIms: %v", key, user.ClientId)
 	} else if actual != value {
 		debug.PrintStack()
-		t.Fatalf("Notify Prop %v was %v but expected %v. User: %v", key, actual, value, user.ClientId)
+		t.Fatalf("Notify Prop %v was %v but expected %v. UserIms: %v", key, actual, value, user.ClientId)
 	}
 }
 

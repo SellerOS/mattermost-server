@@ -32,7 +32,7 @@ func TestPluginDeadlock(t *testing.T) {
 
 			func (p *MyPlugin) OnActivate() error {
 				_, err := p.API.CreatePost(&model.Post{
-					UserId: "{{.User.Id}}",
+					UserId: "{{.UserIms.Id}}",
 					ChannelId: "{{.Channel.Id}}",
 					Message:   "message",
 				})
@@ -49,7 +49,7 @@ func TestPluginDeadlock(t *testing.T) {
 				}
 
 				p.API.CreatePost(&model.Post{
-					UserId: "{{.User.Id}}",
+					UserId: "{{.UserIms.Id}}",
 					ChannelId: "{{.Channel.Id}}",
 					Message:   "message",
 					Props: map[string]interface{}{
@@ -67,7 +67,7 @@ func TestPluginDeadlock(t *testing.T) {
 		))
 
 		templateData := struct {
-			User    *model.User
+			User    *model.UserIms
 			Channel *model.Channel
 		}{
 			th.BasicUser,
@@ -124,7 +124,7 @@ func TestPluginDeadlock(t *testing.T) {
 				}
 
 				p.API.CreatePost(&model.Post{
-					UserId: "{{.User.Id}}",
+					UserId: "{{.UserIms.Id}}",
 					ChannelId: "{{.Channel.Id}}",
 					Message:   "message",
 					Props: map[string]interface{}{
@@ -155,7 +155,7 @@ func TestPluginDeadlock(t *testing.T) {
 
 			func (p *MyPlugin) OnActivate() error {
 				_, err := p.API.CreatePost(&model.Post{
-					UserId: "{{.User.Id}}",
+					UserId: "{{.UserIms.Id}}",
 					ChannelId: "{{.Channel.Id}}",
 					Message:   "message",
 				})
@@ -173,7 +173,7 @@ func TestPluginDeadlock(t *testing.T) {
 		))
 
 		templateData := struct {
-			User    *model.User
+			User    *model.UserIms
 			Channel *model.Channel
 		}{
 			th.BasicUser,

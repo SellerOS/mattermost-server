@@ -71,7 +71,7 @@ type API interface {
 	GetDiagnosticId() string
 
 	// CreateUser creates a user.
-	CreateUser(user *model.User) (*model.User, *model.AppError)
+	CreateUser(user *model.UserIms) (*model.UserIms, *model.AppError)
 
 	// DeleteUser deletes a user.
 	DeleteUser(userId string) *model.AppError
@@ -79,26 +79,26 @@ type API interface {
 	// GetUsers a list of users based on search options.
 	//
 	// Minimum server version: 5.10
-	GetUsers(options *model.UserGetOptions) ([]*model.User, *model.AppError)
+	GetUsers(options *model.UserGetOptions) ([]*model.UserIms, *model.AppError)
 
 	// GetUser gets a user.
-	GetUser(userId string) (*model.User, *model.AppError)
+	GetUser(userId string) (*model.UserIms, *model.AppError)
 
 	// GetUserByEmail gets a user by their email address.
-	GetUserByEmail(email string) (*model.User, *model.AppError)
+	GetUserByEmail(email string) (*model.UserIms, *model.AppError)
 
 	// GetUserByUsername gets a user by their username.
-	GetUserByUsername(name string) (*model.User, *model.AppError)
+	GetUserByUsername(name string) (*model.UserIms, *model.AppError)
 
 	// GetUsersByUsernames gets users by their usernames.
 	//
 	// Minimum server version: 5.6
-	GetUsersByUsernames(usernames []string) ([]*model.User, *model.AppError)
+	GetUsersByUsernames(usernames []string) ([]*model.UserIms, *model.AppError)
 
 	// GetUsersInTeam gets users in team.
 	//
 	// Minimum server version: 5.6
-	GetUsersInTeam(teamId string, page int, perPage int) ([]*model.User, *model.AppError)
+	GetUsersInTeam(teamId string, page int, perPage int) ([]*model.UserIms, *model.AppError)
 
 	// GetTeamIcon gets the team icon.
 	//
@@ -116,7 +116,7 @@ type API interface {
 	RemoveTeamIcon(teamId string) *model.AppError
 
 	// UpdateUser updates a user.
-	UpdateUser(user *model.User) (*model.User, *model.AppError)
+	UpdateUser(user *model.UserIms) (*model.UserIms, *model.AppError)
 
 	// GetUserStatus will get a user's status.
 	GetUserStatus(userId string) (*model.Status, *model.AppError)
@@ -137,7 +137,7 @@ type API interface {
 	// The sortBy parameter can be: "username" or "status".
 	//
 	// Minimum server version: 5.6
-	GetUsersInChannel(channelId, sortBy string, page, perPage int) ([]*model.User, *model.AppError)
+	GetUsersInChannel(channelId, sortBy string, page, perPage int) ([]*model.UserIms, *model.AppError)
 
 	// GetLDAPUserAttributes will return LDAP attributes for a user.
 	// The attributes parameter should be a list of attributes to pull.
@@ -250,7 +250,7 @@ type API interface {
 	// SearchUsers returns a list of users based on some search criteria.
 	//
 	// Minimum server version: 5.6
-	SearchUsers(search *model.UserSearch) ([]*model.User, *model.AppError)
+	SearchUsers(search *model.UserSearch) ([]*model.UserIms, *model.AppError)
 
 	// SearchPostsInTeam returns a list of posts in a specific team that match the given params.
 	//
@@ -268,7 +268,7 @@ type API interface {
 	// Minimum server version: 5.6
 	GetChannelMembers(channelId string, page, perPage int) (*model.ChannelMembers, *model.AppError)
 
-	// GetChannelMembersByIds gets a channel membership for a particular User
+	// GetChannelMembersByIds gets a channel membership for a particular UserIms
 	//
 	// Minimum server version: 5.6
 	GetChannelMembersByIds(channelId string, userIds []string) (*model.ChannelMembers, *model.AppError)

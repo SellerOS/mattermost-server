@@ -32,7 +32,7 @@ func (a *App) CheckForClientSideCert(r *http.Request) (string, string, string) {
 	return pem, subject, email
 }
 
-func (a *App) AuthenticateUserForLogin(id, loginId, password, mfaToken string, ldapOnly bool) (user *model.User, err *model.AppError) {
+func (a *App) AuthenticateUserForLogin(id, loginId, password, mfaToken string, ldapOnly bool) (user *model.UserIms, err *model.AppError) {
 	// Do statistics
 	defer func() {
 		if a.Metrics != nil {
@@ -73,7 +73,7 @@ func (a *App) AuthenticateUserForLogin(id, loginId, password, mfaToken string, l
 	return user, nil
 }
 
-func (a *App) GetUserForLogin(id, loginId string) (*model.User, *model.AppError) {
+func (a *App) GetUserForLogin(id, loginId string) (*model.UserIms, *model.AppError) {
 	enableUsername := *a.Config().EmailSettings.EnableSignInWithUsername
 	enableEmail := *a.Config().EmailSettings.EnableSignInWithEmail
 
@@ -93,7 +93,7 @@ func (a *App) GetUserForLogin(id, loginId string) (*model.User, *model.AppError)
 
 	// Try to get the user by username/email
 	if result := <-a.Srv.Store.User().GetForLogin(loginId, enableUsername, enableEmail); result.Err == nil {
-		return result.Data.(*model.User), nil
+		return result.Data.(*model.UserIms), nil
 	}
 
 	// Try to get the user with LDAP if enabled
@@ -109,7 +109,7 @@ func (a *App) GetUserForLogin(id, loginId string) (*model.User, *model.AppError)
 	return nil, model.NewAppError("GetUserForLogin", "store.sql_user.get_for_login.app_error", nil, "", http.StatusBadRequest)
 }
 
-func (a *App) DoLogin(w http.ResponseWriter, r *http.Request, user *model.User, deviceId string) (*model.Session, *model.AppError) {
+func (a *App) DoLogin(w http.ResponseWriter, r *http.Request, user *model.UserIms, deviceId string) (*model.Session, *model.AppError) {
 	if pluginsEnvironment := a.GetPluginsEnvironment(); pluginsEnvironment != nil {
 		var rejectionReason string
 		pluginContext := a.PluginContext()

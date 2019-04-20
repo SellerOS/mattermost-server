@@ -260,7 +260,7 @@ func (s SqlChannelStore) ClearCaches() {
 
 	if s.metrics != nil {
 		s.metrics.IncrementMemCacheInvalidationCounter("Channel Member Counts - Purge")
-		s.metrics.IncrementMemCacheInvalidationCounter("All Channel Members for User - Purge")
+		s.metrics.IncrementMemCacheInvalidationCounter("All Channel Members for UserIms - Purge")
 		s.metrics.IncrementMemCacheInvalidationCounter("All Channel Members Notify Props for Channel - Purge")
 		s.metrics.IncrementMemCacheInvalidationCounter("Channel - Purge")
 		s.metrics.IncrementMemCacheInvalidationCounter("Channel By Name - Purge")
@@ -1427,14 +1427,14 @@ func (s SqlChannelStore) InvalidateAllChannelMembersForUser(userId string) {
 	allChannelMembersForUserCache.Remove(userId)
 	allChannelMembersForUserCache.Remove(userId + "_deleted")
 	if s.metrics != nil {
-		s.metrics.IncrementMemCacheInvalidationCounter("All Channel Members for User - Remove by UserId")
+		s.metrics.IncrementMemCacheInvalidationCounter("All Channel Members for UserIms - Remove by UserId")
 	}
 }
 
 func (s SqlChannelStore) IsUserInChannelUseCache(userId string, channelId string) bool {
 	if cacheItem, ok := allChannelMembersForUserCache.Get(userId); ok {
 		if s.metrics != nil {
-			s.metrics.IncrementMemCacheHitCounter("All Channel Members for User")
+			s.metrics.IncrementMemCacheHitCounter("All Channel Members for UserIms")
 		}
 		ids := cacheItem.(map[string]string)
 		if _, ok := ids[channelId]; ok {
@@ -1444,7 +1444,7 @@ func (s SqlChannelStore) IsUserInChannelUseCache(userId string, channelId string
 	}
 
 	if s.metrics != nil {
-		s.metrics.IncrementMemCacheMissCounter("All Channel Members for User")
+		s.metrics.IncrementMemCacheMissCounter("All Channel Members for UserIms")
 	}
 
 	result := <-s.GetAllChannelMembersForUser(userId, true, false)
@@ -1503,7 +1503,7 @@ func (s SqlChannelStore) GetAllChannelMembersForUser(userId string, allowFromCac
 		if allowFromCache {
 			if cacheItem, ok := allChannelMembersForUserCache.Get(cache_key); ok {
 				if s.metrics != nil {
-					s.metrics.IncrementMemCacheHitCounter("All Channel Members for User")
+					s.metrics.IncrementMemCacheHitCounter("All Channel Members for UserIms")
 				}
 				result.Data = cacheItem.(map[string]string)
 				return
@@ -1511,7 +1511,7 @@ func (s SqlChannelStore) GetAllChannelMembersForUser(userId string, allowFromCac
 		}
 
 		if s.metrics != nil {
-			s.metrics.IncrementMemCacheMissCounter("All Channel Members for User")
+			s.metrics.IncrementMemCacheMissCounter("All Channel Members for UserIms")
 		}
 
 		var deletedClause string

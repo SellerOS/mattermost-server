@@ -88,33 +88,29 @@ func TestPluginAPIGetUsers(t *testing.T) {
 	defer th.TearDown()
 	api := th.SetupPluginAPI()
 
-	user1, err := th.App.CreateUser(&model.User{
+	user1, err := th.App.CreateUser(&model.UserIms{
 		Email:    strings.ToLower(model.NewId()) + "success+test@example.com",
-		Password: "password",
 		Username: "user1" + model.NewId(),
 	})
 	require.Nil(t, err)
 	defer th.App.PermanentDeleteUser(user1)
 
-	user2, err := th.App.CreateUser(&model.User{
+	user2, err := th.App.CreateUser(&model.UserIms{
 		Email:    strings.ToLower(model.NewId()) + "success+test@example.com",
-		Password: "password",
 		Username: "user2" + model.NewId(),
 	})
 	require.Nil(t, err)
 	defer th.App.PermanentDeleteUser(user2)
 
-	user3, err := th.App.CreateUser(&model.User{
+	user3, err := th.App.CreateUser(&model.UserIms{
 		Email:    strings.ToLower(model.NewId()) + "success+test@example.com",
-		Password: "password",
 		Username: "user3" + model.NewId(),
 	})
 	require.Nil(t, err)
 	defer th.App.PermanentDeleteUser(user3)
 
-	user4, err := th.App.CreateUser(&model.User{
+	user4, err := th.App.CreateUser(&model.UserIms{
 		Email:    strings.ToLower(model.NewId()) + "success+test@example.com",
-		Password: "password",
 		Username: "user4" + model.NewId(),
 	})
 	require.Nil(t, err)
@@ -124,37 +120,37 @@ func TestPluginAPIGetUsers(t *testing.T) {
 		Description   string
 		Page          int
 		PerPage       int
-		ExpectedUsers []*model.User
+		ExpectedUsers []*model.UserIms
 	}{
 		{
 			"page 0, perPage 0",
 			0,
 			0,
-			[]*model.User{},
+			[]*model.UserIms{},
 		},
 		{
 			"page 0, perPage 10",
 			0,
 			10,
-			[]*model.User{user1, user2, user3, user4},
+			[]*model.UserIms{user1, user2, user3, user4},
 		},
 		{
 			"page 0, perPage 2",
 			0,
 			2,
-			[]*model.User{user1, user2},
+			[]*model.UserIms{user1, user2},
 		},
 		{
 			"page 1, perPage 2",
 			1,
 			2,
-			[]*model.User{user3, user4},
+			[]*model.UserIms{user3, user4},
 		},
 		{
 			"page 10, perPage 10",
 			10,
 			10,
-			[]*model.User{},
+			[]*model.UserIms{},
 		},
 	}
 
@@ -178,33 +174,29 @@ func TestPluginAPIGetUsersInTeam(t *testing.T) {
 	team1 := th.CreateTeam()
 	team2 := th.CreateTeam()
 
-	user1, err := th.App.CreateUser(&model.User{
+	user1, err := th.App.CreateUser(&model.UserIms{
 		Email:    strings.ToLower(model.NewId()) + "success+test@example.com",
-		Password: "password",
 		Username: "user1" + model.NewId(),
 	})
 	require.Nil(t, err)
 	defer th.App.PermanentDeleteUser(user1)
 
-	user2, err := th.App.CreateUser(&model.User{
+	user2, err := th.App.CreateUser(&model.UserIms{
 		Email:    strings.ToLower(model.NewId()) + "success+test@example.com",
-		Password: "password",
 		Username: "user2" + model.NewId(),
 	})
 	require.Nil(t, err)
 	defer th.App.PermanentDeleteUser(user2)
 
-	user3, err := th.App.CreateUser(&model.User{
+	user3, err := th.App.CreateUser(&model.UserIms{
 		Email:    strings.ToLower(model.NewId()) + "success+test@example.com",
-		Password: "password",
 		Username: "user3" + model.NewId(),
 	})
 	require.Nil(t, err)
 	defer th.App.PermanentDeleteUser(user3)
 
-	user4, err := th.App.CreateUser(&model.User{
+	user4, err := th.App.CreateUser(&model.UserIms{
 		Email:    strings.ToLower(model.NewId()) + "success+test@example.com",
-		Password: "password",
 		Username: "user4" + model.NewId(),
 	})
 	require.Nil(t, err)
@@ -231,42 +223,42 @@ func TestPluginAPIGetUsersInTeam(t *testing.T) {
 		TeamId        string
 		Page          int
 		PerPage       int
-		ExpectedUsers []*model.User
+		ExpectedUsers []*model.UserIms
 	}{
 		{
 			"unknown team",
 			model.NewId(),
 			0,
 			0,
-			[]*model.User{},
+			[]*model.UserIms{},
 		},
 		{
 			"team 1, page 0, perPage 10",
 			team1.Id,
 			0,
 			10,
-			[]*model.User{user1, user2, user3, user4},
+			[]*model.UserIms{user1, user2, user3, user4},
 		},
 		{
 			"team 1, page 0, perPage 2",
 			team1.Id,
 			0,
 			2,
-			[]*model.User{user1, user2},
+			[]*model.UserIms{user1, user2},
 		},
 		{
 			"team 1, page 1, perPage 2",
 			team1.Id,
 			1,
 			2,
-			[]*model.User{user3, user4},
+			[]*model.UserIms{user3, user4},
 		},
 		{
 			"team 2, page 0, perPage 10",
 			team2.Id,
 			0,
 			10,
-			[]*model.User{user3, user4},
+			[]*model.UserIms{user3, user4},
 		},
 	}
 

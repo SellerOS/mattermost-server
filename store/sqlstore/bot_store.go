@@ -13,7 +13,7 @@ import (
 	"github.com/mattermost/mattermost-server/store"
 )
 
-// bot is a subset of the model.Bot type, omitting the model.User fields.
+// bot is a subset of the model.Bot type, omitting the model.UserIms fields.
 type bot struct {
 	UserId      string `json:"user_id"`
 	Description string `json:"description"`
@@ -36,7 +36,7 @@ func botFromModel(b *model.Bot) *bot {
 
 // SqlBotStore is a store for managing bots in the database.
 // Bots are otherwise normal users with extra metadata record in the Bots table. The primary key
-// for a bot matches the primary key value for corresponding User record.
+// for a bot matches the primary key value for corresponding UserIms record.
 type SqlBotStore struct {
 	SqlStore
 	metrics einterfaces.MetricsInterface

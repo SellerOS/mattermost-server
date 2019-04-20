@@ -9,7 +9,7 @@ import (
 )
 
 type TeamEnvironment struct {
-	Users    []*model.User
+	Users    []*model.UserIms
 	Channels []*model.Channel
 }
 

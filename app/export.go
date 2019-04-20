@@ -185,7 +185,7 @@ func (a *App) ExportAllUsers(writer io.Writer) *model.AppError {
 			return result.Err
 		}
 
-		users := result.Data.([]*model.User)
+		users := result.Data.([]*model.UserIms)
 
 		if len(users) == 0 {
 			break

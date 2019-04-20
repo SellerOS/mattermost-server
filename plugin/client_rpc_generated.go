@@ -125,13 +125,13 @@ func init() {
 
 type Z_UserHasBeenCreatedArgs struct {
 	A *Context
-	B *model.User
+	B *model.UserIms
 }
 
 type Z_UserHasBeenCreatedReturns struct {
 }
 
-func (g *hooksRPCClient) UserHasBeenCreated(c *Context, user *model.User) {
+func (g *hooksRPCClient) UserHasBeenCreated(c *Context, user *model.UserIms) {
 	_args := &Z_UserHasBeenCreatedArgs{c, user}
 	_returns := &Z_UserHasBeenCreatedReturns{}
 	if g.implemented[UserHasBeenCreatedId] {
@@ -144,7 +144,7 @@ func (g *hooksRPCClient) UserHasBeenCreated(c *Context, user *model.User) {
 
 func (s *hooksRPCServer) UserHasBeenCreated(args *Z_UserHasBeenCreatedArgs, returns *Z_UserHasBeenCreatedReturns) error {
 	if hook, ok := s.impl.(interface {
-		UserHasBeenCreated(c *Context, user *model.User)
+		UserHasBeenCreated(c *Context, user *model.UserIms)
 	}); ok {
 		hook.UserHasBeenCreated(args.A, args.B)
 
@@ -160,14 +160,14 @@ func init() {
 
 type Z_UserWillLogInArgs struct {
 	A *Context
-	B *model.User
+	B *model.UserIms
 }
 
 type Z_UserWillLogInReturns struct {
 	A string
 }
 
-func (g *hooksRPCClient) UserWillLogIn(c *Context, user *model.User) string {
+func (g *hooksRPCClient) UserWillLogIn(c *Context, user *model.UserIms) string {
 	_args := &Z_UserWillLogInArgs{c, user}
 	_returns := &Z_UserWillLogInReturns{}
 	if g.implemented[UserWillLogInId] {
@@ -180,7 +180,7 @@ func (g *hooksRPCClient) UserWillLogIn(c *Context, user *model.User) string {
 
 func (s *hooksRPCServer) UserWillLogIn(args *Z_UserWillLogInArgs, returns *Z_UserWillLogInReturns) error {
 	if hook, ok := s.impl.(interface {
-		UserWillLogIn(c *Context, user *model.User) string
+		UserWillLogIn(c *Context, user *model.UserIms) string
 	}); ok {
 		returns.A = hook.UserWillLogIn(args.A, args.B)
 
@@ -196,13 +196,13 @@ func init() {
 
 type Z_UserHasLoggedInArgs struct {
 	A *Context
-	B *model.User
+	B *model.UserIms
 }
 
 type Z_UserHasLoggedInReturns struct {
 }
 
-func (g *hooksRPCClient) UserHasLoggedIn(c *Context, user *model.User) {
+func (g *hooksRPCClient) UserHasLoggedIn(c *Context, user *model.UserIms) {
 	_args := &Z_UserHasLoggedInArgs{c, user}
 	_returns := &Z_UserHasLoggedInReturns{}
 	if g.implemented[UserHasLoggedInId] {
@@ -215,7 +215,7 @@ func (g *hooksRPCClient) UserHasLoggedIn(c *Context, user *model.User) {
 
 func (s *hooksRPCServer) UserHasLoggedIn(args *Z_UserHasLoggedInArgs, returns *Z_UserHasLoggedInReturns) error {
 	if hook, ok := s.impl.(interface {
-		UserHasLoggedIn(c *Context, user *model.User)
+		UserHasLoggedIn(c *Context, user *model.UserIms)
 	}); ok {
 		hook.UserHasLoggedIn(args.A, args.B)
 
@@ -338,13 +338,13 @@ func init() {
 type Z_UserHasJoinedChannelArgs struct {
 	A *Context
 	B *model.ChannelMember
-	C *model.User
+	C *model.UserIms
 }
 
 type Z_UserHasJoinedChannelReturns struct {
 }
 
-func (g *hooksRPCClient) UserHasJoinedChannel(c *Context, channelMember *model.ChannelMember, actor *model.User) {
+func (g *hooksRPCClient) UserHasJoinedChannel(c *Context, channelMember *model.ChannelMember, actor *model.UserIms) {
 	_args := &Z_UserHasJoinedChannelArgs{c, channelMember, actor}
 	_returns := &Z_UserHasJoinedChannelReturns{}
 	if g.implemented[UserHasJoinedChannelId] {
@@ -357,7 +357,7 @@ func (g *hooksRPCClient) UserHasJoinedChannel(c *Context, channelMember *model.C
 
 func (s *hooksRPCServer) UserHasJoinedChannel(args *Z_UserHasJoinedChannelArgs, returns *Z_UserHasJoinedChannelReturns) error {
 	if hook, ok := s.impl.(interface {
-		UserHasJoinedChannel(c *Context, channelMember *model.ChannelMember, actor *model.User)
+		UserHasJoinedChannel(c *Context, channelMember *model.ChannelMember, actor *model.UserIms)
 	}); ok {
 		hook.UserHasJoinedChannel(args.A, args.B, args.C)
 
@@ -374,13 +374,13 @@ func init() {
 type Z_UserHasLeftChannelArgs struct {
 	A *Context
 	B *model.ChannelMember
-	C *model.User
+	C *model.UserIms
 }
 
 type Z_UserHasLeftChannelReturns struct {
 }
 
-func (g *hooksRPCClient) UserHasLeftChannel(c *Context, channelMember *model.ChannelMember, actor *model.User) {
+func (g *hooksRPCClient) UserHasLeftChannel(c *Context, channelMember *model.ChannelMember, actor *model.UserIms) {
 	_args := &Z_UserHasLeftChannelArgs{c, channelMember, actor}
 	_returns := &Z_UserHasLeftChannelReturns{}
 	if g.implemented[UserHasLeftChannelId] {
@@ -393,7 +393,7 @@ func (g *hooksRPCClient) UserHasLeftChannel(c *Context, channelMember *model.Cha
 
 func (s *hooksRPCServer) UserHasLeftChannel(args *Z_UserHasLeftChannelArgs, returns *Z_UserHasLeftChannelReturns) error {
 	if hook, ok := s.impl.(interface {
-		UserHasLeftChannel(c *Context, channelMember *model.ChannelMember, actor *model.User)
+		UserHasLeftChannel(c *Context, channelMember *model.ChannelMember, actor *model.UserIms)
 	}); ok {
 		hook.UserHasLeftChannel(args.A, args.B, args.C)
 
@@ -410,13 +410,13 @@ func init() {
 type Z_UserHasJoinedTeamArgs struct {
 	A *Context
 	B *model.TeamMember
-	C *model.User
+	C *model.UserIms
 }
 
 type Z_UserHasJoinedTeamReturns struct {
 }
 
-func (g *hooksRPCClient) UserHasJoinedTeam(c *Context, teamMember *model.TeamMember, actor *model.User) {
+func (g *hooksRPCClient) UserHasJoinedTeam(c *Context, teamMember *model.TeamMember, actor *model.UserIms) {
 	_args := &Z_UserHasJoinedTeamArgs{c, teamMember, actor}
 	_returns := &Z_UserHasJoinedTeamReturns{}
 	if g.implemented[UserHasJoinedTeamId] {
@@ -429,7 +429,7 @@ func (g *hooksRPCClient) UserHasJoinedTeam(c *Context, teamMember *model.TeamMem
 
 func (s *hooksRPCServer) UserHasJoinedTeam(args *Z_UserHasJoinedTeamArgs, returns *Z_UserHasJoinedTeamReturns) error {
 	if hook, ok := s.impl.(interface {
-		UserHasJoinedTeam(c *Context, teamMember *model.TeamMember, actor *model.User)
+		UserHasJoinedTeam(c *Context, teamMember *model.TeamMember, actor *model.UserIms)
 	}); ok {
 		hook.UserHasJoinedTeam(args.A, args.B, args.C)
 
@@ -446,13 +446,13 @@ func init() {
 type Z_UserHasLeftTeamArgs struct {
 	A *Context
 	B *model.TeamMember
-	C *model.User
+	C *model.UserIms
 }
 
 type Z_UserHasLeftTeamReturns struct {
 }
 
-func (g *hooksRPCClient) UserHasLeftTeam(c *Context, teamMember *model.TeamMember, actor *model.User) {
+func (g *hooksRPCClient) UserHasLeftTeam(c *Context, teamMember *model.TeamMember, actor *model.UserIms) {
 	_args := &Z_UserHasLeftTeamArgs{c, teamMember, actor}
 	_returns := &Z_UserHasLeftTeamReturns{}
 	if g.implemented[UserHasLeftTeamId] {
@@ -465,7 +465,7 @@ func (g *hooksRPCClient) UserHasLeftTeam(c *Context, teamMember *model.TeamMembe
 
 func (s *hooksRPCServer) UserHasLeftTeam(args *Z_UserHasLeftTeamArgs, returns *Z_UserHasLeftTeamReturns) error {
 	if hook, ok := s.impl.(interface {
-		UserHasLeftTeam(c *Context, teamMember *model.TeamMember, actor *model.User)
+		UserHasLeftTeam(c *Context, teamMember *model.TeamMember, actor *model.UserIms)
 	}); ok {
 		hook.UserHasLeftTeam(args.A, args.B, args.C)
 
@@ -809,15 +809,15 @@ func (s *apiRPCServer) GetDiagnosticId(args *Z_GetDiagnosticIdArgs, returns *Z_G
 }
 
 type Z_CreateUserArgs struct {
-	A *model.User
+	A *model.UserIms
 }
 
 type Z_CreateUserReturns struct {
-	A *model.User
+	A *model.UserIms
 	B *model.AppError
 }
 
-func (g *apiRPCClient) CreateUser(user *model.User) (*model.User, *model.AppError) {
+func (g *apiRPCClient) CreateUser(user *model.UserIms) (*model.UserIms, *model.AppError) {
 	_args := &Z_CreateUserArgs{user}
 	_returns := &Z_CreateUserReturns{}
 	if err := g.client.Call("Plugin.CreateUser", _args, _returns); err != nil {
@@ -828,7 +828,7 @@ func (g *apiRPCClient) CreateUser(user *model.User) (*model.User, *model.AppErro
 
 func (s *apiRPCServer) CreateUser(args *Z_CreateUserArgs, returns *Z_CreateUserReturns) error {
 	if hook, ok := s.impl.(interface {
-		CreateUser(user *model.User) (*model.User, *model.AppError)
+		CreateUser(user *model.UserIms) (*model.UserIms, *model.AppError)
 	}); ok {
 		returns.A, returns.B = hook.CreateUser(args.A)
 	} else {
@@ -870,11 +870,11 @@ type Z_GetUsersArgs struct {
 }
 
 type Z_GetUsersReturns struct {
-	A []*model.User
+	A []*model.UserIms
 	B *model.AppError
 }
 
-func (g *apiRPCClient) GetUsers(options *model.UserGetOptions) ([]*model.User, *model.AppError) {
+func (g *apiRPCClient) GetUsers(options *model.UserGetOptions) ([]*model.UserIms, *model.AppError) {
 	_args := &Z_GetUsersArgs{options}
 	_returns := &Z_GetUsersReturns{}
 	if err := g.client.Call("Plugin.GetUsers", _args, _returns); err != nil {
@@ -885,7 +885,7 @@ func (g *apiRPCClient) GetUsers(options *model.UserGetOptions) ([]*model.User, *
 
 func (s *apiRPCServer) GetUsers(args *Z_GetUsersArgs, returns *Z_GetUsersReturns) error {
 	if hook, ok := s.impl.(interface {
-		GetUsers(options *model.UserGetOptions) ([]*model.User, *model.AppError)
+		GetUsers(options *model.UserGetOptions) ([]*model.UserIms, *model.AppError)
 	}); ok {
 		returns.A, returns.B = hook.GetUsers(args.A)
 	} else {
@@ -899,11 +899,11 @@ type Z_GetUserArgs struct {
 }
 
 type Z_GetUserReturns struct {
-	A *model.User
+	A *model.UserIms
 	B *model.AppError
 }
 
-func (g *apiRPCClient) GetUser(userId string) (*model.User, *model.AppError) {
+func (g *apiRPCClient) GetUser(userId string) (*model.UserIms, *model.AppError) {
 	_args := &Z_GetUserArgs{userId}
 	_returns := &Z_GetUserReturns{}
 	if err := g.client.Call("Plugin.GetUser", _args, _returns); err != nil {
@@ -914,7 +914,7 @@ func (g *apiRPCClient) GetUser(userId string) (*model.User, *model.AppError) {
 
 func (s *apiRPCServer) GetUser(args *Z_GetUserArgs, returns *Z_GetUserReturns) error {
 	if hook, ok := s.impl.(interface {
-		GetUser(userId string) (*model.User, *model.AppError)
+		GetUser(userId string) (*model.UserIms, *model.AppError)
 	}); ok {
 		returns.A, returns.B = hook.GetUser(args.A)
 	} else {
@@ -928,11 +928,11 @@ type Z_GetUserByEmailArgs struct {
 }
 
 type Z_GetUserByEmailReturns struct {
-	A *model.User
+	A *model.UserIms
 	B *model.AppError
 }
 
-func (g *apiRPCClient) GetUserByEmail(email string) (*model.User, *model.AppError) {
+func (g *apiRPCClient) GetUserByEmail(email string) (*model.UserIms, *model.AppError) {
 	_args := &Z_GetUserByEmailArgs{email}
 	_returns := &Z_GetUserByEmailReturns{}
 	if err := g.client.Call("Plugin.GetUserByEmail", _args, _returns); err != nil {
@@ -943,7 +943,7 @@ func (g *apiRPCClient) GetUserByEmail(email string) (*model.User, *model.AppErro
 
 func (s *apiRPCServer) GetUserByEmail(args *Z_GetUserByEmailArgs, returns *Z_GetUserByEmailReturns) error {
 	if hook, ok := s.impl.(interface {
-		GetUserByEmail(email string) (*model.User, *model.AppError)
+		GetUserByEmail(email string) (*model.UserIms, *model.AppError)
 	}); ok {
 		returns.A, returns.B = hook.GetUserByEmail(args.A)
 	} else {
@@ -957,11 +957,11 @@ type Z_GetUserByUsernameArgs struct {
 }
 
 type Z_GetUserByUsernameReturns struct {
-	A *model.User
+	A *model.UserIms
 	B *model.AppError
 }
 
-func (g *apiRPCClient) GetUserByUsername(name string) (*model.User, *model.AppError) {
+func (g *apiRPCClient) GetUserByUsername(name string) (*model.UserIms, *model.AppError) {
 	_args := &Z_GetUserByUsernameArgs{name}
 	_returns := &Z_GetUserByUsernameReturns{}
 	if err := g.client.Call("Plugin.GetUserByUsername", _args, _returns); err != nil {
@@ -972,7 +972,7 @@ func (g *apiRPCClient) GetUserByUsername(name string) (*model.User, *model.AppEr
 
 func (s *apiRPCServer) GetUserByUsername(args *Z_GetUserByUsernameArgs, returns *Z_GetUserByUsernameReturns) error {
 	if hook, ok := s.impl.(interface {
-		GetUserByUsername(name string) (*model.User, *model.AppError)
+		GetUserByUsername(name string) (*model.UserIms, *model.AppError)
 	}); ok {
 		returns.A, returns.B = hook.GetUserByUsername(args.A)
 	} else {
@@ -986,11 +986,11 @@ type Z_GetUsersByUsernamesArgs struct {
 }
 
 type Z_GetUsersByUsernamesReturns struct {
-	A []*model.User
+	A []*model.UserIms
 	B *model.AppError
 }
 
-func (g *apiRPCClient) GetUsersByUsernames(usernames []string) ([]*model.User, *model.AppError) {
+func (g *apiRPCClient) GetUsersByUsernames(usernames []string) ([]*model.UserIms, *model.AppError) {
 	_args := &Z_GetUsersByUsernamesArgs{usernames}
 	_returns := &Z_GetUsersByUsernamesReturns{}
 	if err := g.client.Call("Plugin.GetUsersByUsernames", _args, _returns); err != nil {
@@ -1001,7 +1001,7 @@ func (g *apiRPCClient) GetUsersByUsernames(usernames []string) ([]*model.User, *
 
 func (s *apiRPCServer) GetUsersByUsernames(args *Z_GetUsersByUsernamesArgs, returns *Z_GetUsersByUsernamesReturns) error {
 	if hook, ok := s.impl.(interface {
-		GetUsersByUsernames(usernames []string) ([]*model.User, *model.AppError)
+		GetUsersByUsernames(usernames []string) ([]*model.UserIms, *model.AppError)
 	}); ok {
 		returns.A, returns.B = hook.GetUsersByUsernames(args.A)
 	} else {
@@ -1017,11 +1017,11 @@ type Z_GetUsersInTeamArgs struct {
 }
 
 type Z_GetUsersInTeamReturns struct {
-	A []*model.User
+	A []*model.UserIms
 	B *model.AppError
 }
 
-func (g *apiRPCClient) GetUsersInTeam(teamId string, page int, perPage int) ([]*model.User, *model.AppError) {
+func (g *apiRPCClient) GetUsersInTeam(teamId string, page int, perPage int) ([]*model.UserIms, *model.AppError) {
 	_args := &Z_GetUsersInTeamArgs{teamId, page, perPage}
 	_returns := &Z_GetUsersInTeamReturns{}
 	if err := g.client.Call("Plugin.GetUsersInTeam", _args, _returns); err != nil {
@@ -1032,7 +1032,7 @@ func (g *apiRPCClient) GetUsersInTeam(teamId string, page int, perPage int) ([]*
 
 func (s *apiRPCServer) GetUsersInTeam(args *Z_GetUsersInTeamArgs, returns *Z_GetUsersInTeamReturns) error {
 	if hook, ok := s.impl.(interface {
-		GetUsersInTeam(teamId string, page int, perPage int) ([]*model.User, *model.AppError)
+		GetUsersInTeam(teamId string, page int, perPage int) ([]*model.UserIms, *model.AppError)
 	}); ok {
 		returns.A, returns.B = hook.GetUsersInTeam(args.A, args.B, args.C)
 	} else {
@@ -1128,15 +1128,15 @@ func (s *apiRPCServer) RemoveTeamIcon(args *Z_RemoveTeamIconArgs, returns *Z_Rem
 }
 
 type Z_UpdateUserArgs struct {
-	A *model.User
+	A *model.UserIms
 }
 
 type Z_UpdateUserReturns struct {
-	A *model.User
+	A *model.UserIms
 	B *model.AppError
 }
 
-func (g *apiRPCClient) UpdateUser(user *model.User) (*model.User, *model.AppError) {
+func (g *apiRPCClient) UpdateUser(user *model.UserIms) (*model.UserIms, *model.AppError) {
 	_args := &Z_UpdateUserArgs{user}
 	_returns := &Z_UpdateUserReturns{}
 	if err := g.client.Call("Plugin.UpdateUser", _args, _returns); err != nil {
@@ -1147,7 +1147,7 @@ func (g *apiRPCClient) UpdateUser(user *model.User) (*model.User, *model.AppErro
 
 func (s *apiRPCServer) UpdateUser(args *Z_UpdateUserArgs, returns *Z_UpdateUserReturns) error {
 	if hook, ok := s.impl.(interface {
-		UpdateUser(user *model.User) (*model.User, *model.AppError)
+		UpdateUser(user *model.UserIms) (*model.UserIms, *model.AppError)
 	}); ok {
 		returns.A, returns.B = hook.UpdateUser(args.A)
 	} else {
@@ -1281,11 +1281,11 @@ type Z_GetUsersInChannelArgs struct {
 }
 
 type Z_GetUsersInChannelReturns struct {
-	A []*model.User
+	A []*model.UserIms
 	B *model.AppError
 }
 
-func (g *apiRPCClient) GetUsersInChannel(channelId, sortBy string, page, perPage int) ([]*model.User, *model.AppError) {
+func (g *apiRPCClient) GetUsersInChannel(channelId, sortBy string, page, perPage int) ([]*model.UserIms, *model.AppError) {
 	_args := &Z_GetUsersInChannelArgs{channelId, sortBy, page, perPage}
 	_returns := &Z_GetUsersInChannelReturns{}
 	if err := g.client.Call("Plugin.GetUsersInChannel", _args, _returns); err != nil {
@@ -1296,7 +1296,7 @@ func (g *apiRPCClient) GetUsersInChannel(channelId, sortBy string, page, perPage
 
 func (s *apiRPCServer) GetUsersInChannel(args *Z_GetUsersInChannelArgs, returns *Z_GetUsersInChannelReturns) error {
 	if hook, ok := s.impl.(interface {
-		GetUsersInChannel(channelId, sortBy string, page, perPage int) ([]*model.User, *model.AppError)
+		GetUsersInChannel(channelId, sortBy string, page, perPage int) ([]*model.UserIms, *model.AppError)
 	}); ok {
 		returns.A, returns.B = hook.GetUsersInChannel(args.A, args.B, args.C, args.D)
 	} else {
@@ -2170,11 +2170,11 @@ type Z_SearchUsersArgs struct {
 }
 
 type Z_SearchUsersReturns struct {
-	A []*model.User
+	A []*model.UserIms
 	B *model.AppError
 }
 
-func (g *apiRPCClient) SearchUsers(search *model.UserSearch) ([]*model.User, *model.AppError) {
+func (g *apiRPCClient) SearchUsers(search *model.UserSearch) ([]*model.UserIms, *model.AppError) {
 	_args := &Z_SearchUsersArgs{search}
 	_returns := &Z_SearchUsersReturns{}
 	if err := g.client.Call("Plugin.SearchUsers", _args, _returns); err != nil {
@@ -2185,7 +2185,7 @@ func (g *apiRPCClient) SearchUsers(search *model.UserSearch) ([]*model.User, *mo
 
 func (s *apiRPCServer) SearchUsers(args *Z_SearchUsersArgs, returns *Z_SearchUsersReturns) error {
 	if hook, ok := s.impl.(interface {
-		SearchUsers(search *model.UserSearch) ([]*model.User, *model.AppError)
+		SearchUsers(search *model.UserSearch) ([]*model.UserIms, *model.AppError)
 	}); ok {
 		returns.A, returns.B = hook.SearchUsers(args.A)
 	} else {

@@ -1885,10 +1885,10 @@ func testPostStoreGetParentsForExportAfter(t *testing.T, ss store.Store) {
 	c1.Type = model.CHANNEL_OPEN
 	store.Must(ss.Channel().Save(&c1, -1))
 
-	u1 := model.User{}
+	u1 := model.UserIms{}
 	u1.Username = model.NewId()
 	u1.Email = MakeEmail()
-	u1.Nickname = model.NewId()
+	//u1.Nickname = model.NewId()
 	store.Must(ss.User().Save(&u1))
 
 	p1 := &model.Post{}
@@ -1931,9 +1931,9 @@ func testPostStoreGetRepliesForExport(t *testing.T, ss store.Store) {
 	c1.Type = model.CHANNEL_OPEN
 	store.Must(ss.Channel().Save(&c1, -1))
 
-	u1 := model.User{}
+	u1 := model.UserIms{}
 	u1.Email = MakeEmail()
-	u1.Nickname = model.NewId()
+	//u1.Nickname = model.NewId()
 	store.Must(ss.User().Save(&u1))
 
 	p1 := &model.Post{}
@@ -1989,15 +1989,15 @@ func testPostStoreGetDirectPostParentsForExportAfter(t *testing.T, ss store.Stor
 	o1.Name = "zz" + model.NewId() + "b"
 	o1.Type = model.CHANNEL_DIRECT
 
-	u1 := &model.User{}
+	u1 := &model.UserIms{}
 	u1.Email = MakeEmail()
-	u1.Nickname = model.NewId()
+	//u1.Nickname = model.NewId()
 	store.Must(ss.User().Save(u1))
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: model.NewId(), UserId: u1.ClientId}, -1))
 
-	u2 := &model.User{}
+	u2 := &model.UserIms{}
 	u2.Email = MakeEmail()
-	u2.Nickname = model.NewId()
+	//u2.Nickname = model.NewId()
 	store.Must(ss.User().Save(u2))
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: model.NewId(), UserId: u2.ClientId}, -1))
 
@@ -2039,17 +2039,17 @@ func testPostStoreGetDirectPostParentsForExportAfterDeleted(t *testing.T, ss sto
 	o1.Name = "zz" + model.NewId() + "b"
 	o1.Type = model.CHANNEL_DIRECT
 
-	u1 := &model.User{}
+	u1 := &model.UserIms{}
 	u1.DeleteAt = 1
 	u1.Email = MakeEmail()
-	u1.Nickname = model.NewId()
+	//u1.Nickname = model.NewId()
 	store.Must(ss.User().Save(u1))
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: model.NewId(), UserId: u1.ClientId}, -1))
 
-	u2 := &model.User{}
+	u2 := &model.UserIms{}
 	u2.DeleteAt = 1
 	u2.Email = MakeEmail()
-	u2.Nickname = model.NewId()
+	//u2.Nickname = model.NewId()
 	store.Must(ss.User().Save(u2))
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: model.NewId(), UserId: u2.ClientId}, -1))
 
@@ -2105,15 +2105,15 @@ func testPostStoreGetDirectPostParentsForExportAfterBatched(t *testing.T, ss sto
 
 	var postIds []string
 	for i := 0; i < 150; i++ {
-		u1 := &model.User{}
+		u1 := &model.UserIms{}
 		u1.Email = MakeEmail()
-		u1.Nickname = model.NewId()
+		//u1.Nickname = model.NewId()
 		store.Must(ss.User().Save(u1))
 		store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: model.NewId(), UserId: u1.ClientId}, -1))
 
-		u2 := &model.User{}
+		u2 := &model.UserIms{}
 		u2.Email = MakeEmail()
-		u2.Nickname = model.NewId()
+		//u2.Nickname = model.NewId()
 		store.Must(ss.User().Save(u2))
 		store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: model.NewId(), UserId: u2.ClientId}, -1))
 

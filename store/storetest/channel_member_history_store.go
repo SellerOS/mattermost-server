@@ -32,12 +32,12 @@ func testLogJoinEvent(t *testing.T, ss store.Store) {
 	channel = *store.Must(ss.Channel().Save(&channel, -1)).(*model.Channel)
 
 	// and a test user
-	user := model.User{
-		Email:    MakeEmail(),
-		Nickname: model.NewId(),
+	user := model.UserIms{
+		//Email:    MakeEmail(),
+		//Nickname: model.NewId(),
 		Username: model.NewId(),
 	}
-	user = *store.Must(ss.User().Save(&user)).(*model.User)
+	user = *store.Must(ss.User().Save(&user)).(*model.UserIms)
 
 	// log a join event
 	result := <-ss.ChannelMemberHistory().LogJoinEvent(user.ClientId, channel.Id, model.GetMillis())
@@ -55,12 +55,12 @@ func testLogLeaveEvent(t *testing.T, ss store.Store) {
 	channel = *store.Must(ss.Channel().Save(&channel, -1)).(*model.Channel)
 
 	// and a test user
-	user := model.User{
-		Email:    MakeEmail(),
-		Nickname: model.NewId(),
+	user := model.UserIms{
+		//Email:    MakeEmail(),
+		//Nickname: model.NewId(),
 		Username: model.NewId(),
 	}
-	user = *store.Must(ss.User().Save(&user)).(*model.User)
+	user = *store.Must(ss.User().Save(&user)).(*model.UserIms)
 
 	// log a join event, followed by a leave event
 	result := <-ss.ChannelMemberHistory().LogJoinEvent(user.ClientId, channel.Id, model.GetMillis())
@@ -81,12 +81,12 @@ func testGetUsersInChannelAtChannelMemberHistory(t *testing.T, ss store.Store) {
 	channel = *store.Must(ss.Channel().Save(&channel, -1)).(*model.Channel)
 
 	// and a test user
-	user := model.User{
-		Email:    MakeEmail(),
-		Nickname: model.NewId(),
+	user := model.UserIms{
+		//Email:    MakeEmail(),
+		//Nickname: model.NewId(),
 		Username: model.NewId(),
 	}
-	user = *store.Must(ss.User().Save(&user)).(*model.User)
+	user = *store.Must(ss.User().Save(&user)).(*model.UserIms)
 
 	// the user was previously in the channel a long time ago, before the export period starts
 	// the existence of this record makes it look like the MessageExport feature has been active for awhile, and prevents
@@ -110,7 +110,7 @@ func testGetUsersInChannelAtChannelMemberHistory(t *testing.T, ss store.Store) {
 	assert.Len(t, channelMembers, 1)
 	assert.Equal(t, channel.Id, channelMembers[0].ChannelId)
 	assert.Equal(t, user.ClientId, channelMembers[0].UserId)
-	assert.Equal(t, user.Email, channelMembers[0].UserEmail)
+	//assert.Equal(t, user.Email, channelMembers[0].UserEmail)
 	assert.Equal(t, user.Username, channelMembers[0].Username)
 	assert.Equal(t, joinTime, channelMembers[0].JoinTime)
 	assert.Nil(t, channelMembers[0].LeaveTime)
@@ -120,7 +120,7 @@ func testGetUsersInChannelAtChannelMemberHistory(t *testing.T, ss store.Store) {
 	assert.Len(t, channelMembers, 1)
 	assert.Equal(t, channel.Id, channelMembers[0].ChannelId)
 	assert.Equal(t, user.ClientId, channelMembers[0].UserId)
-	assert.Equal(t, user.Email, channelMembers[0].UserEmail)
+	//assert.Equal(t, user.Email, channelMembers[0].UserEmail)
 	assert.Equal(t, user.Username, channelMembers[0].Username)
 	assert.Equal(t, joinTime, channelMembers[0].JoinTime)
 	assert.Nil(t, channelMembers[0].LeaveTime)
@@ -133,7 +133,7 @@ func testGetUsersInChannelAtChannelMemberHistory(t *testing.T, ss store.Store) {
 	assert.Len(t, channelMembers, 1)
 	assert.Equal(t, channel.Id, channelMembers[0].ChannelId)
 	assert.Equal(t, user.ClientId, channelMembers[0].UserId)
-	assert.Equal(t, user.Email, channelMembers[0].UserEmail)
+	//assert.Equal(t, user.Email, channelMembers[0].UserEmail)
 	assert.Equal(t, user.Username, channelMembers[0].Username)
 	assert.Equal(t, joinTime, channelMembers[0].JoinTime)
 	assert.Equal(t, leaveTime, *channelMembers[0].LeaveTime)
@@ -143,7 +143,7 @@ func testGetUsersInChannelAtChannelMemberHistory(t *testing.T, ss store.Store) {
 	assert.Len(t, channelMembers, 1)
 	assert.Equal(t, channel.Id, channelMembers[0].ChannelId)
 	assert.Equal(t, user.ClientId, channelMembers[0].UserId)
-	assert.Equal(t, user.Email, channelMembers[0].UserEmail)
+	//assert.Equal(t, user.Email, channelMembers[0].UserEmail)
 	assert.Equal(t, user.Username, channelMembers[0].Username)
 	assert.Equal(t, joinTime, channelMembers[0].JoinTime)
 	assert.Equal(t, leaveTime, *channelMembers[0].LeaveTime)
@@ -164,12 +164,12 @@ func testGetUsersInChannelAtChannelMembers(t *testing.T, ss store.Store) {
 	channel = *store.Must(ss.Channel().Save(&channel, -1)).(*model.Channel)
 
 	// and a test user
-	user := model.User{
-		Email:    MakeEmail(),
-		Nickname: model.NewId(),
+	user := model.UserIms{
+		//Email:    MakeEmail(),
+		//Nickname: model.NewId(),
 		Username: model.NewId(),
 	}
-	user = *store.Must(ss.User().Save(&user)).(*model.User)
+	user = *store.Must(ss.User().Save(&user)).(*model.UserIms)
 
 	// clear any existing ChannelMemberHistory data that might interfere with our test
 	var tableDataTruncated = false
@@ -199,7 +199,7 @@ func testGetUsersInChannelAtChannelMembers(t *testing.T, ss store.Store) {
 	assert.Len(t, channelMembers, 1)
 	assert.Equal(t, channel.Id, channelMembers[0].ChannelId)
 	assert.Equal(t, user.ClientId, channelMembers[0].UserId)
-	assert.Equal(t, user.Email, channelMembers[0].UserEmail)
+	//assert.Equal(t, user.Email, channelMembers[0].UserEmail)
 	assert.Equal(t, user.Username, channelMembers[0].Username)
 	assert.Equal(t, joinTime-500, channelMembers[0].JoinTime)
 	assert.Equal(t, joinTime-100, *channelMembers[0].LeaveTime)
@@ -209,7 +209,7 @@ func testGetUsersInChannelAtChannelMembers(t *testing.T, ss store.Store) {
 	assert.Len(t, channelMembers, 1)
 	assert.Equal(t, channel.Id, channelMembers[0].ChannelId)
 	assert.Equal(t, user.ClientId, channelMembers[0].UserId)
-	assert.Equal(t, user.Email, channelMembers[0].UserEmail)
+	//assert.Equal(t, user.Email, channelMembers[0].UserEmail)
 	assert.Equal(t, user.Username, channelMembers[0].Username)
 	assert.Equal(t, joinTime-100, channelMembers[0].JoinTime)
 	assert.Equal(t, joinTime+500, *channelMembers[0].LeaveTime)
@@ -219,7 +219,7 @@ func testGetUsersInChannelAtChannelMembers(t *testing.T, ss store.Store) {
 	assert.Len(t, channelMembers, 1)
 	assert.Equal(t, channel.Id, channelMembers[0].ChannelId)
 	assert.Equal(t, user.ClientId, channelMembers[0].UserId)
-	assert.Equal(t, user.Email, channelMembers[0].UserEmail)
+	//assert.Equal(t, user.Email, channelMembers[0].UserEmail)
 	assert.Equal(t, user.Username, channelMembers[0].Username)
 	assert.Equal(t, joinTime+100, channelMembers[0].JoinTime)
 	assert.Equal(t, joinTime+500, *channelMembers[0].LeaveTime)
@@ -229,7 +229,7 @@ func testGetUsersInChannelAtChannelMembers(t *testing.T, ss store.Store) {
 	assert.Len(t, channelMembers, 1)
 	assert.Equal(t, channel.Id, channelMembers[0].ChannelId)
 	assert.Equal(t, user.ClientId, channelMembers[0].UserId)
-	assert.Equal(t, user.Email, channelMembers[0].UserEmail)
+	//assert.Equal(t, user.Email, channelMembers[0].UserEmail)
 	assert.Equal(t, user.Username, channelMembers[0].Username)
 	assert.Equal(t, joinTime+100, channelMembers[0].JoinTime)
 	assert.Equal(t, leaveTime-100, *channelMembers[0].LeaveTime)
@@ -239,7 +239,7 @@ func testGetUsersInChannelAtChannelMembers(t *testing.T, ss store.Store) {
 	assert.Len(t, channelMembers, 1)
 	assert.Equal(t, channel.Id, channelMembers[0].ChannelId)
 	assert.Equal(t, user.ClientId, channelMembers[0].UserId)
-	assert.Equal(t, user.Email, channelMembers[0].UserEmail)
+	//assert.Equal(t, user.Email, channelMembers[0].UserEmail)
 	assert.Equal(t, user.Username, channelMembers[0].Username)
 	assert.Equal(t, joinTime-100, channelMembers[0].JoinTime)
 	assert.Equal(t, leaveTime+100, *channelMembers[0].LeaveTime)
@@ -249,7 +249,7 @@ func testGetUsersInChannelAtChannelMembers(t *testing.T, ss store.Store) {
 	assert.Len(t, channelMembers, 1)
 	assert.Equal(t, channel.Id, channelMembers[0].ChannelId)
 	assert.Equal(t, user.ClientId, channelMembers[0].UserId)
-	assert.Equal(t, user.Email, channelMembers[0].UserEmail)
+	//assert.Equal(t, user.Email, channelMembers[0].UserEmail)
 	assert.Equal(t, user.Username, channelMembers[0].Username)
 	assert.Equal(t, leaveTime+100, channelMembers[0].JoinTime)
 	assert.Equal(t, leaveTime+200, *channelMembers[0].LeaveTime)
@@ -266,19 +266,19 @@ func testPermanentDeleteBatch(t *testing.T, ss store.Store) {
 	channel = *store.Must(ss.Channel().Save(&channel, -1)).(*model.Channel)
 
 	// and two test users
-	user := model.User{
-		Email:    MakeEmail(),
-		Nickname: model.NewId(),
+	user := model.UserIms{
+		//Email:    MakeEmail(),
+		//Nickname: model.NewId(),
 		Username: model.NewId(),
 	}
-	user = *store.Must(ss.User().Save(&user)).(*model.User)
+	user = *store.Must(ss.User().Save(&user)).(*model.UserIms)
 
-	user2 := model.User{
-		Email:    MakeEmail(),
-		Nickname: model.NewId(),
+	user2 := model.UserIms{
+		//Email:    MakeEmail(),
+		//Nickname: model.NewId(),
 		Username: model.NewId(),
 	}
-	user2 = *store.Must(ss.User().Save(&user2)).(*model.User)
+	user2 = *store.Must(ss.User().Save(&user2)).(*model.UserIms)
 
 	// user1 joins and leaves the channel
 	leaveTime := model.GetMillis()

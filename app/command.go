@@ -242,7 +242,7 @@ func (a *App) tryExecuteCustomCommand(args *model.CommandArgs, trigger string, m
 	if ur.Err != nil {
 		return nil, nil, ur.Err
 	}
-	user := ur.Data.(*model.User)
+	user := ur.Data.(*model.UserIms)
 
 	cr := <-chanChan
 	if cr.Err != nil {

@@ -40,13 +40,17 @@ func (tl TokenLocation) String() string {
 //	return utils.IsPasswordValidWithSettings(password, &a.Config().PasswordSettings)
 //}
 
-func (a *App) CheckPasswordAndAllCriteria(user *model.User, password string, mfaToken string) *model.AppError {
+func (a *App) CheckPasswordAndAllCriteria(user *model.UserIms, password string, mfaToken string) *model.AppError {
 	if err := a.CheckUserPreflightAuthenticationCriteria(user, mfaToken); err != nil {
 		return err
 	}
 
-	if err := a.checkUserPassword(user, password); err != nil {
-		if result := <-a.Srv.Store.User().UpdateFailedPasswordAttempts(user.ClientId, user.FailedAttempts+1); result.Err != nil {
+	userLogin, err := a.GetUserLogin(user.ClientId)
+	if err != nil {
+		return err
+	}
+	if err := a.checkUserPassword(userLogin, password); err != nil {
+		if result := <-a.Srv.Store.User().UpdateFailedPasswordAttempts(user.ClientId, 1); result.Err != nil {
 			return result.Err
 		}
 		return err
@@ -56,7 +60,7 @@ func (a *App) CheckPasswordAndAllCriteria(user *model.User, password string, mfa
 		// If the mfaToken is not set, we assume the client used this as a pre-flight request to query the server
 		// about the MFA state of the user in question
 		if mfaToken != "" {
-			if result := <-a.Srv.Store.User().UpdateFailedPasswordAttempts(user.ClientId, user.FailedAttempts+1); result.Err != nil {
+			if result := <-a.Srv.Store.User().UpdateFailedPasswordAttempts(user.ClientId, 1); result.Err != nil {
 				return result.Err
 			}
 		}
@@ -67,7 +71,11 @@ func (a *App) CheckPasswordAndAllCriteria(user *model.User, password string, mfa
 		return result.Err
 	}
 
-	if err := a.CheckUserPostflightAuthenticationCriteria(user); err != nil {
+	userInfo, err := a.GetUserInfo(user.ClientId)
+	if err != nil {
+		return err
+	}
+	if err := a.CheckUserPostflightAuthenticationCriteria(userInfo); err != nil {
 		return err
 	}
 
@@ -75,13 +83,17 @@ func (a *App) CheckPasswordAndAllCriteria(user *model.User, password string, mfa
 }
 
 // This to be used for places we check the users password when they are already logged in
-func (a *App) DoubleCheckPassword(user *model.User, password string) *model.AppError {
+func (a *App) DoubleCheckPassword(user *model.UserIms, password string) *model.AppError {
 	if err := checkUserLoginAttempts(user, *a.Config().ServiceSettings.MaximumLoginAttempts); err != nil {
 		return err
 	}
 
-	if err := a.checkUserPassword(user, password); err != nil {
-		if result := <-a.Srv.Store.User().UpdateFailedPasswordAttempts(user.ClientId, user.FailedAttempts+1); result.Err != nil {
+	userLogin, err := a.GetUserLogin(user.ClientId)
+	if err != nil {
+		return err
+	}
+	if err := a.checkUserPassword(userLogin, password); err != nil {
+		if result := <-a.Srv.Store.User().UpdateFailedPasswordAttempts(user.ClientId, 1); result.Err != nil {
 			return result.Err
 		}
 		return err
@@ -94,15 +106,15 @@ func (a *App) DoubleCheckPassword(user *model.User, password string) *model.AppE
 	return nil
 }
 
-func (a *App) checkUserPassword(user *model.User, password string) *model.AppError {
-	if !model.ComparePassword(password, user.Salt, user.Password) {
+func (a *App) checkUserPassword(user *model.UserLogin, password string) *model.AppError {
+	if !model.ComparePassword(password, user.Salt, user.PasswordEncryption) {
 		return model.NewAppError("checkUserPassword", "api.user.check_user_password.invalid.app_error", nil, "user_id="+user.ClientId, http.StatusUnauthorized)
 	}
 
 	return nil
 }
 
-func (a *App) checkLdapUserPasswordAndAllCriteria(ldapId *string, password string, mfaToken string) (*model.User, *model.AppError) {
+func (a *App) checkLdapUserPasswordAndAllCriteria(ldapId *string, password string, mfaToken string) (*model.UserIms, *model.AppError) {
 	if a.Ldap == nil || ldapId == nil {
 		err := model.NewAppError("doLdapAuthentication", "api.user.login_ldap.not_available.app_error", nil, "", http.StatusNotImplemented)
 		return nil, err
@@ -126,19 +138,23 @@ func (a *App) checkLdapUserPasswordAndAllCriteria(ldapId *string, password strin
 	return ldapUser, nil
 }
 
-func (a *App) CheckUserAllAuthenticationCriteria(user *model.User, mfaToken string) *model.AppError {
+func (a *App) CheckUserAllAuthenticationCriteria(user *model.UserIms, mfaToken string) *model.AppError {
 	if err := a.CheckUserPreflightAuthenticationCriteria(user, mfaToken); err != nil {
 		return err
 	}
 
-	if err := a.CheckUserPostflightAuthenticationCriteria(user); err != nil {
+	userInfo, err := a.GetUserInfo(user.ClientId)
+	if err != nil {
+		return err
+	}
+	if err := a.CheckUserPostflightAuthenticationCriteria(userInfo); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (a *App) CheckUserPreflightAuthenticationCriteria(user *model.User, mfaToken string) *model.AppError {
+func (a *App) CheckUserPreflightAuthenticationCriteria(user *model.UserIms, mfaToken string) *model.AppError {
 	if err := checkUserNotDisabled(user); err != nil {
 		return err
 	}
@@ -154,7 +170,7 @@ func (a *App) CheckUserPreflightAuthenticationCriteria(user *model.User, mfaToke
 	return nil
 }
 
-func (a *App) CheckUserPostflightAuthenticationCriteria(user *model.User) *model.AppError {
+func (a *App) CheckUserPostflightAuthenticationCriteria(user *model.UserInfo) *model.AppError {
 	if !user.EmailVerified && *a.Config().EmailSettings.RequireEmailVerification {
 		return model.NewAppError("Login", "api.user.login.not_verified.app_error", nil, "user_id="+user.ClientId, http.StatusUnauthorized)
 	}
@@ -162,7 +178,7 @@ func (a *App) CheckUserPostflightAuthenticationCriteria(user *model.User) *model
 	return nil
 }
 
-func (a *App) CheckUserMfa(user *model.User, token string) *model.AppError {
+func (a *App) CheckUserMfa(user *model.UserIms, token string) *model.AppError {
 	if !user.MfaActive || !*a.Config().ServiceSettings.EnableMultifactorAuthentication {
 		return nil
 	}
@@ -180,29 +196,29 @@ func (a *App) CheckUserMfa(user *model.User, token string) *model.AppError {
 	return nil
 }
 
-func checkUserLoginAttempts(user *model.User, max int) *model.AppError {
-	if user.FailedAttempts >= max {
-		return model.NewAppError("checkUserLoginAttempts", "api.user.check_user_login_attempts.too_many.app_error", nil, "user_id="+user.ClientId, http.StatusUnauthorized)
-	}
+func checkUserLoginAttempts(user *model.UserIms, max int) *model.AppError {
+	//if user.FailedAttempts >= max {
+	//	return model.NewAppError("checkUserLoginAttempts", "api.user.check_user_login_attempts.too_many.app_error", nil, "user_id="+user.ClientId, http.StatusUnauthorized)
+	//}
 
 	return nil
 }
 
-func checkUserNotDisabled(user *model.User) *model.AppError {
+func checkUserNotDisabled(user *model.UserIms) *model.AppError {
 	if user.DeleteAt > 0 {
 		return model.NewAppError("Login", "api.user.login.inactive.app_error", nil, "user_id="+user.ClientId, http.StatusUnauthorized)
 	}
 	return nil
 }
 
-func checkUserNotBot(user *model.User) *model.AppError {
+func checkUserNotBot(user *model.UserIms) *model.AppError {
 	if user.IsBot {
 		return model.NewAppError("Login", "api.user.login.bot_login_forbidden.app_error", nil, "user_id="+user.ClientId, http.StatusUnauthorized)
 	}
 	return nil
 }
 
-func (a *App) authenticateUser(user *model.User, password, mfaToken string) (*model.User, *model.AppError) {
+func (a *App) authenticateUser(user *model.UserIms, password, mfaToken string) (*model.UserIms, *model.AppError) {
 	license := a.License()
 	ldapAvailable := *a.Config().LdapSettings.Enable && a.Ldap != nil && license != nil && *license.Features.LDAP
 

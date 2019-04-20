@@ -13,8 +13,8 @@ import (
 	"github.com/mattermost/mattermost-server/store"
 )
 
-func makeBotWithUser(ss store.Store, bot *model.Bot) (*model.Bot, *model.User) {
-	user := store.Must(ss.User().Save(model.UserFromBot(bot))).(*model.User)
+func makeBotWithUser(ss store.Store, bot *model.Bot) (*model.Bot, *model.UserIms) {
+	user := store.Must(ss.User().Save(model.UserFromBot(bot))).(*model.UserIms)
 
 	bot.UserId = user.ClientId
 	bot = store.Must(ss.Bot().Save(bot)).(*model.Bot)
@@ -165,8 +165,8 @@ func testBotStoreGetAll(t *testing.T, ss store.Store) {
 	defer func() { store.Must(ss.Bot().PermanentDelete(b4.UserId)) }()
 	defer func() { store.Must(ss.User().PermanentDelete(b4.UserId)) }()
 
-	deletedUser := model.User{
-		Email:    MakeEmail(),
+	deletedUser := model.UserIms{
+		//Email:    MakeEmail(),
 		Username: model.NewId(),
 	}
 	if err := (<-ss.User().Save(&deletedUser)).Err; err != nil {
@@ -305,7 +305,7 @@ func testBotStoreSave(t *testing.T, ss store.Store) {
 			OwnerId:     model.NewId(),
 		}
 
-		user := store.Must(ss.User().Save(model.UserFromBot(bot))).(*model.User)
+		user := store.Must(ss.User().Save(model.UserFromBot(bot))).(*model.UserIms)
 		defer func() { store.Must(ss.User().PermanentDelete(user.ClientId)) }()
 		bot.UserId = user.ClientId
 

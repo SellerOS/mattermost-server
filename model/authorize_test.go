@@ -60,7 +60,7 @@ func TestAuthIsValid(t *testing.T) {
 
 	ad.UserId = NewRandomString(28)
 	if err := ad.IsValid(); err == nil {
-		t.Fatal("Should have failed User Id")
+		t.Fatal("Should have failed UserIms Id")
 	}
 
 	ad.UserId = NewId()

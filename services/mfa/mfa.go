@@ -51,7 +51,7 @@ func getIssuerFromUrl(uri string) string {
 	return url.QueryEscape(issuer)
 }
 
-func (m *Mfa) GenerateSecret(user *model.User) (string, []byte, *model.AppError) {
+func (m *Mfa) GenerateSecret(user *model.UserInfo) (string, []byte, *model.AppError) {
 	if err := m.checkConfig(); err != nil {
 		return "", nil, err
 	}
@@ -60,7 +60,8 @@ func (m *Mfa) GenerateSecret(user *model.User) (string, []byte, *model.AppError)
 
 	secret := b32.StdEncoding.EncodeToString([]byte(model.NewRandomString(MFA_SECRET_SIZE)))
 
-	authLink := fmt.Sprintf("otpauth://totp/%s:%s?secret=%s&issuer=%s", issuer, user.Email, secret, issuer)
+
+	authLink := fmt.Sprintf("otpauth://totp/%s:%s?secret=%s&issuer=%s", issuer, user.Email, secret, issuer) // user.Email
 
 	code, err := qr.Encode(authLink, qr.H)
 
@@ -77,7 +78,7 @@ func (m *Mfa) GenerateSecret(user *model.User) (string, []byte, *model.AppError)
 	return secret, img, nil
 }
 
-func (m *Mfa) Activate(user *model.User, token string) *model.AppError {
+func (m *Mfa) Activate(user *model.UserIms, token string) *model.AppError {
 	if err := m.checkConfig(); err != nil {
 		return err
 	}

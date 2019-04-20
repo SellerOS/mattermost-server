@@ -91,10 +91,11 @@ func manualTest(c *web.Context, w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Create user for testing
-		user := &model.User{
+		user := &model.UserIms{
 			Email:    "success+" + model.NewId() + "simulator.amazonses.com",
-			Nickname: username[0],
-			Password: app.USER_PASSWORD}
+			Username: username[0],
+			//Password: app.USER_PASSWORD
+			}
 
 		user, resp := client.CreateUser(user)
 		if resp.Error != nil {

@@ -8,7 +8,7 @@ import (
 	"github.com/mattermost/mattermost-server/model"
 )
 
-func (a *App) SendAutoResponse(channel *model.Channel, receiver *model.User) {
+func (a *App) SendAutoResponse(channel *model.Channel, receiver *model.UserIms) {
 	if receiver == nil || receiver.NotifyProps == nil {
 		return
 	}
@@ -32,7 +32,7 @@ func (a *App) SendAutoResponse(channel *model.Channel, receiver *model.User) {
 	}
 }
 
-func (a *App) SetAutoResponderStatus(user *model.User, oldNotifyProps model.StringMap) {
+func (a *App) SetAutoResponderStatus(user *model.UserIms, oldNotifyProps model.StringMap) {
 	active := user.NotifyProps[model.AUTO_RESPONDER_ACTIVE_NOTIFY_PROP] == "true"
 	oldActive := oldNotifyProps[model.AUTO_RESPONDER_ACTIVE_NOTIFY_PROP] == "true"
 

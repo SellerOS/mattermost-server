@@ -142,8 +142,9 @@ func TestSaveReaction(t *testing.T) {
 	t.Run("react-as-other-user", func(t *testing.T) {
 		reaction.EmojiName = "smile"
 		otherUser := th.CreateUser()
+		otherUserLogin := th.CreateUserLogin(otherUser.Email)
 		Client.Logout()
-		Client.Login(otherUser.Email, otherUser.Password)
+		Client.Login(otherUser.Email, otherUserLogin.PasswordOld)
 
 		_, resp := Client.SaveReaction(reaction)
 		CheckForbiddenStatus(t, resp)

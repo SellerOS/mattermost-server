@@ -38,7 +38,7 @@ func (me *groupmsgProvider) GetCommand(a *App, T goi18n.TranslateFunc) *model.Co
 }
 
 func (me *groupmsgProvider) DoCommand(a *App, args *model.CommandArgs, message string) *model.CommandResponse {
-	targetUsers := map[string]*model.User{}
+	targetUsers := map[string]*model.UserIms{}
 	targetUsersSlice := []string{args.UserId}
 	invalidUsernames := []string{}
 
@@ -50,7 +50,7 @@ func (me *groupmsgProvider) DoCommand(a *App, args *model.CommandArgs, message s
 		if result := <-a.Srv.Store.User().GetByUsername(username); result.Err != nil {
 			invalidUsernames = append(invalidUsernames, username)
 		} else {
-			targetUser := result.Data.(*model.User)
+			targetUser := result.Data.(*model.UserIms)
 			_, exists := targetUsers[targetUser.ClientId]
 			if !exists && targetUser.ClientId != args.UserId {
 				targetUsers[targetUser.ClientId] = targetUser

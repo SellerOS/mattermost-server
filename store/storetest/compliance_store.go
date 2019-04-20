@@ -77,16 +77,16 @@ func testComplianceExport(t *testing.T, ss store.Store) {
 	t1.Type = model.TEAM_OPEN
 	t1 = store.Must(ss.Team().Save(t1)).(*model.Team)
 
-	u1 := &model.User{}
+	u1 := &model.UserIms{}
 	u1.Email = MakeEmail()
 	u1.Username = model.NewId()
-	u1 = store.Must(ss.User().Save(u1)).(*model.User)
+	u1 = store.Must(ss.User().Save(u1)).(*model.UserIms)
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: t1.Id, UserId: u1.ClientId}, -1))
 
-	u2 := &model.User{}
+	u2 := &model.UserIms{}
 	u2.Email = MakeEmail()
 	u2.Username = model.NewId()
-	u2 = store.Must(ss.User().Save(u2)).(*model.User)
+	u2 = store.Must(ss.User().Save(u2)).(*model.UserIms)
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: t1.Id, UserId: u2.ClientId}, -1))
 
 	c1 := &model.Channel{}
@@ -239,16 +239,16 @@ func testComplianceExportDirectMessages(t *testing.T, ss store.Store) {
 	t1.Type = model.TEAM_OPEN
 	t1 = store.Must(ss.Team().Save(t1)).(*model.Team)
 
-	u1 := &model.User{}
+	u1 := &model.UserIms{}
 	u1.Email = MakeEmail()
 	u1.Username = model.NewId()
-	u1 = store.Must(ss.User().Save(u1)).(*model.User)
+	u1 = store.Must(ss.User().Save(u1)).(*model.UserIms)
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: t1.Id, UserId: u1.ClientId}, -1))
 
-	u2 := &model.User{}
+	u2 := &model.UserIms{}
 	u2.Email = MakeEmail()
 	u2.Username = model.NewId()
-	u2 = store.Must(ss.User().Save(u2)).(*model.User)
+	u2 = store.Must(ss.User().Save(u2)).(*model.UserIms)
 	store.Must(ss.Team().SaveMember(&model.TeamMember{TeamId: t1.Id, UserId: u2.ClientId}, -1))
 
 	c1 := &model.Channel{}
@@ -338,21 +338,21 @@ func testMessageExportPublicChannel(t *testing.T, ss store.Store) {
 	team = store.Must(ss.Team().Save(team)).(*model.Team)
 
 	// and two users that are a part of that team
-	user1 := &model.User{
+	user1 := &model.UserIms{
 		Email:    MakeEmail(),
 		Username: model.NewId(),
 	}
-	user1 = store.Must(ss.User().Save(user1)).(*model.User)
+	user1 = store.Must(ss.User().Save(user1)).(*model.UserIms)
 	store.Must(ss.Team().SaveMember(&model.TeamMember{
 		TeamId: team.Id,
 		UserId: user1.ClientId,
 	}, -1))
 
-	user2 := &model.User{
+	user2 := &model.UserIms{
 		Email:    MakeEmail(),
 		Username: model.NewId(),
 	}
-	user2 = store.Must(ss.User().Save(user2)).(*model.User)
+	user2 = store.Must(ss.User().Save(user2)).(*model.UserIms)
 	store.Must(ss.Team().SaveMember(&model.TeamMember{
 		TeamId: team.Id,
 		UserId: user2.ClientId,
@@ -439,21 +439,21 @@ func testMessageExportPrivateChannel(t *testing.T, ss store.Store) {
 	team = store.Must(ss.Team().Save(team)).(*model.Team)
 
 	// and two users that are a part of that team
-	user1 := &model.User{
+	user1 := &model.UserIms{
 		Email:    MakeEmail(),
 		Username: model.NewId(),
 	}
-	user1 = store.Must(ss.User().Save(user1)).(*model.User)
+	user1 = store.Must(ss.User().Save(user1)).(*model.UserIms)
 	store.Must(ss.Team().SaveMember(&model.TeamMember{
 		TeamId: team.Id,
 		UserId: user1.ClientId,
 	}, -1))
 
-	user2 := &model.User{
+	user2 := &model.UserIms{
 		Email:    MakeEmail(),
 		Username: model.NewId(),
 	}
-	user2 = store.Must(ss.User().Save(user2)).(*model.User)
+	user2 = store.Must(ss.User().Save(user2)).(*model.UserIms)
 	store.Must(ss.Team().SaveMember(&model.TeamMember{
 		TeamId: team.Id,
 		UserId: user2.ClientId,
@@ -542,21 +542,21 @@ func testMessageExportDirectMessageChannel(t *testing.T, ss store.Store) {
 	team = store.Must(ss.Team().Save(team)).(*model.Team)
 
 	// and two users that are a part of that team
-	user1 := &model.User{
+	user1 := &model.UserIms{
 		Email:    MakeEmail(),
 		Username: model.NewId(),
 	}
-	user1 = store.Must(ss.User().Save(user1)).(*model.User)
+	user1 = store.Must(ss.User().Save(user1)).(*model.UserIms)
 	store.Must(ss.Team().SaveMember(&model.TeamMember{
 		TeamId: team.Id,
 		UserId: user1.ClientId,
 	}, -1))
 
-	user2 := &model.User{
+	user2 := &model.UserIms{
 		Email:    MakeEmail(),
 		Username: model.NewId(),
 	}
-	user2 = store.Must(ss.User().Save(user2)).(*model.User)
+	user2 = store.Must(ss.User().Save(user2)).(*model.UserIms)
 	store.Must(ss.Team().SaveMember(&model.TeamMember{
 		TeamId: team.Id,
 		UserId: user2.ClientId,
@@ -620,31 +620,31 @@ func testMessageExportGroupMessageChannel(t *testing.T, ss store.Store) {
 	team = store.Must(ss.Team().Save(team)).(*model.Team)
 
 	// and three users that are a part of that team
-	user1 := &model.User{
+	user1 := &model.UserIms{
 		Email:    MakeEmail(),
 		Username: model.NewId(),
 	}
-	user1 = store.Must(ss.User().Save(user1)).(*model.User)
+	user1 = store.Must(ss.User().Save(user1)).(*model.UserIms)
 	store.Must(ss.Team().SaveMember(&model.TeamMember{
 		TeamId: team.Id,
 		UserId: user1.ClientId,
 	}, -1))
 
-	user2 := &model.User{
+	user2 := &model.UserIms{
 		Email:    MakeEmail(),
 		Username: model.NewId(),
 	}
-	user2 = store.Must(ss.User().Save(user2)).(*model.User)
+	user2 = store.Must(ss.User().Save(user2)).(*model.UserIms)
 	store.Must(ss.Team().SaveMember(&model.TeamMember{
 		TeamId: team.Id,
 		UserId: user2.ClientId,
 	}, -1))
 
-	user3 := &model.User{
+	user3 := &model.UserIms{
 		Email:    MakeEmail(),
 		Username: model.NewId(),
 	}
-	user3 = store.Must(ss.User().Save(user3)).(*model.User)
+	user3 = store.Must(ss.User().Save(user3)).(*model.UserIms)
 	store.Must(ss.Team().SaveMember(&model.TeamMember{
 		TeamId: team.Id,
 		UserId: user3.ClientId,

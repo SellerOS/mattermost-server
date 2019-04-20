@@ -75,7 +75,7 @@ func GetSystemAdminCount() ApiResponse {
 	return result
 }
 
-func SaveUser(user *model.User) error {
+func SaveUser(user *model.UserIms) error {
 	result := ApiResponse{}
 	url, err := lookupService("workstation-user")
 	if err != nil {
@@ -102,7 +102,7 @@ func SaveUser(user *model.User) error {
 	return nil
 }
 
-func UpdateUser(user *model.User) error {
+func UpdateUser(user *model.UserIms) error {
 	result := ApiResponse{}
 	url, err := lookupService("workstation-user")
 	if err != nil {

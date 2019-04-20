@@ -55,20 +55,20 @@ func (a *App) DeleteGroup(groupID string) (*model.Group, *model.AppError) {
 	return result.Data.(*model.Group), nil
 }
 
-func (a *App) GetGroupMemberUsers(groupID string) ([]*model.User, *model.AppError) {
+func (a *App) GetGroupMemberUsers(groupID string) ([]*model.UserIms, *model.AppError) {
 	result := <-a.Srv.Store.Group().GetMemberUsers(groupID)
 	if result.Err != nil {
 		return nil, result.Err
 	}
-	return result.Data.([]*model.User), nil
+	return result.Data.([]*model.UserIms), nil
 }
 
-func (a *App) GetGroupMemberUsersPage(groupID string, page int, perPage int) ([]*model.User, int, *model.AppError) {
+func (a *App) GetGroupMemberUsersPage(groupID string, page int, perPage int) ([]*model.UserIms, int, *model.AppError) {
 	result := <-a.Srv.Store.Group().GetMemberUsersPage(groupID, page, perPage)
 	if result.Err != nil {
 		return nil, 0, result.Err
 	}
-	members := result.Data.([]*model.User)
+	members := result.Data.([]*model.UserIms)
 	result = <-a.Srv.Store.Group().GetMemberCount(groupID)
 	if result.Err != nil {
 		return nil, 0, result.Err

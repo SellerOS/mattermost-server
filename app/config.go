@@ -13,7 +13,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
 	"runtime/debug"
 	"strconv"
 	"time"
@@ -303,15 +302,15 @@ func (a *App) regenerateClientConfig() {
 	a.Srv.limitedClientConfig = limitedClientConfig
 	a.Srv.clientConfigHash = fmt.Sprintf("%x", md5.Sum(clientConfigJSON))
 }
-
-func (a *App) GetCookieDomain() string {
-	if *a.Config().ServiceSettings.AllowCookiesForSubdomains {
-		if siteURL, err := url.Parse(*a.Config().ServiceSettings.SiteURL); err == nil {
-			return siteURL.Hostname()
-		}
-	}
-	return ""
-}
+//
+//func (a *App) GetCookieDomain() string {
+//	if *a.Config().ServiceSettings.AllowCookiesForSubdomains {
+//		if siteURL, err := url.Parse(*a.Config().ServiceSettings.SiteURL); err == nil {
+//			return siteURL.Hostname()
+//		}
+//	}
+//	return ""
+//}
 
 func (a *App) GetSiteURL() string {
 	return *a.Config().ServiceSettings.SiteURL

@@ -9,9 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
-	"time"
 
-	"github.com/mattermost/mattermost-server/app"
 	"github.com/mattermost/mattermost-server/mlog"
 	"github.com/mattermost/mattermost-server/model"
 	"strings"
@@ -1320,26 +1318,26 @@ func attachDeviceId(c *Context, w http.ResponseWriter, r *http.Request) {
 	c.App.ClearSessionCacheForUser(c.App.Session.UserId)
 	c.App.Session.SetExpireInDays(*c.App.Config().ServiceSettings.SessionLengthMobileInDays)
 
-	maxAge := *c.App.Config().ServiceSettings.SessionLengthMobileInDays * 60 * 60 * 24
-
-	secure := false
-	if app.GetProtocol(r) == "https" {
-		secure = true
-	}
-
-	expiresAt := time.Unix(model.GetMillis()/1000+int64(maxAge), 0)
-	sessionCookie := &http.Cookie{
-		Name:     model.SESSION_COOKIE_TOKEN,
-		Value:    c.App.Session.Token,
-		Path:     "/",
-		MaxAge:   maxAge,
-		Expires:  expiresAt,
-		HttpOnly: true,
-		Domain:   c.App.GetCookieDomain(),
-		Secure:   secure,
-	}
-
-	http.SetCookie(w, sessionCookie)
+	//maxAge := *c.App.Config().ServiceSettings.SessionLengthMobileInDays * 60 * 60 * 24
+	//
+	//secure := false
+	//if app.GetProtocol(r) == "https" {
+	//	secure = true
+	//}
+	//
+	//expiresAt := time.Unix(model.GetMillis()/1000+int64(maxAge), 0)
+	//sessionCookie := &http.Cookie{
+	//	Name:     model.SESSION_COOKIE_TOKEN,
+	//	Value:    c.App.Session.Token,
+	//	Path:     "/",
+	//	MaxAge:   maxAge,
+	//	Expires:  expiresAt,
+	//	HttpOnly: true,
+	//	Domain:   c.App.GetCookieDomain(),
+	//	Secure:   secure,
+	//}
+	//
+	//http.SetCookie(w, sessionCookie)
 
 	if err := c.App.AttachDeviceId(c.App.Session.Id, deviceId, c.App.Session.ExpiresAt); err != nil {
 		c.Err = err

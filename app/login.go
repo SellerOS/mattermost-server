@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/avct/uasurfer"
 	"github.com/mattermost/mattermost-server/model"
@@ -125,7 +124,7 @@ func (a *App) DoLogin(w http.ResponseWriter, r *http.Request, user *model.UserIm
 
 	session := &model.Session{UserId: user.ClientId, Roles: user.GetRawRoles(), DeviceId: deviceId, IsOAuth: false}
 	session.GenerateCSRF()
-	maxAge := *a.Config().ServiceSettings.SessionLengthWebInDays * 60 * 60 * 24
+	//maxAge := *a.Config().ServiceSettings.SessionLengthWebInDays * 60 * 60 * 24
 
 	if len(deviceId) > 0 {
 		session.SetExpireInDays(*a.Config().ServiceSettings.SessionLengthMobileInDays)
@@ -158,47 +157,47 @@ func (a *App) DoLogin(w http.ResponseWriter, r *http.Request, user *model.UserIm
 
 	w.Header().Set(model.HEADER_TOKEN, session.Token)
 
-	secure := false
-	if GetProtocol(r) == "https" {
-		secure = true
-	}
-
-	domain := a.GetCookieDomain()
-	expiresAt := time.Unix(model.GetMillis()/1000+int64(maxAge), 0)
-	sessionCookie := &http.Cookie{
-		Name:     model.SESSION_COOKIE_TOKEN,
-		Value:    session.Token,
-		Path:     "/",
-		MaxAge:   maxAge,
-		Expires:  expiresAt,
-		HttpOnly: true,
-		Domain:   domain,
-		Secure:   secure,
-	}
-
-	userCookie := &http.Cookie{
-		Name:    model.SESSION_COOKIE_USER,
-		Value:   user.ClientId,
-		Path:    "/",
-		MaxAge:  maxAge,
-		Expires: expiresAt,
-		Domain:  domain,
-		Secure:  secure,
-	}
-
-	csrfCookie := &http.Cookie{
-		Name:    model.SESSION_COOKIE_CSRF,
-		Value:   session.GetCSRF(),
-		Path:    "/",
-		MaxAge:  maxAge,
-		Expires: expiresAt,
-		Domain:  domain,
-		Secure:  secure,
-	}
-
-	http.SetCookie(w, sessionCookie)
-	http.SetCookie(w, userCookie)
-	http.SetCookie(w, csrfCookie)
+	//secure := false
+	//if GetProtocol(r) == "https" {
+	//	secure = true
+	//}
+	//
+	//domain := a.GetCookieDomain()
+	//expiresAt := time.Unix(model.GetMillis()/1000+int64(maxAge), 0)
+	//sessionCookie := &http.Cookie{
+	//	Name:     model.SESSION_COOKIE_TOKEN,
+	//	Value:    session.Token,
+	//	Path:     "/",
+	//	MaxAge:   maxAge,
+	//	Expires:  expiresAt,
+	//	HttpOnly: true,
+	//	Domain:   domain,
+	//	Secure:   secure,
+	//}
+	//
+	//userCookie := &http.Cookie{
+	//	Name:    model.SESSION_COOKIE_USER,
+	//	Value:   user.ClientId,
+	//	Path:    "/",
+	//	MaxAge:  maxAge,
+	//	Expires: expiresAt,
+	//	Domain:  domain,
+	//	Secure:  secure,
+	//}
+	//
+	//csrfCookie := &http.Cookie{
+	//	Name:    model.SESSION_COOKIE_CSRF,
+	//	Value:   session.GetCSRF(),
+	//	Path:    "/",
+	//	MaxAge:  maxAge,
+	//	Expires: expiresAt,
+	//	Domain:  domain,
+	//	Secure:  secure,
+	//}
+	//
+	//http.SetCookie(w, sessionCookie)
+	//http.SetCookie(w, userCookie)
+	//http.SetCookie(w, csrfCookie)
 
 	if pluginsEnvironment := a.GetPluginsEnvironment(); pluginsEnvironment != nil {
 		a.Srv.Go(func() {

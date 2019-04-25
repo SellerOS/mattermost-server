@@ -73,7 +73,7 @@ func (a *App) CreateUserWithToken(user *model.UserIms, tokenId string) (*model.U
 	}
 	team := result.Data.(*model.Team)
 
-	//user.Email = tokenData["email"]
+	user.Email = tokenData["email"]
 	//user.EmailVerified = true
 
 	ruser, err := a.CreateUser(user)

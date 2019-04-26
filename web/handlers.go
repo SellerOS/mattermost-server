@@ -107,7 +107,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			if err.StatusCode == http.StatusInternalServerError {
 				c.Err = err
 			} else if h.RequireSession {
-				c.RemoveSessionCookie(w, r)
+				//c.RemoveSessionCookie(w, r)
 				c.Err = model.NewAppError("ServeHTTP", "api.context.session_expired.app_error", nil, "token="+token, http.StatusUnauthorized)
 			}
 		} else if !session.IsOAuth && tokenLocation == app.TokenLocationQueryString {

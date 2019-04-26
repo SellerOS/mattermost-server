@@ -136,18 +136,18 @@ func (c *Context) MfaRequired() {
 		}
 	}
 }
-
-func (c *Context) RemoveSessionCookie(w http.ResponseWriter, r *http.Request) {
-	cookie := &http.Cookie{
-		Name:     model.SESSION_COOKIE_TOKEN,
-		Value:    "",
-		Path:     "/",
-		MaxAge:   -1,
-		HttpOnly: true,
-	}
-
-	http.SetCookie(w, cookie)
-}
+//
+//func (c *Context) RemoveSessionCookie(w http.ResponseWriter, r *http.Request) {
+//	cookie := &http.Cookie{
+//		Name:     model.SESSION_COOKIE_TOKEN,
+//		Value:    "",
+//		Path:     "/",
+//		MaxAge:   -1,
+//		HttpOnly: true,
+//	}
+//
+//	http.SetCookie(w, cookie)
+//}
 
 func (c *Context) SetInvalidParam(parameter string) {
 	c.Err = NewInvalidParamError(parameter)

@@ -1209,7 +1209,7 @@ func logout(c *Context, w http.ResponseWriter, r *http.Request) {
 
 func Logout(c *Context, w http.ResponseWriter, r *http.Request) {
 	c.LogAudit("")
-	c.RemoveSessionCookie(w, r)
+	//c.RemoveSessionCookie(w, r)
 	if c.App.Session.Id != "" {
 		if err := c.App.RevokeSessionById(c.App.Session.Id); err != nil {
 			c.Err = err

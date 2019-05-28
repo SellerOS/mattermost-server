@@ -1070,6 +1070,14 @@ func (a *App) GetFileInfo(fileId string) (*model.FileInfo, *model.AppError) {
 	return result.Data.(*model.FileInfo), nil
 }
 
+func (a *App) GetFilesForUser(userId string) ([]*model.FileInfo, *model.AppError) {
+	result := <-a.Srv.Store.FileInfo().GetForUser(userId)
+	if result.Err != nil {
+		return nil, result.Err
+	}
+	return result.Data.([]*model.FileInfo), nil
+}
+
 func (a *App) GetFile(fileId string) ([]byte, *model.AppError) {
 	info, err := a.GetFileInfo(fileId)
 	if err != nil {

@@ -60,7 +60,7 @@ func (api *API) InitFile() {
 	api.BaseRoutes.File.Handle("/link", api.ApiSessionRequired(getFileLink)).Methods("GET")
 	api.BaseRoutes.File.Handle("/preview", api.ApiSessionRequiredTrustRequester(getFilePreview)).Methods("GET")
 	api.BaseRoutes.File.Handle("/info", api.ApiSessionRequired(getFileInfo)).Methods("GET")
-
+	api.BaseRoutes.File.Handle("/files", api.ApiSessionRequired(getFiles)).Methods("GET")
 	api.BaseRoutes.PublicFile.Handle("", api.ApiHandler(getPublicFile)).Methods("GET")
 
 }
@@ -689,6 +689,27 @@ func getFileInfo(c *Context, w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Cache-Control", "max-age=2592000, public")
 	w.Write([]byte(info.ToJson()))
+}
+
+func getFiles(c *Context, w http.ResponseWriter, r *http.Request) {
+	c.RequireUserId()
+	if c.Err != nil {
+		return
+	}
+
+	infos, err := c.App.GetFilesForUser(c.Params.UserId)
+	if err != nil {
+		c.Err = err
+		return
+	}
+	for _, info := range infos {
+		if info.CreatorId != c.App.Session.UserId && !c.App.SessionHasPermissionToChannelByPost(c.App.Session, info.PostId, model.PERMISSION_READ_CHANNEL) {
+			c.SetPermissionError(model.PERMISSION_READ_CHANNEL)
+			return
+		}
+	}
+	w.Header().Set("Cache-Control", "max-age=2592000, public")
+	w.Write([]byte(model.FileInfosToJson(infos)))
 }
 
 func getPublicFile(c *Context, w http.ResponseWriter, r *http.Request) {
